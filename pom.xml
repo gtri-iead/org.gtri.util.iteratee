@@ -7,8 +7,8 @@
   <packaging>pom</packaging>
   <name>iteratee</name>
     <modules>
-        <module>../main</module>
-        <module>../api</module>
-        <module>../impl</module>
+        <module>main</module>
+        <module>api</module>
+        <module>impl</module>
     </modules>
 </project>
