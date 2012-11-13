@@ -20,7 +20,7 @@
 
 */
 
-package org.gtri.iteratee.api;
+package org.gtri.iteratee;
 
 import java.util.ArrayList;
 import java.util.List;

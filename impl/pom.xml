@@ -7,11 +7,6 @@
     <version>1.0-SNAPSHOT</version>
     <name>iteratee.impl</name>
     <packaging>jar</packaging>
-    <parent>
-        <groupId>org.gtri</groupId>
-        <artifactId>super-pom</artifactId>
-        <version>1.6</version>
-    </parent>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scalaVersion>2.9.2</scalaVersion>
@@ -65,6 +60,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
