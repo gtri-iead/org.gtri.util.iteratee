@@ -41,6 +41,7 @@ class TestIntProducer(iterable : Iterable[Integer]) extends Producer[Integer] {
     def enumerate[V](iteratee: Iteratee[Integer, V]) = {
       doEnumerate(iterable.iterator, iteratee)
     }
+    def close() { }
     @tailrec
     def doEnumerate[V](iterator : Iterator[Integer], iteratee : Iteratee[Integer,V]) : Iteratee[Integer, V] = {
       if(iterator.hasNext) {

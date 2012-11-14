@@ -67,8 +67,14 @@ class Planner extends api.Planner {
   def concat[A](lhs : Producer[A], rhs : Producer[A]) : Producer[A] = {
     new Producer[A] {
       def enumerator = new Enumerator[A] {
+        val rhsEnumerator = rhs.enumerator
+        val lhsEnumerator = lhs.enumerator
         def enumerate[V](i : Iteratee[A,V]) : Iteratee[A,V] = {
-          rhs.enumerator.enumerate(lhs.enumerator.enumerate(i))
+          rhsEnumerator.enumerate(lhsEnumerator.enumerate(i))
+        }
+        def close() {
+          lhsEnumerator.close()
+          rhsEnumerator.close()
         }
       }
     }
@@ -84,6 +90,7 @@ class Planner extends api.Planner {
         val e : Enumerator[A] = producer.enumerator
         val i = e.enumerate(consumer.iteratee)
         val (optionValue, issues) = i.run
+        e.close()
         new api.Consumer.Result[A] {
           def getIssues : java.util.List[api.Issue] = ListBuffer(issues : _*)
           def isSuccess = optionValue.isDefined
@@ -110,6 +117,7 @@ class Planner extends api.Planner {
         val e = producer.enumerator
         val i = e.enumerate(builder.iteratee)
         val (optionValue, issues) = i.run
+        e.close()
         new api.Builder.Result[A,V] {
           def getIssues : java.util.List[api.Issue] = ListBuffer(issues : _*)
           def isSuccess : Boolean = optionValue.isDefined

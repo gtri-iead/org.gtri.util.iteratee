@@ -40,6 +40,7 @@ class TestStringProducer(iterable : Iterable[String]) extends Producer[String] {
     def enumerate[V](iteratee: Iteratee[String, V]) = {
       doEnumerate(iterable.iterator, iteratee)
     }
+    def close() { }
     @tailrec
     def doEnumerate[V](iterator : Iterator[String], iteratee : Iteratee[String,V]) : Iteratee[String, V] = {
       if(iterator.hasNext) {

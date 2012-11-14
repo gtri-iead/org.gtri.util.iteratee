@@ -105,6 +105,7 @@ object Iteratee {
 
   trait Enumerator[A] {
     def enumerate[V](i : Iteratee[A,V]) : Iteratee[A,V]
+    def close()
   }
 
   trait Enumeratee[A,B] {
