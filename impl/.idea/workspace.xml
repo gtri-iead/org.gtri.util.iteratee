@@ -2,47 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a23c5381-66cb-4a0c-b20f-af9415d1d70c" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/IteratorEnumeratee.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/PeekIterator.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/base/BaseEnumeratee.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/base/BaseIterS.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/base/BaseIterV.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/base/BaseTranslatee.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/concat/ConcatConsumer.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/concat/ConcatProducer.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/translate/TranslatedBuilder.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/translate/TranslatedConsumer.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/translate/TranslatedEnumeratee.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/translate/TranslatedProducer.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/util/Emptys.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/util/Plans.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/util/Results.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/util/Reuseables.scala" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/util/Util.scala" />
-      <change type="DELETED" beforePath="C:\Users\Lance\Documents\Code\org.gtri.util.iteratee\impl\src\main\scala\org\gtri\util\iteratee\impl\Iteratee.scala" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Lance\Documents\Code\org.gtri.util.iteratee\impl\src\main\scala\org\gtri\util\iteratee\impl\Producer.scala" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Lance\Documents\Code\org.gtri.util.iteratee\impl\src\main\scala\org\gtri\util\iteratee\impl\Translator.scala" afterPath="" />
-      <change type="MOVED" beforePath="C:\Users\Lance\Documents\Code\org.gtri.util.iteratee\impl\src\main\scala\org\gtri\util\iteratee\impl\Builder.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/concat/ConcatIteratee.scala" />
-      <change type="MOVED" beforePath="C:\Users\Lance\Documents\Code\org.gtri.util.iteratee\impl\src\main\scala\org\gtri\util\iteratee\impl\Consumer.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/concat/ConcatEnumeratee.scala" />
-      <change type="MOVED" beforePath="C:\Users\Lance\Documents\Code\org.gtri.util.iteratee\impl\src\main\scala\org\gtri\util\iteratee\impl\Issue.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/base/BaseIssues.scala" />
-      <change type="MOVED" beforePath="C:\Users\Lance\Documents\Code\org.gtri.util.iteratee\impl\src\main\scala\org\gtri\util\iteratee\impl\IterVUtil.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/Foldatee.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../api/pom.xml" afterPath="$PROJECT_DIR$/../api/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../api/src/main/java/org/gtri/util/iteratee/api/Builder.java" afterPath="$PROJECT_DIR$/../api/src/main/java/org/gtri/util/iteratee/api/Builder.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../api/src/main/java/org/gtri/util/iteratee/api/Consumer.java" afterPath="$PROJECT_DIR$/../api/src/main/java/org/gtri/util/iteratee/api/Consumer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../api/src/main/java/org/gtri/util/iteratee/api/Planner.java" afterPath="$PROJECT_DIR$/../api/src/main/java/org/gtri/util/iteratee/api/Planner.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../api/src/main/java/org/gtri/util/iteratee/api/Producer.java" afterPath="$PROJECT_DIR$/../api/src/main/java/org/gtri/util/iteratee/api/Producer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../api/src/main/java/org/gtri/util/iteratee/api/Translator.java" afterPath="$PROJECT_DIR$/../api/src/main/java/org/gtri/util/iteratee/api/Translator.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.sbt" afterPath="$PROJECT_DIR$/build.sbt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/Planner.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/Planner.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestIntBuilder.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestIntBuilder.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestIntProducer.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestIntProducer.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestIntToStringTranslator.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestIntToStringTranslator.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestPrintConsumer.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestPrintConsumer.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestStringBuilder.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestStringBuilder.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestStringConsumer.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestStringConsumer.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestStringProducer.scala" afterPath="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestStringProducer.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../main/src/test/java/org/gtri/iteratee/IterateeApiTests.java" afterPath="$PROJECT_DIR$/../main/src/test/java/org/gtri/iteratee/IterateeApiTests.java" />
     </list>
     <ignored path="impl.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -122,10 +84,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TestStringProducer.scala" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="TestStringProducer.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestStringProducer.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="47" column="26" selection-start="1619" selection-end="1619" vertical-scroll-proportion="0.5869159">
+            <state line="47" column="26" selection-start="1619" selection-end="1619" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="build.sbt" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/build.sbt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="14" column="2" selection-start="357" selection-end="357" vertical-scroll-proportion="0.4448598">
               <folding />
             </state>
           </provider>
@@ -162,7 +133,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/base/BaseIterV.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestIntBuilder.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestStringBuilder.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestIntToStringTranslator.scala" />
@@ -178,6 +148,7 @@
         <option value="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/concat/ConcatEnumeratee.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/concat/ConcatProducer.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestStringProducer.scala" />
+        <option value="$PROJECT_DIR$/build.sbt" />
       </list>
     </option>
   </component>
@@ -685,13 +656,13 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="SBT Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.38105726" sideWeight="0.49811321" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="SBT Console" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.38105726" sideWeight="0.49811321" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295964" sideWeight="0.49811321" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -764,13 +735,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$PROJECT_DIR$/lib/iteratee.api_2.9.2-1.0-SNAPSHOT.jar!/org/gtri/util/iteratee/api/Enumeratee.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="51" selection-start="471" selection-end="471" vertical-scroll-proportion="0.46666667">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$PROJECT_DIR$/lib/iteratee.api_2.9.2-1.0-SNAPSHOT.jar!/org/gtri/util/iteratee/api/Translator.class">
       <provider selected="true" editor-type-id="text-editor">
         <state line="5" column="17" selection-start="168" selection-end="168" vertical-scroll-proportion="0.13934426">
@@ -877,7 +841,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/org/gtri/util/iteratee/impl/test/TestStringProducer.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="47" column="26" selection-start="1619" selection-end="1619" vertical-scroll-proportion="0.5869159">
+        <state line="47" column="26" selection-start="1619" selection-end="1619" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build.sbt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="2" selection-start="357" selection-end="357" vertical-scroll-proportion="0.4448598">
           <folding />
         </state>
       </provider>

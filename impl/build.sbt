@@ -12,7 +12,7 @@ scalacOptions ++= Seq("-unchecked", "-deprecation")
 
 //libraryDependencies += "org.gtri.util" %% "iteratee.api" % "1.0-SNAPSHOT"
 
-libraryDependencies += "org.scalaz" %% "scalaz-core" % "6.0.4"
+//libraryDependencies += "org.scalaz" %% "scalaz-core" % "6.0.4"
 
 publishTo <<= {    // set publish repository url according to whether `version` ends in "-SNAPSHOT"
   val releases = "iead-artifactory" at "https://iead.ittl.gtri.org/artifactory/internal"
