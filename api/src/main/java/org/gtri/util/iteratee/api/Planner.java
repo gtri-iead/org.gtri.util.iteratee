@@ -38,7 +38,7 @@ public interface Planner {
    * @param rhs second producer
    * @return a producer composed of the first followed by the second
    */
-  <A> Producer<A> concat(Producer<A> lhs, Producer<A> rhs);
+//  <A> Producer<A> concat(Producer<A> lhs, Producer<A> rhs);
   
   /**
    * Concatenate the input of two consumers. The first consumer is fed input
@@ -49,20 +49,7 @@ public interface Planner {
    * @param rhs second consumer
    * @return a consumer composed of the first followed by the second
    */
-  <A> Consumer<A> concat(Consumer<A> lhs, Consumer<A> rhs);
-  
-  /**
-   * Concatenate the input of a consumer and a builder. The consumer is fed 
-   * input until it is done then the builder is fed input until it is done.
-   * 
-   * 
-   * @param <A> the input type
-   * @param <V> the type being built
-   * @param lhs the consumer
-   * @param rhs the builder
-   * @return a builder composed of the consumer followed by the builder
-   */
-  <A,V> Builder<A,V> concat(Consumer<A> lhs, Builder<A,V> rhs);
+//  <A> Consumer<A> concat(Consumer<A> lhs, Consumer<A> rhs);
   
   /**
    * Compose a consumer with a translator so that it may accept input of another
@@ -76,21 +63,20 @@ public interface Planner {
    * @return a consumer that feeds its input to a translator which feeds its
    * translated output to the original consumer
    */
-  <A,B> Consumer<A> translate(Translator<A,B> translator, Consumer<B> consumer);
+//  <A,B> Consumer<A> translate(Translator<A,B> translator, Consumer<B> consumer);
   
   /**
-   * Compose a builder with a translator so that it may accept input of another
-   * type. Input fed to the returned builder is translated by the translator
-   * and then fed to the original builder.
+   * Compose a producer with a translator so that produces output of another 
+   * type. Output from the original producer is translated by the translator
+   * and then fed to the consumer for the new producer.
    * 
    * @param <A> the type being translated from
    * @param <B> the type being translated to
    * @param translator 
-   * @param builder
-   * @return a builder that feeds its input to a translator which feeds its
-   * translated output to the original builder
+   * @param producer
+   * @return a producer of the type being translated to
    */
-  <A,B,V> Builder<A,V> translate(Translator<A,B> translator, Builder<B,V> consumer);
+  <A,B> Producer<B> translate(Translator<A,B> translator, Producer<A> producer);
   
   /**
    * Create a plan to connect a producer and a consumer.
@@ -106,9 +92,10 @@ public interface Planner {
    * Create a plan to connect a producer and a builder.
    * 
    * @param <A> the input/output type
+   * @param <A> the value type 
    * @param producer 
    * @param builder
    * @return a plan that can be run to obtain results
-   */  
+   */
   <A,V> Builder.Plan<A,V> connect(Producer<A> producer, Builder<A,V> builder);
 }

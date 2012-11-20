@@ -19,25 +19,44 @@
     along with org.gtri.util.iteratee library. If not, see <http://www.gnu.org/licenses/>.
 
 */
-
 package org.gtri.util.iteratee.api;
 
-import java.util.List;
+import scala.Option;
+import scala.collection.immutable.List;
 
 /**
- * An interface for a builder that builds an object from the output of a 
- * producer.
- * 
+ *
  * @author Lance
  */
-public interface Builder<A, V> {
+public interface Builder<A,V> {
+  public static interface State<A,V> {
+    StatusCode status();
+    
+    List<Issue> issues();
+  
+    List<A> overflow();
+    
+    Option<V> value();
+  }
   /**
-   * A plan that can be run to for results.
+   * An interface for a plan to stream input from a producer to a consumer
    * 
-   * @param <A> the input/output type
-   * @param <V> the type being built
+   * @author Lance
    */
   public static interface Plan<A,V> {
+    /**
+     * Get the producer for the plan
+     *
+     * @return a producer for the plan
+     */
+    Producer<A> producer();
+
+    /**
+     * Get the builder for the plan
+     *
+     * @return a builder for the plan
+     */
+    Builder<A,V> builder();
     /**
      * Run the plan to get results
      * 
@@ -46,33 +65,29 @@ public interface Builder<A, V> {
     Result<A,V> run();
   }
   
-  public static interface Result<A,V> {
+  /**
+   * The results of running a plan
+   *
+   * @param <A> the input/output type
+   */
+  public static interface Result<A,V>  extends State<A,V> {
     /**
-     * Get the success/failure status of the execution
-     * @return TRUE if run succeeded FALSE otherwise
+     * Get the producer after processing
+     *
+     * @return the producer after processing
      */
-    boolean isSuccess();
+    Producer<A> producer();
+
     /**
-     * Get a list of issues identified during processing
-     * 
-     * @return a list of issues identified during processing
+     * Get the builder after processing
+     *
+     * @return the builder after processing
      */
-    List<Issue> getIssues();
-    
-    /**
-     * Get a producer that represents the state of the producer after execution.
-     * @return a producer that represents the state of the producer after execution.
-     */
-    Producer<A> getProducer();
-    /**
-     * Get a consumer that represents the state of the producer after execution.
-     * @return a consumer that represents the state of the producer after execution.
-     */
-    Builder<A,V> getBuilder();
-    /**
-     * Get the value built
-     * @return the value built OR NULL if execution was not successful
-     */
-    V get();
+    Builder<A,V> builder();
   }
+    
+//  Plan<A,V> createPlan(Producer<A> producer);  
+//  <C> Result<C,V> createResult(Enumeratee<C> enumeratee, Iteratee<C> iteratee);
+  
+  Iteratee<A,Builder.State<A,V>> iteratee();
 }

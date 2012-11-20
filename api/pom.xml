@@ -2,19 +2,33 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.gtri.util</groupId>
-  <artifactId>iteratee.api</artifactId>
+  <artifactId>iteratee.api_2.9.2</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>iteratee.api</name>
+  <name>iteratee.api_2.9.2</name>
 
   <parent>
     <groupId>org.gtri</groupId>
     <artifactId>super-pom</artifactId>
     <version>1.6</version>
   </parent>
-  
+<!--    <distributionManagement>
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>GTRI</id>
+            <name>GTRI Internal Repository</name>
+            <url>https://iead.ittl.gtri.org/artifactory/internal</url>
+        </repository>
+        <snapshotRepository>
+            <uniqueVersion>true</uniqueVersion>
+            <id>GTRI</id>
+            <name>GTRI Internal Snapshots Repository</name>
+            <url>https://iead.ittl.gtri.org/artifactory/internal-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>-->
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <scalaVersion>2.9.2</scalaVersion>
   </properties>
 
   <dependencies>
@@ -23,6 +37,16 @@
       <artifactId>junit</artifactId>
       <version>4.10</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>11.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scalaVersion}</version>
     </dependency>
   </dependencies>
   

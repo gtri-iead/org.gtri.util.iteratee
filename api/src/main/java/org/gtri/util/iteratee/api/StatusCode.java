@@ -19,38 +19,46 @@
     along with org.gtri.util.iteratee library. If not, see <http://www.gnu.org/licenses/>.
 
 */
-
 package org.gtri.util.iteratee.api;
 
 /**
- * An interface for a translator which translates input of one type into output 
- * of another type.
- * 
+ *
  * @author Lance
  */
-public interface Translator<A, B>  {
-  <S> Translatee<A,B,S> translatee(Iteratee<B,S> i);
-}
+public enum StatusCode {
+  CONTINUE,
+  SUCCESS,
+  RECOVERABLE_ERROR,
+  FATAL_ERROR;
 
-/*
- * Try #3 See Enumeratee #1 for deatils why this doesn't work
-public interface Translator<A, B>  {
-  <S,Ib extends Iteratee<B,S>> Translatee<A,B,S,Ib> translatee(Ib i);
-}
-
- */
-/*
- * Try #2: See Translatee for why this didn't work.
-public interface Translator<A, B>  {
-  <S> Enumeratee<B,S> translate(Enumeratee<A,S> e);
-}
-
- */
-/*
- * Try #1: only allowing translation of IterS,IterV. Still might do this.
-public interface Translator<A, B>  {
-  IterS<A> translate(IterS<B> translate);
-  <V> IterV<A,V> translate(IterV<B,V> translate);
-}
-
- */
+  public boolean isDone() { 
+    switch(this) {
+      case RECOVERABLE_ERROR:
+      case CONTINUE :
+        return false;
+      case SUCCESS :
+      case FATAL_ERROR :
+    }
+    return true;
+  }
+  public boolean isSuccess() {
+    switch(this) {
+      case RECOVERABLE_ERROR:
+      case CONTINUE :
+      case FATAL_ERROR :
+        return false;
+      case SUCCESS :
+    }
+    return true;
+  }
+  public boolean isError() {
+    switch(this) {
+      case CONTINUE :
+      case SUCCESS :
+        return false;
+      case RECOVERABLE_ERROR:
+      case FATAL_ERROR :
+    }
+    return true;    
+  }
+}  

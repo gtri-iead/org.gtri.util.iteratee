@@ -22,7 +22,7 @@
 
 package org.gtri.util.iteratee.api;
 
-import java.util.List;
+import scala.collection.immutable.List;
 
 /**
  * An interface for a consumer of the output of a producer.
@@ -30,47 +30,62 @@ import java.util.List;
  * @author Lance
  */
 public interface Consumer<A> {
+  public static interface State<A> {
+    StatusCode status();
+    
+    List<Issue> issues();
+  
+    List<A> overflow();
+  }
+    
   /**
-   * A plan that can be run to for results.
+   * An interface for a plan to stream input from a producer to a consumer
    * 
-   * @param <A> the input/output type
+   * @author Lance
    */
   public static interface Plan<A> {
+    /**
+     * Get the producer for the plan
+     *
+     * @return a producer for the plan
+     */
+    Producer<A> producer();
+
+    /**
+     * Get the consumer for the plan
+     *
+     * @return a consumer for the plan
+     */
+    Consumer<A> consumer();
     /**
      * Run the plan to get results
      * 
      * @return results
      */
     Result<A> run();
+
+
   }
-  
   /**
    * The results of running a plan
-   * 
+   *
    * @param <A> the input/output type
    */
-  public static interface Result<A> {
+  public static interface Result<A> extends State<A> {
     /**
-     * Get the success/failure status of the execution
-     * @return TRUE if run succeeded FALSE otherwise
+     * Get the producer after processing
+     *
+     * @return the producer after processing
      */
-    boolean isSuccess();
+    Producer<A> producer();
+
     /**
-     * Get a list of issues identified during processing
-     * 
-     * @return a list of issues identified during processing
+     * Get the consumer after processing
+     *
+     * @return the consumer after processing
      */
-    List<Issue> getIssues();
-    
-    /**
-     * Get a producer that represents the state of the producer after execution.
-     * @return a producer that represents the state of the producer after execution.
-     */
-    Producer<A> getProducer();
-    /**
-     * Get a consumer that represents the state of the producer after execution.
-     * @return a consumer that represents the state of the producer after execution.
-     */
-    Consumer<A> getConsumer();
+    Consumer<A> consumer();
   }
+  
+  Iteratee<A,Consumer.State<A>> iteratee();
 }

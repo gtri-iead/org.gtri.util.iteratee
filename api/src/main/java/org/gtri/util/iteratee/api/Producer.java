@@ -28,4 +28,13 @@ package org.gtri.util.iteratee.api;
  * @author Lance
  */
 public interface Producer<A> {
+  <S> Enumeratee<A,S> enumeratee(Iteratee<A,S> downstream);
 }
+
+/*
+ * Try #1 : See Enumeratee #1 for why this didn't work
+public interface Producer<A> {
+  <S, I extends Iteratee<A,S>> Enumeratee<A,S,I> enumeratee(I downstream);
+}
+
+ */
