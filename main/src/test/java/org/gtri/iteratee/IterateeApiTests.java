@@ -25,7 +25,12 @@ package org.gtri.iteratee;
 import java.util.ArrayList;
 import java.util.List;
 import org.gtri.util.iteratee.api.*;
-import org.gtri.util.iteratee.impl.test.*;
+import org.gtri.util.iteratee.api.Consumer;
+import org.gtri.util.iteratee.impl.test.TestIntProducer;
+import org.gtri.util.iteratee.impl.test.TestIntToStringTranslator;
+import org.gtri.util.iteratee.impl.test.TestStringBuilder;
+import org.gtri.util.iteratee.impl.test.TestStringConsumer;
+import org.gtri.util.iteratee.impl.test.TestStringProducer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -74,54 +79,93 @@ public class IterateeApiTests {
 
   @Test
   public void testIntToString() {
+    System.out.println("===testIntToString===");
+    System.out.println("Creating TestIntProducer...");
     Producer<Integer> integerProducer = new TestIntProducer(integers);
     
+    System.out.println("Creating TestIntToStringTranslator...");
     Translator<Integer,String> intToString = new TestIntToStringTranslator();
     
+    System.out.println("Creating TestStringConsumer...");
     List<String> output = new ArrayList<String>();
     Consumer<String> stringConsumer = new TestStringConsumer(output);
     
-    Consumer<Integer> integerConsumer = planner.translate(intToString, stringConsumer);
-    Consumer.Plan<Integer> plan = planner.connect(integerProducer, integerConsumer);
-    plan.run();
+    System.out.println("Translating TestIntegerProducer with TestIntToStringTranslator...");
+    Producer<String> stringProducer = planner.translate(intToString, integerProducer);
+    System.out.println("Connecting TestIntegerProducer to TestStringConsumer...");
+    Consumer.Plan<String> plan = planner.connect(stringProducer, stringConsumer);
+    System.out.println("Running plan...");
+    Consumer.Result<String> result = plan.run();
+        
+    System.out.print("Successful? ");
+    assertTrue(result.status().isSuccess());
+    System.out.println("Ok.");
     
+    System.out.print("Testing output... ");
     StringBuilder outBuilder = new StringBuilder();
     for(String s : output) {
       outBuilder.append(s);
     }
     String actual = outBuilder.toString();
+    System.out.print("results=" + actual);
     assertEquals("123", actual);
+    System.out.println("Ok.");
   }
   
+  @Test
   public void testStringToStringBuilder() {
+    System.out.println("===testStringToStringBuilder===");
+    System.out.println("Creating TestStringProducer...");
     Producer<String> stringProducer = new TestStringProducer(strings);
     
+    System.out.println("Creating TestStringConsumer...");
     List<String> output = new ArrayList<String>();
     Consumer<String> stringConsumer = new TestStringConsumer(output);
     
+    System.out.println("Connecting TestStringProducer to TestStringConsumer...");
     Consumer.Plan<String> plan = planner.connect(stringProducer, stringConsumer);
-    plan.run();
+    System.out.println("Running plan...");
+    Consumer.Result<String> result = plan.run();
     
+    System.out.print("Successful? ");
+    assertTrue(result.status().isSuccess());
+    System.out.println("Ok.");
+    
+    System.out.print("Testing output... ");
     StringBuilder outBuilder = new StringBuilder();
     for(String s : output) {
       outBuilder.append(s);
     }
     String actual = outBuilder.toString();
+    System.out.print("results=" + actual);
     assertEquals("abc", actual);
+    System.out.println("Ok.");
   }
   
+  @Test
   public void testStringConcat() {
+    System.out.println("===testStringConcat===");
+    System.out.println("Creating TestStringProducer...");
     Producer<String> stringProducer1 = new TestStringProducer(strings);
+    System.out.println("Creating TestStringProducer...");
     Producer<String> stringProducer2 = new TestStringProducer(strings2);
-    Producer<String> stringProducer3 = planner.concat(stringProducer1, stringProducer2);
-    Builder<String, String> stringBuilder = new TestStringBuilder();
+//    Producer<String> stringProducer3 = planner.concat(stringProducer1, stringProducer2);
+    System.out.println("Creating TestStringBuilder...");
+    Builder<String,String> stringBuilder = new TestStringBuilder();
 
-    Builder.Plan<String,String> plan = planner.connect(stringProducer3, stringBuilder);
+    System.out.println("Connecting TestStringProducer to TestStringBuilder...");
+    Builder.Plan<String,String> plan = planner.connect(stringProducer2, stringBuilder);
+    System.out.println("Running plan...");
     Builder.Result<String,String> result = plan.run();
     
-    assertEquals(true, result.isSuccess());
+    System.out.print("Success? ");
+    assertTrue(result.status().isSuccess());
+    System.out.println("Ok.");
     
-    String actual = result.get();
-    assertEquals("abcdef", actual);
+    System.out.print("Testing results...");
+    String actual = result.value().get();
+    System.out.print("results=" + actual);
+    assertEquals("def", actual);
+    System.out.println("Ok.");
   }
 }
