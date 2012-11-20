@@ -21,30 +21,26 @@
 */
 package org.gtri.util.iteratee.impl.test
 
-import org.gtri.util.iteratee.impl.Consumer
-import org.gtri.util.iteratee.api.Issue
-import org.gtri.util.iteratee.impl.Iteratee._
+import org.gtri.util.iteratee.api._
+import org.gtri.util.iteratee.api.Signals.EndOfInput
+import org.gtri.util.iteratee.impl.base.BaseIterS.base
 
 /**
- * Created with IntelliJ IDEA.
- * User: Lance
- * Date: 11/14/12
- * Time: 5:10 AM
- * To change this template use File | Settings | File Templates.
- */
+* Created with IntelliJ IDEA.
+* User: Lance
+* Date: 11/14/12
+* Time: 5:10 AM
+* To change this template use File | Settings | File Templates.
+*/
 class TestPrintConsumer[A] extends Consumer[A] {
-  def iteratee = {
-    def step(issues : List[Issue]) : (Input[A]) => Iteratee[A, Unit] = {
-      case El(chunk, newIssues) =>
-        for(item <- chunk) {
-          println(item)
-        }
-        Cont(step(newIssues ::: issues))
-      case Empty() =>
-        Cont(step(issues))
-      case EOF() =>
-        Success((), issues, EOF[A])
+  case class Cont[A]() extends base.Cont[A] {
+    def apply(item: A) = {
+      println(item)
+      this
     }
-    Cont(step(Nil))
+
+    def apply(eoi: EndOfInput) = base.Success()
   }
+
+  def iteratee = Cont()
 }

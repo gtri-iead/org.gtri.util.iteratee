@@ -8,9 +8,9 @@ version := "1.0-SNAPSHOT"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 
-resolvers += "iead-all" at "https://iead.ittl.gtri.org/artifactory/all" // need this for getting IEAD artifacts
+//resolvers += "iead-all" at "https://iead.ittl.gtri.org/artifactory/all" // need this for getting IEAD artifacts
 
-libraryDependencies += "org.gtri.util" % "iteratee.api" % "1.0-SNAPSHOT"
+//libraryDependencies += "org.gtri.util" %% "iteratee.api" % "1.0-SNAPSHOT"
 
 libraryDependencies += "org.scalaz" %% "scalaz-core" % "6.0.4"
 

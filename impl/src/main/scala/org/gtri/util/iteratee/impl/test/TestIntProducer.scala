@@ -22,37 +22,36 @@
 
 package org.gtri.util.iteratee.impl.test
 
-import org.gtri.util.iteratee.impl.Producer
-import org.gtri.util.iteratee.impl.Iteratee._
-import annotation.tailrec
+import org.gtri.util.iteratee.api
+import api._
 import java.lang.Integer
 import java.lang.Iterable
 import java.util.Iterator
+import scala.collection.JavaConversions._
+import org.gtri.util.iteratee.impl.base.BaseEnumeratee
 
 /**
- * Created with IntelliJ IDEA.
- * User: Lance
- * Date: 11/12/12
- * Time: 4:22 PM
- * To change this template use File | Settings | File Templates.
- */
+* Created with IntelliJ IDEA.
+* User: Lance
+* Date: 11/12/12
+* Time: 4:22 PM
+* To change this template use File | Settings | File Templates.
+*/
 class TestIntProducer(iterable : Iterable[Integer]) extends Producer[Integer] {
-  def enumerator = new Enumerator[Integer] {
-    def enumerate[V](iteratee: Iteratee[Integer, V]) = {
-      doEnumerate(iterable.iterator, iteratee)
-    }
-    def close() { }
-    @tailrec
-    def doEnumerate[V](iterator : Iterator[Integer], iteratee : Iteratee[Integer,V]) : Iteratee[Integer, V] = {
-      if(iterator.hasNext) {
-        val item = iterator.next
-        iteratee match {
-          case i@Done(_,_) => i
-          case Cont(k) => doEnumerate[V](iterator, k(El(List(item))))
-        }
-      } else {
-        iteratee
-      }
+  case class Step[S](items : Stream[Integer], i : Iteratee[Integer,S]) extends BaseEnumeratee[Integer, S](i) {
+
+    def isDone = items.isEmpty || downstream.isDone
+
+    def attach[T](i: Iteratee[Integer,T]) = Step(items, i)
+
+    def step() = {
+      val head = items.head
+      val tail = items.tail
+      val nextIteratee = downstream(head)
+      println("head=" + head)
+      Step(tail, nextIteratee)
     }
   }
+
+  def enumeratee[S](i: Iteratee[Integer,S]) = Step(iterable.iterator.toStream, i)
 }

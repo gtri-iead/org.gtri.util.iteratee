@@ -3,55 +3,54 @@
 
     Author: lance.gatlin@gtri.gatech.edu
 
-    This file is part of org.gtri.util.iteratee library.
+    This file is part of org.gtri.util.downstream library.
 
-    org.gtri.util.iteratee library is free software: you can redistribute it and/or modify
+    org.gtri.util.downstream library is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    org.gtri.util.iteratee library is distributed in the hope that it will be useful,
+    org.gtri.util.downstream library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with org.gtri.util.iteratee library. If not, see <http://www.gnu.org/licenses/>.
+    along with org.gtri.util.downstream library. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
 package org.gtri.util.iteratee.impl.test
 
-import org.gtri.util.iteratee.impl.Producer
-import org.gtri.util.iteratee.impl.Iteratee._
-import annotation.tailrec
+import org.gtri.util.iteratee.api
+import api._
+import java.lang.Integer
 import java.lang.Iterable
 import java.util.Iterator
+import org.gtri.util.iteratee.impl.base.BaseEnumeratee
+
 
 /**
- * Created with IntelliJ IDEA.
- * User: Lance
- * Date: 11/12/12
- * Time: 4:22 PM
- * To change this template use File | Settings | File Templates.
- */
+* Created with IntelliJ IDEA.
+* User: Lance
+* Date: 11/12/12
+* Time: 4:22 PM
+* To change this template use File | Settings | File Templates.
+*/
 class TestStringProducer(iterable : Iterable[String]) extends Producer[String] {
-  def enumerator = new Enumerator[String] {
-    def enumerate[V](iteratee: Iteratee[String, V]) = {
-      doEnumerate(iterable.iterator, iteratee)
-    }
-    def close() { }
-    @tailrec
-    def doEnumerate[V](iterator : Iterator[String], iteratee : Iteratee[String,V]) : Iteratee[String, V] = {
-      if(iterator.hasNext) {
-        val item = iterator.next
-        iteratee match {
-          case i@Done(_,_) => i
-          case Cont(k) => doEnumerate[V](iterator, k(El(List(item))))
-        }
-      } else {
-        iteratee
-      }
+  case class Step[S](iterator : Iterator[String], i : Iteratee[String,S]) extends BaseEnumeratee[String,S](i) {
+
+    def isDone = iterator.hasNext == false || downstream.isDone
+
+    def attach[T](j: Iteratee[String,T]) = Step(iterable.iterator, j)
+
+    def step() = {
+      val nextS = iterator.next
+      println("nextS=" + nextS)
+      val nextI = downstream(nextS)
+      Step(iterator, nextI)
     }
   }
+
+  def enumeratee[S](i: Iteratee[String,S]) = Step(iterable.iterator, i)
 }

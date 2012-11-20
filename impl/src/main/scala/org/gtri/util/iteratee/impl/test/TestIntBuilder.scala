@@ -22,10 +22,10 @@
 
 package org.gtri.util.iteratee.impl.test
 
-import org.gtri.util.iteratee.impl.Builder
-import org.gtri.util.iteratee.impl.Iteratee._
-import org.gtri.util.iteratee.api.Issue
 import java.lang.Integer
+import org.gtri.util.iteratee.api.Signals.EndOfInput
+import org.gtri.util.iteratee.api._
+import org.gtri.util.iteratee.impl.base.BaseIterV.base
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,17 +34,14 @@ import java.lang.Integer
  * Time: 5:25 PM
  * To change this template use File | Settings | File Templates.
  */
-class TestIntegerBuilder extends Builder[Integer,Integer] {
-  def iteratee = {
-    def step(issues : List[Issue], value : Integer) : (Input[Integer]) => Iteratee[Integer, Integer] = {
-      case El(chunk, newIssues) =>
-        val newValue = chunk.foldLeft(value) { (a,b) => a + b }
-        Cont(step(newIssues ::: issues, newValue))
-      case Empty() =>
-        Cont(step(issues, value))
-      case EOF() =>
-        Success(value,issues, EOF[Integer])
-    }
-    Cont(step(Nil, 0))
+class TestIntegerBuilder extends Builder[Integer, Integer] {
+
+  case class Cont(acc: Integer) extends base.Cont[Integer, Integer] {
+
+    def apply(i: Integer) = Cont(acc + 1)
+
+    def apply(eoi: EndOfInput) = base.Success(Some(acc))
   }
+
+  def iteratee = Cont(0)
 }

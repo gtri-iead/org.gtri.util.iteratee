@@ -20,32 +20,30 @@
 
 */
 
+
 package org.gtri.util.iteratee.impl.test
 
-import org.gtri.util.iteratee.impl.Consumer
-import org.gtri.util.iteratee.api.Issue
-import org.gtri.util.iteratee.impl.Iteratee._
+import org.gtri.util.iteratee.api._
+import org.gtri.util.iteratee.api.Signals.EndOfInput
+import org.gtri.util.iteratee.impl.base.BaseIterS.base
 
 /**
- * Created with IntelliJ IDEA.
- * User: Lance
- * Date: 11/12/12
- * Time: 4:22 PM
- * To change this template use File | Settings | File Templates.
- */
+* Created with IntelliJ IDEA.
+* User: Lance
+* Date: 11/12/12
+* Time: 4:22 PM
+* To change this template use File | Settings | File Templates.
+*/
 class TestStringConsumer(list : java.util.List[String]) extends Consumer[String] {
-  def iteratee = {
-    def step(issues : List[Issue]) : (Input[String]) => Iteratee[String, Unit] = {
-      case El(chunk, newIssues) =>
-        for(item <- chunk) {
-          list.add(item)
-        }
-        Cont(step(newIssues ::: issues))
-      case Empty() =>
-        Cont(step(issues))
-      case EOF() =>
-        Success((), issues, EOF[String])
+  case class Step(list : java.util.List[String]) extends base.Cont[String] {
+
+    def apply(item: String) = {
+      println("item=" + item)
+      list.add(item)
+      this
     }
-    Cont(step(Nil))
+
+    def apply(eoi: EndOfInput) = base.Success()
   }
+  def iteratee = Step(list)
 }

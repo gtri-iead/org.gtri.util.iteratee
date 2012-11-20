@@ -22,28 +22,26 @@
 
 package org.gtri.util.iteratee.impl.test
 
-import org.gtri.util.iteratee.impl.Builder
-import org.gtri.util.iteratee.impl.Iteratee._
-import org.gtri.util.iteratee.api.Issue
+import org.gtri.util.iteratee.api._
+import org.gtri.util.iteratee.api.Signals.EndOfInput
+import org.gtri.util.iteratee.impl.base.BaseIterV.base
 
 /**
- * Created with IntelliJ IDEA.
- * User: Lance
- * Date: 11/12/12
- * Time: 5:25 PM
- * To change this template use File | Settings | File Templates.
- */
-class TestStringBuilder extends Builder[String,String] {
-  def iteratee = {
-    def step(issues : List[Issue], value : String) : (Input[String]) => Iteratee[String, String] = {
-      case El(chunk, newIssues) =>
-        val newValue = chunk.foldLeft(value) { (a,b) => a + b }
-        Cont(step(newIssues ::: issues, newValue))
-      case Empty() =>
-        Cont(step(issues, value))
-      case EOF() =>
-        Success(value,issues, EOF[String])
+* Created with IntelliJ IDEA.
+* User: Lance
+* Date: 11/12/12
+* Time: 5:25 PM
+* To change this template use File | Settings | File Templates.
+*/
+class TestStringBuilder extends Builder[String, String] {
+  case class Cont(acc : String) extends base.Cont[String, String] {
+
+    def apply(i: String) = {
+      println("acc=" + acc + " i=" + i)
+      Cont(i + acc)
     }
-    Cont(step(Nil, ""))
+
+    def apply(eoi: EndOfInput) = base.Success(Some(acc))
   }
+  def iteratee = Cont("")
 }
