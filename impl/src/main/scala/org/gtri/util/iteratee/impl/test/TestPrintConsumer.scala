@@ -19,6 +19,7 @@
     along with org.gtri.util.iteratee library. If not, see <http://www.gnu.org/licenses/>.
 
 */
+
 package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._

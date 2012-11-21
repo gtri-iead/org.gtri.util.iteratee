@@ -24,6 +24,7 @@ package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api
 import api._
+import api.Issue.ImpactCode
 import translate._
 import annotation.tailrec
 
@@ -34,9 +35,8 @@ import annotation.tailrec
 * Time: 1:11 PM
 * To change this template use File | Settings | File Templates.
 */
-class Planner(factory : api.IterateeFactory) extends api.Planner {
-  def errorHandlingCode = factory.errorHandlingCode
-
+class Planner(val factory : api.IterateeFactory) extends api.Planner {
+  val self = this
   def connect[A,S](p: Producer[A], c : Consumer[A,S]) =
     new Consumer.Plan[A,A,S] {
 
@@ -46,7 +46,7 @@ class Planner(factory : api.IterateeFactory) extends api.Planner {
 
       def run = {
         val e = p.enumeratee(c.iteratee)
-        val lastE = e.run
+        val lastE = self.run(e)
         val lastI = lastE.downstream
         // Feed EOI to lastI to force it to complete
         val eoiI = lastI(Signals.eoi)
@@ -77,7 +77,7 @@ class Planner(factory : api.IterateeFactory) extends api.Planner {
 
       def run = {
         val e = p.enumeratee(t.translatee(c.iteratee))
-        val lastE = e.run
+        val lastE = self.run(e)
         val lastI = lastE.downstream
         // Feed EOI to lastI to force it to complete
         val eoiI = lastI(Signals.eoi)
@@ -109,7 +109,7 @@ class Planner(factory : api.IterateeFactory) extends api.Planner {
 
       def run = {
         val e = p.enumeratee(b.iteratee)
-        val lastE = e.run
+        val lastE = self.run(e)
         val lastI = lastE.downstream
         // Feed EOI to lastI to force it to complete
         val eoiI = lastI(Signals.eoi)
@@ -140,7 +140,7 @@ class Planner(factory : api.IterateeFactory) extends api.Planner {
 
       def run = {
         val e = p.enumeratee(t.translatee(b.iteratee))
-        val lastE = e.run
+        val lastE = self.run(e)
         val lastI = lastE.downstream
         // Feed EOI to lastI to force it to complete
         val eoiI = lastI(Signals.eoi)
@@ -171,14 +171,53 @@ class Planner(factory : api.IterateeFactory) extends api.Planner {
 
   def compose[A, B, C, D, E, F](t1: Translator[A, B], t2: Translator[B, C], t3: Translator[C, D], t4: Translator[D, E], t5: Translator[E, F]) = TranslatorTuple5(t1,t2,t3,t4,t5)
 
-  @tailrec
   private def run[A,S](e: Enumeratee[A,S]) : Enumeratee[A,S] = {
+    factory.issueHandlingCode match {
+      case IssueHandlingCode.NORMAL => doNormalRun(e)
+      case IssueHandlingCode.LAX => doLaxRun(e)
+      case IssueHandlingCode.STRICT => doStrictRun(e)
+    }
+  }
+
+  @tailrec
+  private def doNormalRun[A,S](e: Enumeratee[A,S]) : Enumeratee[A,S] = {
     if(e.isDone) {
       e
     } else {
       e.status match {
-        case StatusCode.RECOVERABLE_ERROR=> run(e.step())
-        case StatusCode.CONTINUE => run(e.step())
+        case StatusCode.RECOVERABLE_ERROR=> e
+        case StatusCode.CONTINUE => doNormalRun(e.step())
+        case StatusCode.SUCCESS => e
+        case StatusCode.FATAL_ERROR => e
+      }
+    }
+  }
+  @tailrec
+  private def doLaxRun[A,S](e: Enumeratee[A,S]) : Enumeratee[A,S] = {
+    if(e.isDone) {
+      e
+    } else {
+      e.status match {
+        case StatusCode.RECOVERABLE_ERROR=> doLaxRun(e.step())
+        case StatusCode.CONTINUE => doLaxRun(e.step())
+        case StatusCode.SUCCESS => e
+        case StatusCode.FATAL_ERROR => e
+      }
+    }
+  }
+  @tailrec
+  private def doStrictRun[A,S](e: Enumeratee[A,S]) : Enumeratee[A,S] = {
+    if(e.isDone) {
+      e
+    } else {
+      e.status match {
+        case StatusCode.RECOVERABLE_ERROR=> e
+        case StatusCode.CONTINUE =>
+          if(e.issues().filter({ _.impactCode() == ImpactCode.WARNING}).nonEmpty) {
+            e
+          } else {
+            doStrictRun(e.step())
+          }
         case StatusCode.SUCCESS => e
         case StatusCode.FATAL_ERROR => e
       }

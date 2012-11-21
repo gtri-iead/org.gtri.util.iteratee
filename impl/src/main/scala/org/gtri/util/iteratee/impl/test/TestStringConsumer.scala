@@ -20,7 +20,6 @@
 
 */
 
-
 package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._

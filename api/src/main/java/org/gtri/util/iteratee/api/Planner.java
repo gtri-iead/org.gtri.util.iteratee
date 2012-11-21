@@ -29,6 +29,9 @@ package org.gtri.util.iteratee.api;
  * @author Lance
  */
 public interface Planner {
+  
+  IterateeFactory factory();
+  
   /**
    * Create a plan to connect a producer and a consumer.
    * 
