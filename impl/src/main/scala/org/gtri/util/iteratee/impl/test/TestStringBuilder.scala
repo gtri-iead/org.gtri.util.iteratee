@@ -38,7 +38,7 @@ class TestStringBuilder extends Builder[String, String] {
 
     def apply(i: String) = {
       println("acc=" + acc + " i=" + i)
-      Cont(i + acc)
+      Cont(acc + i)
     }
 
     def apply(eoi: EndOfInput) = base.Success(Some(acc))

@@ -10,27 +10,21 @@ import annotation.tailrec
  * Time: 7:17 PM
  * To change this template use File | Settings | File Templates.
  */
-abstract class BaseEnumeratee[A,S](val downstream : Iteratee[A,S], val issues : List[Issue] = Nil) extends Enumeratee[A,S] {
+abstract class BaseEnumeratee[A,S](val downstream : Iteratee[A,S], localIssues : List[Issue] = Nil) extends Enumeratee[A,S] {
+  def issues = localIssues ::: downstream.issues
 
-  def status() = {
-    if(isDone) {
-      StatusCode.CONTINUE
-    } else {
-      StatusCode.SUCCESS
-    }
-  }
+  def status = downstream.status
 
-  // TODO : how to inject issues here?
   def state = downstream.state
 
-  def run() = doRun(this)
+  def run = doRun(this)
 
   @tailrec
   private def doRun[A,S](e : Enumeratee[A,S]) : Enumeratee[A,S] = {
     if(e.isDone) {
       e
     } else {
-      doRun(e.step())
+      doRun(e.step)
     }
   }
 }

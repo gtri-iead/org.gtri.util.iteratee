@@ -25,7 +25,8 @@ package org.gtri.util.iteratee.impl.test
 import org.gtri.util.iteratee.api
 import api.Signals.EndOfInput
 import api._
-import java.lang.Integer
+import org.gtri.util.iteratee.impl.base.BaseTranslatee
+
 
 /**
 * Created with IntelliJ IDEA.
@@ -34,20 +35,12 @@ import java.lang.Integer
 * Time: 4:23 PM
 * To change this template use File | Settings | File Templates.
 */
-class TestIntToStringTranslator extends Translator[Integer, String] {
-  case class Cont[S](downstream : Iteratee[String,S]) extends Translatee[Integer, String, S] {
-
-    def issues() = Nil
-
-    def status() = StatusCode.CONTINUE
+class TestIntToStringTranslator extends Translator[java.lang.Integer, String] {
+  class Cont[S](downstream : Iteratee[String,S]) extends BaseTranslatee[java.lang.Integer, String, S](downstream) {
 
     def attach[T](i: Iteratee[String,T]) = Cont(i)
 
-    def isDone = downstream.isDone
-
-    def state() = downstream.state
-
-    def apply(input : Integer) = {
+    def apply(input : java.lang.Integer) = {
       val nextI = downstream(input.toString)
       Cont(nextI)
     }
@@ -56,6 +49,9 @@ class TestIntToStringTranslator extends Translator[Integer, String] {
       val nextI = downstream(eoi)
       Cont(nextI)
     }
+  }
+  object Cont {
+    def apply[S](downstream : Iteratee[String,S]) = new Cont(downstream)
   }
 
   def translatee[S](i: Iteratee[String,S]) = Cont(i)

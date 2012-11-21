@@ -29,12 +29,12 @@ import scala.collection.immutable.List;
  * @author Lance
  */
 public interface Builder<A,V> {
-  public static interface State<A,V> {
-    StatusCode status();
-    
-    List<Issue> issues();
-  
-    List<A> overflow();
+  public static interface State<V> {
+//    StatusCode status();
+//    
+//    List<Issue> issues();
+//  
+//    List<A> overflow();
     
     Option<V> value();
   }
@@ -43,7 +43,7 @@ public interface Builder<A,V> {
    * 
    * @author Lance
    */
-  public static interface Plan<A,V> {
+  public static interface Plan<A,B,V> {
     /**
      * Get the producer for the plan
      *
@@ -56,13 +56,13 @@ public interface Builder<A,V> {
      *
      * @return a builder for the plan
      */
-    Builder<A,V> builder();
+    Builder<B,V> builder();
     /**
      * Run the plan to get results
      * 
      * @return results
      */
-    Result<A,V> run();
+    Result<A,B,V> run();
   }
   
   /**
@@ -70,7 +70,15 @@ public interface Builder<A,V> {
    *
    * @param <A> the input/output type
    */
-  public static interface Result<A,V>  extends State<A,V> {
+  public static interface Result<A,B,V> {
+    StatusCode status();
+
+    List<Issue> issues();
+
+    List<A> overflow();
+    
+    Option<V> value();
+    
     /**
      * Get the producer after processing
      *
@@ -89,5 +97,5 @@ public interface Builder<A,V> {
 //  Plan<A,V> createPlan(Producer<A> producer);  
 //  <C> Result<C,V> createResult(Enumeratee<C> enumeratee, Iteratee<C> iteratee);
   
-  Iteratee<A,Builder.State<A,V>> iteratee();
+  Iteratee<A,Builder.State<V>> iteratee();
 }

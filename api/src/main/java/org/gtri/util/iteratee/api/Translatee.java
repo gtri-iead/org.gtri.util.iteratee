@@ -21,17 +21,11 @@
 */
 package org.gtri.util.iteratee.api;
 
-import scala.collection.immutable.List;
-
 /**
  * Try #4
  * @author Lance
  */
 public interface Translatee<A,B,S> extends Iteratee<A,S> {
-  
-  List<Issue> issues();
-  
-  StatusCode status();
   
   Iteratee<B,S> downstream();
   <T> Translatee<A,B,T> attach(Iteratee<B,T> downstream);  

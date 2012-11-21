@@ -11,8 +11,9 @@ import org.gtri.util.iteratee.api.Signals.EndOfInput
  * To change this template use File | Settings | File Templates.
  */
 object BaseIterV {
+  type IterV[A,V] = Iteratee[A, Builder.State[V]]
   object base {
-    abstract class BaseCont[A,V](val issues : List[Issue] = Nil) extends IterV[A,V] {
+    abstract class BaseCont[A,V](val issues : List[Issue] = Nil) extends IterV[A,V] with Builder.State[V] {
       def isDone = false
 
       def state = this
@@ -30,7 +31,7 @@ object BaseIterV {
       def status = StatusCode.RECOVERABLE_ERROR
     }
 
-    abstract class BaseDone[A,V](val issues : List[Issue] = Nil, val overflow : List[A]) extends IterV[A,V] {
+    abstract class BaseDone[A,V](val issues : List[Issue] = Nil, val overflow : List[A]) extends IterV[A,V] with Builder.State[V] {
       def isDone = true
 
       def state = this
@@ -39,7 +40,7 @@ object BaseIterV {
     }
 
     class Success[A,V](val value : Option[V], issues : List[Issue] = Nil, overflow : List[A] = Nil) extends BaseDone[A,V](issues, overflow) {
-      def status() = StatusCode.SUCCESS
+      def status = StatusCode.SUCCESS
 
       def apply(item: A) = Success(value, issues, item :: overflow)
     }
@@ -47,11 +48,11 @@ object BaseIterV {
       def apply[A,V](value : Option[V], issues : List[Issue] = Nil, overflow : List[A] = Nil) = new Success(value, issues, overflow)
     }
     class FatalError[A,V](issues : List[Issue] = Nil, overflow : List[A] = Nil) extends BaseDone[A,V](issues, overflow) {
-      def status() = StatusCode.FATAL_ERROR
+      def status = StatusCode.FATAL_ERROR
 
       def apply(item: A) = FatalError[A,V](issues, item :: overflow)
 
-      def value() = None
+      def value = None
     }
     object FatalError {
       def apply[A,V](issues : List[Issue] = Nil, overflow : List[A] = Nil) = new FatalError[A,V](issues, overflow)

@@ -64,13 +64,13 @@ public interface Issue {
    * @return an object that can be converted to a string that displays the location
    * of the source of the issue within the original producer.
    */
-  ImmutableDiagnosticLocator getLocator();
+  ImmutableDiagnosticLocator locator();
   
   /**
    * Get the message
    * @return the message
    */
-  String getMessage();
+  String message();
   
   /**
    * Get the stack trace for the source code location where the issue was 
@@ -79,11 +79,11 @@ public interface Issue {
    * @return the stack trace for the source code location where the issue was 
    * identified.
    */
-  StackTraceElement[] getStackTrace();
+  StackTraceElement[] stackTrace();
   
   /**
    * Get the level code of the issue
    * @return the level code of the issue
    */
-  ImpactCode getImpactCode();
+  ImpactCode impactCode();
 }

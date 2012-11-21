@@ -22,7 +22,7 @@
 
 package org.gtri.util.iteratee.impl.test
 
-import java.lang.Integer
+
 import org.gtri.util.iteratee.api.Signals.EndOfInput
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.base.BaseIterV.base
@@ -34,11 +34,11 @@ import org.gtri.util.iteratee.impl.base.BaseIterV.base
  * Time: 5:25 PM
  * To change this template use File | Settings | File Templates.
  */
-class TestIntegerBuilder extends Builder[Integer, Integer] {
+class TestIntegerBuilder extends Builder[java.lang.Integer, java.lang.Integer] {
 
-  case class Cont(acc: Integer) extends base.Cont[Integer, Integer] {
+  case class Cont(acc: java.lang.Integer) extends base.Cont[java.lang.Integer, java.lang.Integer] {
 
-    def apply(i: Integer) = Cont(acc + 1)
+    def apply(i: java.lang.Integer) = Cont(acc + 1)
 
     def apply(eoi: EndOfInput) = base.Success(Some(acc))
   }

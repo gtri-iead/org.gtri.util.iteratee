@@ -24,7 +24,7 @@ package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api
 import api._
-import java.lang.Integer
+
 import java.lang.Iterable
 import java.util.Iterator
 import org.gtri.util.iteratee.impl.base.BaseEnumeratee

@@ -34,7 +34,7 @@ import org.gtri.util.iteratee.impl.base.BaseIterS.base
 * Time: 4:22 PM
 * To change this template use File | Settings | File Templates.
 */
-class TestStringConsumer(list : java.util.List[String]) extends Consumer[String] {
+class TestStringConsumer(list : java.util.List[String]) extends Consumer[String, Unit] {
   case class Step(list : java.util.List[String]) extends base.Cont[String] {
 
     def apply(item: String) = {

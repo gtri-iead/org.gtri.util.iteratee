@@ -48,7 +48,7 @@ class IteratorEnumeratee[A,S](
 
   def isDone = peekIterator.hasNext == false || downstream.isDone
 
-  def step() = {
+  def step = {
     if(isDone == false) {
       if(outputBuffer.size < chunkSize) {
         val nextItem = fetchNextItem(peekIterator)

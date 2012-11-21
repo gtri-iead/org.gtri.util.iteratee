@@ -42,7 +42,6 @@ public interface Enumeratee<A,S> {
   boolean isDone();
   
   Enumeratee<A,S> step();
-  Enumeratee<A,S> run();  
 }
 
 /*

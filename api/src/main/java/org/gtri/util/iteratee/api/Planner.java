@@ -30,55 +30,6 @@ package org.gtri.util.iteratee.api;
  */
 public interface Planner {
   /**
-   * Concatenate the output of two producers. The first producer is run until
-   * done then the second producer is run until done.
-   * 
-   * @param <A> the output type
-   * @param lhs first producer
-   * @param rhs second producer
-   * @return a producer composed of the first followed by the second
-   */
-//  <A> Producer<A> concat(Producer<A> lhs, Producer<A> rhs);
-  
-  /**
-   * Concatenate the input of two consumers. The first consumer is fed input
-   * until it is done then the second consumer is fed input until it is done.
-   * 
-   * @param <A> the input type
-   * @param lhs first consumer
-   * @param rhs second consumer
-   * @return a consumer composed of the first followed by the second
-   */
-//  <A> Consumer<A> concat(Consumer<A> lhs, Consumer<A> rhs);
-  
-  /**
-   * Compose a consumer with a translator so that it may accept input of another
-   * type. Input fed to the returned consumer is translated by the translator
-   * and then fed to the original consumer.
-   * 
-   * @param <A> the type being translated from
-   * @param <B> the type being translated to
-   * @param translator 
-   * @param consumer
-   * @return a consumer that feeds its input to a translator which feeds its
-   * translated output to the original consumer
-   */
-//  <A,B> Consumer<A> translate(Translator<A,B> translator, Consumer<B> consumer);
-  
-  /**
-   * Compose a producer with a translator so that produces output of another 
-   * type. Output from the original producer is translated by the translator
-   * and then fed to the consumer for the new producer.
-   * 
-   * @param <A> the type being translated from
-   * @param <B> the type being translated to
-   * @param translator 
-   * @param producer
-   * @return a producer of the type being translated to
-   */
-  <A,B> Producer<B> translate(Translator<A,B> translator, Producer<A> producer);
-  
-  /**
    * Create a plan to connect a producer and a consumer.
    * 
    * @param <A> the input/output type
@@ -86,7 +37,17 @@ public interface Planner {
    * @param consumer
    * @return a plan that can be run to obtain results
    */
-  <A> Consumer.Plan<A> connect(Producer<A> producer, Consumer<A> consumer);
+  <A,S> Consumer.Plan<A,A,S> connect(Producer<A> producer, Consumer<A,S> consumer);
+  
+  /**
+   * Create a plan to connect a producer, a translator and a consumer.
+   * 
+   * @param <A> the input/output type
+   * @param producer 
+   * @param consumer
+   * @return a plan that can be run to obtain results
+   */
+  <A,B,S> Consumer.Plan<A,B,S> connect(Producer<A> producer, Translator<A,B> translator, Consumer<B,S> consumer);
   
   /**
    * Create a plan to connect a producer and a builder.
@@ -97,5 +58,102 @@ public interface Planner {
    * @param builder
    * @return a plan that can be run to obtain results
    */
-  <A,V> Builder.Plan<A,V> connect(Producer<A> producer, Builder<A,V> builder);
+  <A,V> Builder.Plan<A,A,V> connect(Producer<A> producer, Builder<A,V> builder);
+
+  /**
+   * Create a plan to connect a producer, a translator and a builder.
+   * 
+   * @param <A> the input/output type
+   * @param <A> the value type 
+   * @param producer 
+   * @param builder
+   * @return a plan that can be run to obtain results
+   */
+  <A,B,V> Builder.Plan<A,B,V> connect(Producer<A> producer, Translator<A,B> translator, Builder<B,V> builder);
+  
+  /**
+   * Compose two translators.
+   * 
+   * @param <A> the input type of the first translator
+   * @param <B> the output type of the first translator and input type of the 
+   * second
+   * @param <C> the output type of the second translator 
+   * @param first first translator
+   * @param second second translator
+   * @return a translator composed of the two translators
+   */
+  <A,B,C> Translator<A,C> compose(Translator<A,B> first, Translator<B,C> second);
+  
+  /**
+   * Compose three translators.
+   * 
+   * @param <A> the input type of the first translator
+   * @param <B> the output type of the first translator and input type of the 
+   * second
+   * @param <C> the output type of the second translator and input type of the 
+   * third
+   * @param <D> the output type of the third translator 
+   * @param first first translator
+   * @param second second translator
+   * @param third third translator
+   * @return a translator composed of the three translators
+   */
+  <A,B,C,D> Translator<A,D> compose(
+    Translator<A,B> first, 
+    Translator<B,C> second,
+    Translator<C,D> third
+  );
+  
+  /**
+   * Compose four translators.
+   * 
+   * @param <A> the input type of the first translator
+   * @param <B> the output type of the first translator and input type of the 
+   * second
+   * @param <C> the output type of the second translator and input type of the 
+   * third
+   * @param <D> the output type of the third translator and input type of the 
+   * fourth
+   * @param <E> the output type of the fourth translator 
+   * @param first first translator
+   * @param second second translator
+   * @param third third translator
+   * @param fourth fourth translator
+   * @return a translator composed of the four translators
+   */
+  <A,B,C,D,E> Translator<A,E> compose(
+    Translator<A,B> first, 
+    Translator<B,C> second,
+    Translator<C,D> third,
+    Translator<D,E> fourth
+  );
+  
+  /**
+   * Compose five translators.
+   * 
+   * @param <A> the input type of the first translator
+   * @param <B> the output type of the first translator and input type of the 
+   * second
+   * @param <C> the output type of the second translator and input type of the 
+   * third
+   * @param <D> the output type of the third translator and input type of the 
+   * fourth
+   * @param <D> the output type of the fourth translator and input type of the 
+   * fifth
+   * @param <E> the output type of the fifth translator 
+   * @param first first translator
+   * @param second second translator
+   * @param third third translator
+   * @param fourth fourth translator
+   * @param fifth fifth translator
+   * @return a translator composed of the five translators
+   */
+  <A,B,C,D,E,F> Translator<A,F> compose(
+    Translator<A,B> first, 
+    Translator<B,C> second,
+    Translator<C,D> third,
+    Translator<D,E> fourth,
+    Translator<E,F> fifth
+  );
+  
 }

@@ -22,14 +22,18 @@
 package org.gtri.util.iteratee.api;
 
 import org.gtri.util.iteratee.api.Signals.EndOfInput;
+import scala.collection.immutable.List;
 
 /**
  *
  * @author Lance
  */
 public interface Iteratee<A,S> {
-  
-//  StatusCode status();
+  StatusCode status();
+
+  List<Issue> issues();
+
+  List<A> overflow();
 
   boolean isDone();
   S state();

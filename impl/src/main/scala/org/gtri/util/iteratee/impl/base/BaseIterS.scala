@@ -11,11 +11,12 @@ import org.gtri.util.iteratee.api.Signals.EndOfInput
  * To change this template use File | Settings | File Templates.
  */
 object BaseIterS {
+  type IterS[A] = Iteratee[A, Unit]
   object base {
     abstract class BaseCont[A](val issues : List[Issue] = Nil) extends IterS[A] {
       def isDone = false
 
-      def state = this
+      def state = ()
 
       def overflow = Nil
     }
@@ -31,13 +32,13 @@ object BaseIterS {
     abstract class BaseDone[A](val issues : List[Issue] = Nil, val overflow : List[A]) extends IterS[A] {
       def isDone = true
 
-      def state = this
+      def state = ()
 
       def apply(ignore: EndOfInput) = this
     }
 
     class Success[A](issues : List[Issue] = Nil, overflow : List[A] = Nil) extends BaseDone[A](issues, overflow) {
-      def status() = StatusCode.SUCCESS
+      def status = StatusCode.SUCCESS
 
       def apply(item: A) = Success(issues, item :: overflow)
     }
@@ -45,7 +46,7 @@ object BaseIterS {
       def apply[A](issues : List[Issue] = Nil, overflow : List[A] = Nil) = new Success(issues, overflow)
     }
     class FatalError[A](issues : List[Issue] = Nil, overflow : List[A] = Nil) extends BaseDone[A](issues, overflow) {
-      def status() = StatusCode.FATAL_ERROR
+      def status = StatusCode.FATAL_ERROR
 
       def apply(item: A) = FatalError[A](issues, item :: overflow)
     }

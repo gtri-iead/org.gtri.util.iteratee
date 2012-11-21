@@ -11,12 +11,4 @@ import org.gtri.util.iteratee.api.Enumeratee
 * To change this template use File | Settings | File Templates.
 */
 object Util {
-  @tailrec
-  def run[A,S](e: Enumeratee[A,S]) : Enumeratee[A,S] = {
-    if(e.status.isDone) {
-      e
-    } else {
-      run(e.step())
-    }
-  }
 }

@@ -29,21 +29,13 @@ import scala.collection.immutable.List;
  * 
  * @author Lance
  */
-public interface Consumer<A> {
-  public static interface State<A> {
-    StatusCode status();
-    
-    List<Issue> issues();
-  
-    List<A> overflow();
-  }
-    
+public interface Consumer<A,S> {
   /**
    * An interface for a plan to stream input from a producer to a consumer
    * 
    * @author Lance
    */
-  public static interface Plan<A> {
+  public static interface Plan<A,B,S> {
     /**
      * Get the producer for the plan
      *
@@ -56,22 +48,23 @@ public interface Consumer<A> {
      *
      * @return a consumer for the plan
      */
-    Consumer<A> consumer();
+    Consumer<B,S> consumer();
     /**
      * Run the plan to get results
      * 
      * @return results
      */
-    Result<A> run();
-
-
+    Result<A,B,S> run();
   }
-  /**
-   * The results of running a plan
-   *
-   * @param <A> the input/output type
-   */
-  public static interface Result<A> extends State<A> {
+  
+  public static interface Result<A,B,S> {
+    StatusCode status();
+
+    List<Issue> issues();
+
+    List<A> overflow();
+    
+    S state();
     /**
      * Get the producer after processing
      *
@@ -80,12 +73,18 @@ public interface Consumer<A> {
     Producer<A> producer();
 
     /**
-     * Get the consumer after processing
+     * Get the builder after processing
      *
-     * @return the consumer after processing
+     * @return the builder after processing
      */
-    Consumer<A> consumer();
+    Consumer<A,S> consumer();
+    
   }
+  /**
+   * The results of running a plan
+   *
+   * @param <A> the input/output type
+   */
   
-  Iteratee<A,Consumer.State<A>> iteratee();
+  Iteratee<A,S> iteratee();
 }

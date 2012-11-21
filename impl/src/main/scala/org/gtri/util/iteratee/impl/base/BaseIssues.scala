@@ -35,53 +35,32 @@ import java.lang.StackTraceElement
  * To change this template use File | Settings | File Templates.
  */
 object BaseIssues {
-  class FatalError(throwable : Throwable, locator : ImmutableDiagnosticLocator) extends api.Issue {
-    def getLocator = locator
+  case class FatalError(throwable : Throwable, locator : ImmutableDiagnosticLocator) extends api.Issue {
 
-    def getMessage = throwable.getMessage
+    def message = throwable.getMessage
 
-    def getStackTrace = throwable.getStackTrace
+    def stackTrace = throwable.getStackTrace
 
-    def getImpactCode = ImpactCode.FATAL_ERROR
+    def impactCode = ImpactCode.FATAL_ERROR
   }
 
-  class RecoverableError(throwable : Throwable, locator : ImmutableDiagnosticLocator) extends api.Issue {
-    def getLocator = locator
+  case class RecoverableError(throwable : Throwable, locator : ImmutableDiagnosticLocator) extends api.Issue {
+    def message = throwable.getMessage
 
-    def getMessage = throwable.getMessage
+    def stackTrace = throwable.getStackTrace
 
-    def getStackTrace = throwable.getStackTrace
-
-    def getImpactCode = ImpactCode.RECOVERABLE_ERROR
+    def impactCode = ImpactCode.RECOVERABLE_ERROR
   }
 
-  class Warning(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[StackTraceElement] = Array()) extends api.Issue {
-    def getLocator = locator
-
-    def getMessage = message
-
-    def getStackTrace = stackTrace
-
-    def getImpactCode = ImpactCode.WARNING
+  case class Warning(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[StackTraceElement] = Array()) extends api.Issue {
+    def impactCode = ImpactCode.WARNING
   }
 
-  class Info(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[StackTraceElement] = Array()) extends api.Issue {
-    def getLocator = locator
-
-    def getMessage = message
-
-    def getStackTrace = stackTrace
-
-    def getImpactCode = ImpactCode.INFO
+  case class Info(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[StackTraceElement] = Array()) extends api.Issue {
+    def impactCode = ImpactCode.INFO
   }
 
-  class Debug(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[StackTraceElement] = Array()) extends api.Issue {
-    def getLocator = locator
-
-    def getMessage = message
-
-    def getStackTrace = stackTrace
-
-    def getImpactCode = ImpactCode.DEBUG
+  case class Debug(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[StackTraceElement] = Array()) extends api.Issue {
+    def impactCode = ImpactCode.DEBUG
   }
 }

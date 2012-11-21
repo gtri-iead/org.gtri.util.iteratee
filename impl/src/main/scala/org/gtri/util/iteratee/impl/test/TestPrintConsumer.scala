@@ -32,7 +32,7 @@ import org.gtri.util.iteratee.impl.base.BaseIterS.base
 * Time: 5:10 AM
 * To change this template use File | Settings | File Templates.
 */
-class TestPrintConsumer[A] extends Consumer[A] {
+class TestPrintConsumer[A] extends Consumer[A, Unit] {
   case class Cont[A]() extends base.Cont[A] {
     def apply(item: A) = {
       println(item)
