@@ -33,10 +33,4 @@ public class Signals {
   public static EndOfInput eoi() {
     return EndOfInput.INSTANCE;
   }
-  public static class Empty {
-    public static final Empty INSTANCE = new Empty();
-  }
-  public static Empty empty() {
-    return Empty.INSTANCE;
-  }
 }
