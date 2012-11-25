@@ -26,10 +26,23 @@ import scala.collection.immutable.List;
 
 
 /**
- * Try #2
+ * Try #3
  * @author Lance
  */
 
+public interface Enumeratee<A,S> {
+  StatusCode status();
+  
+  List<Issue> issues();
+  
+  Iteratee<A,S> iteratee();
+  <T> Enumeratee<A,T> attach(Iteratee<A,T> iteratee);
+  
+  Enumeratee<A,S> step();
+}
+
+/*
+ * Try #2
 public interface Enumeratee<A,S> {
   List<Issue> issues();
   
@@ -44,7 +57,7 @@ public interface Enumeratee<A,S> {
   
   Enumeratee<A,S> step();
 }
-
+ */
 /*
  * Try #1: Using I extends Iteratee<A,?> instead of above to support preserving 
  * the downstream Iteratee derived-type e.g. Translatee 
