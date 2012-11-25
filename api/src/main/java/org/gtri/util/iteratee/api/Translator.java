@@ -29,9 +29,14 @@ package org.gtri.util.iteratee.api;
  * @author Lance
  */
 public interface Translator<A, B>  {
+  Translatee<A,B> translatee();
+}
+/*
+ * Try #5:
+public interface Translator<A, B>  {
   <S> Iteratee<A,S> translatee(Iteratee<B,S> i);
 }
-
+ */
 /* Try #4: Issues when composing Translatees, implementation becomes much easier
  * if the translatee function simply returns an iteratee
  * 
