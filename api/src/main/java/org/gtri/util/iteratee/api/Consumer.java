@@ -62,7 +62,7 @@ public interface Consumer<A,S> {
 
     List<Issue> issues();
 
-    List<A> overflow();
+    List<B> overflow();
     
     S state();
     /**
@@ -77,7 +77,7 @@ public interface Consumer<A,S> {
      *
      * @return the builder after processing
      */
-    Consumer<A,S> consumer();
+    Consumer<B,S> consumer();
     
   }
   /**
