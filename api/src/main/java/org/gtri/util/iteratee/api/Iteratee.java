@@ -22,13 +22,27 @@
 
 package org.gtri.util.iteratee.api;
 
-import org.gtri.util.iteratee.api.Signals.EndOfInput;
 import scala.collection.immutable.List;
 
 /**
  *
  * @author Lance
  */
+public interface Iteratee<A,S> {
+  StatusCode status();
+
+  List<Issue> issues();
+  List<A> overflow();
+
+  S state();
+  
+  Iteratee<A,S> apply(List<A> a);
+  Iteratee<A,S> endOfInput();
+}
+
+/* Try #1
+ * Minor mods - always work with a chunk (list) of input and get rid of 
+ * EndOfInput signal
 public interface Iteratee<A,S> {
   StatusCode status();
 
@@ -42,3 +56,5 @@ public interface Iteratee<A,S> {
   Iteratee<A,S> apply(A a);
   Iteratee<A,S> apply(EndOfInput unused);
 }
+
+ */
