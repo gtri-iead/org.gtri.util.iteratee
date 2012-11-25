@@ -23,9 +23,7 @@
 package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api
-import api.Signals.EndOfInput
 import api._
-import org.gtri.util.iteratee.impl.base.BaseTranslatee
 
 
 /**
@@ -36,23 +34,16 @@ import org.gtri.util.iteratee.impl.base.BaseTranslatee
 * To change this template use File | Settings | File Templates.
 */
 class TestIntToStringTranslator extends Translator[java.lang.Integer, String] {
-  class Cont[S](downstream : Iteratee[String,S]) extends BaseTranslatee[java.lang.Integer, String, S](downstream) {
-
-    def attach[T](i: Iteratee[String,T]) = Cont(i)
-
-    def apply(input : java.lang.Integer) = {
-      val nextI = downstream(input.toString)
-      Cont(nextI)
-    }
-
-    def apply(eoi: EndOfInput) = {
-      val nextI = downstream(eoi)
-      Cont(nextI)
+  class Cont extends Translatee[java.lang.Integer,String]  {
+    def apply(items: List[java.lang.Integer], output: List[String], issues: List[Issue]) = {
+      println("translating=" + items)
+      val nextOutput = items.foldLeft(output) {
+        (list,item) => {
+          item.toString :: list
+        }
+      }
+      (this, nextOutput, issues)
     }
   }
-  object Cont {
-    def apply[S](downstream : Iteratee[String,S]) = new Cont(downstream)
-  }
-
-  def translatee[S](i: Iteratee[String,S]) = Cont(i)
+  def translatee = new Cont()
 }

@@ -23,8 +23,7 @@
 package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.api.Signals.EndOfInput
-import org.gtri.util.iteratee.impl.base.BaseIterS.base
+import org.gtri.util.iteratee.impl.base.BaseIteratee.base
 
 /**
 * Created with IntelliJ IDEA.
@@ -34,15 +33,16 @@ import org.gtri.util.iteratee.impl.base.BaseIterS.base
 * To change this template use File | Settings | File Templates.
 */
 class TestStringConsumer(list : java.util.List[String]) extends Consumer[String, Unit] {
-  case class Step(list : java.util.List[String]) extends base.Cont[String] {
-
-    def apply(item: String) = {
-      println("item=" + item)
-      list.add(item)
+  case class Step() extends base.Cont[String, Unit](()) {
+    def apply(items: List[String]) = {
+      println("received=" + items)
+      for (item <- items) {
+        list.add(item)
+      }
       this
     }
 
-    def apply(eoi: EndOfInput) = base.Success()
+    def endOfInput() = base.Success(())
   }
-  def iteratee = Step(list)
+  def iteratee = Step()
 }

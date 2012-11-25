@@ -23,7 +23,6 @@
 package org.gtri.util.iteratee.impl.base
 
 import org.gtri.util.iteratee.api.{StatusCode, Iteratee, Issue}
-import org.gtri.util.iteratee.api.Signals.EndOfInput
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,7 +31,7 @@ import org.gtri.util.iteratee.api.Signals.EndOfInput
  * Time: 6:37 AM
  * To change this template use File | Settings | File Templates.
  */
-class BaseIteratee {
+object BaseIteratee {
   object base {
     abstract class BaseCont[A,S](val state : S, val issues : List[Issue] = Nil) extends Iteratee[A,S] {
       def isDone = false
@@ -51,13 +50,13 @@ class BaseIteratee {
     abstract class BaseDone[A,S](val state : S, val issues : List[Issue] = Nil, val overflow : List[A]) extends Iteratee[A,S] {
       def isDone = true
 
-      def apply(ignore: EndOfInput) = this
+      def endOfInput = this
     }
 
     class Success[A,S](state : S, issues : List[Issue] = Nil, overflow : List[A] = Nil) extends BaseDone[A,S](state, issues, overflow) {
       def status = StatusCode.SUCCESS
 
-      def apply(item: A) = Success(state, issues, item :: overflow)
+      def apply(items: List[A]) = Success(state, issues, items ::: overflow)
     }
     object Success {
       def apply[A,S](state : S, issues : List[Issue] = Nil, overflow : List[A] = Nil) = new Success(state, issues, overflow)
@@ -65,7 +64,7 @@ class BaseIteratee {
     class FatalError[A,S](state : S, issues : List[Issue] = Nil, overflow : List[A] = Nil) extends BaseDone[A,S](state, issues, overflow) {
       def status = StatusCode.FATAL_ERROR
 
-      def apply(item: A) = FatalError(state, issues, item :: overflow)
+      def apply(items: List[A]) = FatalError(state, issues, items ::: overflow)
     }
     object FatalError {
       def apply[A,S](state : S, issues : List[Issue] = Nil, overflow : List[A] = Nil) = new FatalError[A,S](state, issues, overflow)

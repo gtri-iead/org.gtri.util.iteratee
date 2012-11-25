@@ -22,8 +22,6 @@
 
 package org.gtri.util.iteratee.impl.test
 
-
-import org.gtri.util.iteratee.api.Signals.EndOfInput
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.base.BaseIterV.base
 
@@ -34,13 +32,13 @@ import org.gtri.util.iteratee.impl.base.BaseIterV.base
  * Time: 5:25 PM
  * To change this template use File | Settings | File Templates.
  */
-class TestIntegerBuilder extends Builder[java.lang.Integer, java.lang.Integer] {
+class TestIntegerBuilder extends Builder[Int, Int] {
 
-  case class Cont(acc: java.lang.Integer) extends base.Cont[java.lang.Integer, java.lang.Integer] {
+  case class Cont(acc: Int) extends base.Cont[Int, Int] {
 
-    def apply(i: java.lang.Integer) = Cont(acc + 1)
+    def apply(items: List[Int]) = Cont(items.fold(acc) { _ + _ })
 
-    def apply(eoi: EndOfInput) = base.Success(Some(acc))
+    def endOfInput() = base.Success(Some(acc))
   }
 
   def iteratee = Cont(0)

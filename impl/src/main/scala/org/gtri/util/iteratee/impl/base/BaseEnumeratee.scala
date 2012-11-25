@@ -32,21 +32,42 @@ import annotation.tailrec
  * Time: 7:17 PM
  * To change this template use File | Settings | File Templates.
  */
-abstract class BaseEnumeratee[A,S](val downstream : Iteratee[A,S], localIssues : List[Issue] = Nil) extends Enumeratee[A,S] {
-  def issues = localIssues ::: downstream.issues
+object BaseEnumeratee {
+  val STD_CHUNK_SIZE = 256
+  object base {
+    abstract class Cont[A,S](
+      val stream : Stream[A],
+      val iteratee : Iteratee[A,S],
+      val issues : List[Issue] = Nil,
+      val chunkSize : Int = STD_CHUNK_SIZE
+    ) extends Enumeratee[A,S] {
+      def status = StatusCode.CONTINUE
 
-  def status = downstream.status
+//      def attach[T](i: Iteratee[A, T]) = new Cont(stream, i, issues, chunkSize)
 
-  def state = downstream.state
+//      protected final def nextChunk() : (Stream[A], Stream[A]) = {
+//        stream.sp
+//        val chunk = stream.take(chunkSize)
+//        val size = chunk.size
+//        (chunk, stream.drop(size))
+//      }
 
-  def run = doRun(this)
-
-  @tailrec
-  private def doRun[A,S](e : Enumeratee[A,S]) : Enumeratee[A,S] = {
-    if(e.isDone) {
-      e
-    } else {
-      doRun(e.step)
+//      def step = {
+//        val (chunk, nextS, nextI) = doStep()
+//        if(nextS.isEmpty) {
+//          Success(nextI, issues)
+//        } else {
+//          new Cont(nextS, iteratee, issues, chunkSize)
+//        }
+//      }
     }
+    class Success[A,S](val iteratee : Iteratee[A,S], val issues : List[Issue]) extends Enumeratee[A,S] {
+      def status = StatusCode.SUCCESS
+
+      def attach[T](i: Iteratee[A, T]) = new Success(i, issues)
+
+      def step = this
+    }
+
   }
 }

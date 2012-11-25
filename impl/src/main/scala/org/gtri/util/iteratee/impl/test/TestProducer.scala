@@ -24,11 +24,9 @@ package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api
 import api._
-
-import java.lang.Iterable
-import java.util.Iterator
+import scala.collection.JavaConversions._
+import org.gtri.util.iteratee.impl.base.BaseEnumeratee.base
 import org.gtri.util.iteratee.impl.base.BaseEnumeratee
-
 
 /**
 * Created with IntelliJ IDEA.
@@ -37,20 +35,22 @@ import org.gtri.util.iteratee.impl.base.BaseEnumeratee
 * Time: 4:22 PM
 * To change this template use File | Settings | File Templates.
 */
-class TestStringProducer(iterable : Iterable[String]) extends Producer[String] {
-  case class Step[S](iterator : Iterator[String], i : Iteratee[String,S]) extends BaseEnumeratee[String,S](i) {
+class TestProducer[A](iterable : java.lang.Iterable[A], chunkSize : java.lang.Integer) extends Producer[A] {
+  case class Cont[S](_stream : Stream[A], _iteratee : Iteratee[A,S], _issues : List[Issue], _chunkSize : Int) extends base.Cont(_stream, _iteratee, _issues, _chunkSize) {
 
-    def isDone = iterator.hasNext == false || downstream.isDone
+    def attach[T](i: Iteratee[A, T]) = Cont(stream, i, issues, chunkSize)
 
-    def attach[T](j: Iteratee[String,T]) = Step(iterable.iterator, j)
-
-    def step() = {
-      val nextS = iterator.next
-      println("nextS=" + nextS)
-      val nextI = downstream(nextS)
-      Step(iterator, nextI)
+    def step = {
+      val (chunk, nextS) = stream.splitAt(chunkSize)
+      println("producing chunk=" + chunk)
+      val nextI = iteratee(chunk.toList)
+      if(nextS.isEmpty) {
+        Success(nextI, issues)
+      } else {
+        Cont(nextS, nextI, issues, chunkSize)
+      }
     }
   }
-
-  def enumeratee[S](i: Iteratee[String,S]) = Step(iterable.iterator, i)
+  case class Success[S](_iteratee : Iteratee[A,S], _issues : List[Issue]) extends base.Success(_iteratee, _issues)
+  def enumeratee[S](i: Iteratee[A,S]) = Cont(iterable.iterator.toStream,i,Nil,chunkSize)
 }

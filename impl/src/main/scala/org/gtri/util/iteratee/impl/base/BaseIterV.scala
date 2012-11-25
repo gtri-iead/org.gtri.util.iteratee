@@ -23,7 +23,6 @@
 package org.gtri.util.iteratee.impl.base
 
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.api.Signals.EndOfInput
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,16 +32,14 @@ import org.gtri.util.iteratee.api.Signals.EndOfInput
  * To change this template use File | Settings | File Templates.
  */
 object BaseIterV {
-  type IterV[A,V] = Iteratee[A, Builder.State[V]]
+  type IterV[A,V] = Iteratee[A, Option[V]]
   object base {
-    abstract class BaseCont[A,V](val issues : List[Issue] = Nil) extends IterV[A,V] with Builder.State[V] {
+    abstract class BaseCont[A,V](val issues : List[Issue] = Nil) extends IterV[A,V] {
+      def state = None
+
       def isDone = false
 
-      def state = this
-
       def overflow = Nil
-
-      def value = None
     }
 
     abstract class Cont[A,V](issues : List[Issue] = Nil) extends BaseCont[A,V](issues) {
@@ -53,31 +50,27 @@ object BaseIterV {
       def status = StatusCode.RECOVERABLE_ERROR
     }
 
-    abstract class BaseDone[A,V](val issues : List[Issue] = Nil, val overflow : List[A]) extends IterV[A,V] with Builder.State[V] {
+    abstract class BaseDone[A,V](val state : Option[V], val issues : List[Issue] = Nil, val overflow : List[A]) extends IterV[A,V] {
       def isDone = true
 
-      def state = this
-
-      def apply(ignore: EndOfInput) = this
+      def endOfInput = this
     }
 
-    class Success[A,V](val value : Option[V], issues : List[Issue] = Nil, overflow : List[A] = Nil) extends BaseDone[A,V](issues, overflow) {
+    class Success[A,V](state : Option[V], issues : List[Issue] = Nil, overflow : List[A] = Nil) extends BaseDone[A,V](state, issues, overflow) {
       def status = StatusCode.SUCCESS
 
-      def apply(item: A) = Success(value, issues, item :: overflow)
+      def apply(items: List[A]) = Success(state, issues, items ::: overflow)
     }
     object Success {
-      def apply[A,V](value : Option[V], issues : List[Issue] = Nil, overflow : List[A] = Nil) = new Success(value, issues, overflow)
+      def apply[A,V](state : Option[V], issues : List[Issue] = Nil, overflow : List[A] = Nil) = new Success(state, issues, overflow)
     }
-    class FatalError[A,V](issues : List[Issue] = Nil, overflow : List[A] = Nil) extends BaseDone[A,V](issues, overflow) {
+    class FatalError[A,V](state : Option[V], issues : List[Issue] = Nil, overflow : List[A] = Nil) extends BaseDone[A,V](state, issues, overflow) {
       def status = StatusCode.FATAL_ERROR
 
-      def apply(item: A) = FatalError[A,V](issues, item :: overflow)
-
-      def value = None
+      def apply(items: List[A]) = FatalError(state, issues, items ::: overflow)
     }
     object FatalError {
-      def apply[A,V](issues : List[Issue] = Nil, overflow : List[A] = Nil) = new FatalError[A,V](issues, overflow)
+      def apply[A,V](state : Option[V], issues : List[Issue] = Nil, overflow : List[A] = Nil) = new FatalError[A,V](state, issues, overflow)
     }
   }
 }

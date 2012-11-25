@@ -20,26 +20,24 @@
 
 */
 
-package org.gtri.util.iteratee.impl.base
+package org.gtri.util.iteratee.impl.translate
 
-import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.api.Signals.EndOfInput
+import org.gtri.util.iteratee.api.{Issue, Translatee}
 
 /**
-* Created with IntelliJ IDEA.
-* User: Lance
-* Date: 11/19/12
-* Time: 7:21 PM
-* To change this template use File | Settings | File Templates.
-*/
-abstract class BaseTranslatee[A,B,S](val downstream : Iteratee[B,S], localIssues : List[Issue] = Nil) extends Translatee[A,B,S] {
-  def status = downstream.status
-
-  def issues = localIssues ::: downstream.issues
-
-  def overflow = Nil
-
-  def isDone = downstream.isDone
-
-  def state = downstream.state
+ * Created with IntelliJ IDEA.
+ * User: Lance
+ * Date: 11/21/12
+ * Time: 6:16 AM
+ * To change this template use File | Settings | File Templates.
+ */
+class TranslateeF[A,B](f: A => B) extends Translatee[A,B]{
+  def apply(input: List[A], output: List[B], issues: List[Issue]) = {
+    val nextOutput = input.foldLeft(output) {
+      (list,item) => {
+         f(item) :: list
+      }
+    }
+    (this, nextOutput, issues)
+  }
 }

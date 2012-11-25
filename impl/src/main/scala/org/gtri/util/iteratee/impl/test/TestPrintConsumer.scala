@@ -23,8 +23,7 @@
 package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.api.Signals.EndOfInput
-import org.gtri.util.iteratee.impl.base.BaseIterS.base
+import org.gtri.util.iteratee.impl.base.BaseIteratee.base
 
 /**
 * Created with IntelliJ IDEA.
@@ -34,13 +33,16 @@ import org.gtri.util.iteratee.impl.base.BaseIterS.base
 * To change this template use File | Settings | File Templates.
 */
 class TestPrintConsumer[A] extends Consumer[A, Unit] {
-  case class Cont[A]() extends base.Cont[A] {
-    def apply(item: A) = {
-      println(item)
+  case class Cont[A]() extends base.Cont[A, Unit](()) {
+    def apply(items: List[A]) = {
+      println("received=" + items)
+      for (item <- items) {
+        println(item)
+      }
       this
     }
 
-    def apply(eoi: EndOfInput) = base.Success()
+    def endOfInput() = base.Success(())
   }
 
   def iteratee = Cont()

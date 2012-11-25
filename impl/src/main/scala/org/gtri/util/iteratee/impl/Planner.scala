@@ -27,6 +27,7 @@ import api._
 import api.Issue.ImpactCode
 import translate._
 import annotation.tailrec
+import util.{PullIteratee, IterateeUtil}
 
 /**
 * Created with IntelliJ IDEA.
@@ -46,10 +47,10 @@ class Planner(val factory : api.IterateeFactory) extends api.Planner {
 
       def run = {
         val e = p.enumeratee(c.iteratee)
-        val lastE = self.run(e)
-        val lastI = lastE.downstream
+        val lastE = IterateeUtil.run[A,S,Enumeratee[A,S]](factory.issueHandlingCode,e, { _.step() })
+        val lastI = lastE.iteratee
         // Feed EOI to lastI to force it to complete
-        val eoiI = lastI(Signals.eoi)
+        val eoiI = lastI.endOfInput()
 
         new Consumer.Result[A,A,S] {
 
@@ -76,11 +77,12 @@ class Planner(val factory : api.IterateeFactory) extends api.Planner {
       def consumer = c
 
       def run = {
-        val e = p.enumeratee(t.translatee(c.iteratee))
-        val lastE = self.run(e)
-        val lastI = lastE.downstream
+        val innerE = p.enumeratee(PullIteratee())
+        val translatedE = new TranslatedEnumeratee(innerE, t.translatee, Nil, c.iteratee())
+        val lastE = IterateeUtil.run[B,S,TranslatedEnumeratee[A,B,S]](factory.issueHandlingCode,translatedE, { _.step() })
+        val lastI = lastE.iteratee
         // Feed EOI to lastI to force it to complete
-        val eoiI = lastI(Signals.eoi)
+        val eoiI = lastI.endOfInput()
 
         new Consumer.Result[A,B,S] {
 
@@ -92,7 +94,7 @@ class Planner(val factory : api.IterateeFactory) extends api.Planner {
 
           def overflow = eoiI.overflow
 
-          def producer = factory.createProducer(lastE)
+          def producer = factory.createProducer(lastE.innerEnumeratee)
 
           def consumer = factory.createConsumer(lastI)
         }
@@ -109,13 +111,13 @@ class Planner(val factory : api.IterateeFactory) extends api.Planner {
 
       def run = {
         val e = p.enumeratee(b.iteratee)
-        val lastE = self.run(e)
-        val lastI = lastE.downstream
+        val lastE = IterateeUtil.run[A,Option[V],Enumeratee[A,Option[V]]](factory.issueHandlingCode, e, { _.step() })
+        val lastI = lastE.iteratee
         // Feed EOI to lastI to force it to complete
-        val eoiI = lastI(Signals.eoi)
+        val eoiI = lastI.endOfInput()
 
         new Builder.Result[A,A,V] {
-          def value = eoiI.state.value
+          def value = eoiI.state
 
           def status = eoiI.status
 
@@ -139,15 +141,16 @@ class Planner(val factory : api.IterateeFactory) extends api.Planner {
       def builder = b
 
       def run = {
-        val e = p.enumeratee(t.translatee(b.iteratee))
-        val lastE = self.run(e)
-        val lastI = lastE.downstream
+        val innerE = p.enumeratee(PullIteratee())
+        val translatedE = new TranslatedEnumeratee(innerE, t.translatee, Nil, b.iteratee())
+        val lastE = IterateeUtil.run[B,Option[V],TranslatedEnumeratee[A,B,Option[V]]](factory.issueHandlingCode, translatedE, { _.step() })
+        val lastI = lastE.iteratee
         // Feed EOI to lastI to force it to complete
-        val eoiI = lastI(Signals.eoi)
+        val eoiI = lastI.endOfInput()
 
         new Builder.Result[A,B,V] {
 
-          def value = eoiI.state.value
+          def value = eoiI.state
 
           def status = eoiI.status
 
@@ -155,7 +158,7 @@ class Planner(val factory : api.IterateeFactory) extends api.Planner {
 
           def overflow = eoiI.overflow
 
-          def producer = factory.createProducer(lastE)
+          def producer = factory.createProducer(lastE.innerEnumeratee)
 
           def builder = factory.createBuilder(lastI)
         }
@@ -170,57 +173,4 @@ class Planner(val factory : api.IterateeFactory) extends api.Planner {
   def compose[A, B, C, D, E](t1: Translator[A, B], t2: Translator[B, C], t3: Translator[C, D], t4: Translator[D, E]) = TranslatorTuple4(t1,t2,t3,t4)
 
   def compose[A, B, C, D, E, F](t1: Translator[A, B], t2: Translator[B, C], t3: Translator[C, D], t4: Translator[D, E], t5: Translator[E, F]) = TranslatorTuple5(t1,t2,t3,t4,t5)
-
-  private def run[A,S](e: Enumeratee[A,S]) : Enumeratee[A,S] = {
-    factory.issueHandlingCode match {
-      case IssueHandlingCode.NORMAL => doNormalRun(e)
-      case IssueHandlingCode.LAX => doLaxRun(e)
-      case IssueHandlingCode.STRICT => doStrictRun(e)
-    }
-  }
-
-  @tailrec
-  private def doNormalRun[A,S](e: Enumeratee[A,S]) : Enumeratee[A,S] = {
-    if(e.isDone) {
-      e
-    } else {
-      e.status match {
-        case StatusCode.RECOVERABLE_ERROR=> e
-        case StatusCode.CONTINUE => doNormalRun(e.step())
-        case StatusCode.SUCCESS => e
-        case StatusCode.FATAL_ERROR => e
-      }
-    }
-  }
-  @tailrec
-  private def doLaxRun[A,S](e: Enumeratee[A,S]) : Enumeratee[A,S] = {
-    if(e.isDone) {
-      e
-    } else {
-      e.status match {
-        case StatusCode.RECOVERABLE_ERROR=> doLaxRun(e.step())
-        case StatusCode.CONTINUE => doLaxRun(e.step())
-        case StatusCode.SUCCESS => e
-        case StatusCode.FATAL_ERROR => e
-      }
-    }
-  }
-  @tailrec
-  private def doStrictRun[A,S](e: Enumeratee[A,S]) : Enumeratee[A,S] = {
-    if(e.isDone) {
-      e
-    } else {
-      e.status match {
-        case StatusCode.RECOVERABLE_ERROR=> e
-        case StatusCode.CONTINUE =>
-          if(e.issues().filter({ _.impactCode() == ImpactCode.WARNING}).nonEmpty) {
-            e
-          } else {
-            doStrictRun(e.step())
-          }
-        case StatusCode.SUCCESS => e
-        case StatusCode.FATAL_ERROR => e
-      }
-    }
-  }
 }

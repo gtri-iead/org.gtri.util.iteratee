@@ -23,7 +23,6 @@
 package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.api.Signals.EndOfInput
 import org.gtri.util.iteratee.impl.base.BaseIterV.base
 
 /**
@@ -36,12 +35,12 @@ import org.gtri.util.iteratee.impl.base.BaseIterV.base
 class TestStringBuilder extends Builder[String, String] {
   case class Cont(acc : String) extends base.Cont[String, String] {
 
-    def apply(i: String) = {
-      println("acc=" + acc + " i=" + i)
-      Cont(acc + i)
+    def apply(items: List[String]) = {
+      println("received=" + items)
+      Cont(items.fold(acc) { _ + _ })
     }
 
-    def apply(eoi: EndOfInput) = base.Success(Some(acc))
+    def endOfInput() = base.Success(Some(acc))
   }
   def iteratee = Cont("")
 }
