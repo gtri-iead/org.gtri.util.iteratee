@@ -23,6 +23,7 @@
 package org.gtri.util.iteratee.api;
 
 import scala.Function1;
+import scala.Option;
 
 /**
  *
@@ -34,6 +35,6 @@ public interface IterateeFactory {
   Planner createPlanner();
   <A,S> Producer<A> createProducer(Enumeratee<A,S> enumeratee);
   <A,S> Consumer<A,S> createConsumer(Iteratee<A,S> iteratee);
-  <A,V> Builder<A,V> createBuilder(Iteratee<A,Builder.State<V>> iteratee);
+  <A,V> Builder<A,V> createBuilder(Iteratee<A,Option<V>> iteratee);
   <A,B> Translator<A,B> createTranslator(Function1<A,B> f);
 }
