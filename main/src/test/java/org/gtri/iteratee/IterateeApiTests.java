@@ -26,11 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.gtri.util.iteratee.api.*;
 import org.gtri.util.iteratee.api.Consumer;
-import org.gtri.util.iteratee.impl.test.TestIntProducer;
 import org.gtri.util.iteratee.impl.test.TestIntToStringTranslator;
+import org.gtri.util.iteratee.impl.test.TestProducer;
 import org.gtri.util.iteratee.impl.test.TestStringBuilder;
 import org.gtri.util.iteratee.impl.test.TestStringConsumer;
-import org.gtri.util.iteratee.impl.test.TestStringProducer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -84,7 +83,7 @@ public class IterateeApiTests {
   public void testIntToString() {
     System.out.println("===testIntToString===");
     System.out.println("Creating TestIntProducer...");
-    TestIntProducer integerProducer = new TestIntProducer(integers);
+    TestProducer<Integer> integerProducer = new TestProducer(integers,1);
     
     System.out.println("Creating TestIntToStringTranslator...");
     TestIntToStringTranslator intToString = new TestIntToStringTranslator();
@@ -102,13 +101,13 @@ public class IterateeApiTests {
     assertTrue(result.status().isSuccess());
     System.out.println("Ok.");
     
-    System.out.print("Testing output... ");
+    System.out.println("Testing output... ");
     StringBuilder outBuilder = new StringBuilder();
     for(String s : output) {
       outBuilder.append(s);
     }
     String actual = outBuilder.toString();
-    System.out.print("results=" + actual);
+    System.out.println("results=" + actual);
     assertEquals("123", actual);
     System.out.println("Ok.");
   }
@@ -117,7 +116,7 @@ public class IterateeApiTests {
   public void testStringToStringBuilder() {
     System.out.println("===testStringToStringBuilder===");
     System.out.println("Creating TestStringProducer...");
-    TestStringProducer stringProducer = new TestStringProducer(strings);
+    TestProducer<String> stringProducer = new TestProducer(strings,1);
     
     System.out.println("Creating TestStringConsumer...");
     List<String> output = new ArrayList<String>();
@@ -132,13 +131,13 @@ public class IterateeApiTests {
     assertTrue(result.status().isSuccess());
     System.out.println("Ok.");
     
-    System.out.print("Testing output... ");
+    System.out.println("Testing output... ");
     StringBuilder outBuilder = new StringBuilder();
     for(String s : output) {
       outBuilder.append(s);
     }
     String actual = outBuilder.toString();
-    System.out.print("results=" + actual);
+    System.out.println("results=" + actual);
     assertEquals("abc", actual);
     System.out.println("Ok.");
   }
@@ -147,9 +146,9 @@ public class IterateeApiTests {
   public void testStringConcat() {
     System.out.println("===testStringConcat===");
     System.out.println("Creating TestStringProducer...");
-    TestStringProducer stringProducer1 = new TestStringProducer(strings);
+    TestProducer<String> stringProducer1 = new TestProducer(strings,1);
     System.out.println("Creating TestStringProducer...");
-    TestStringProducer stringProducer2 = new TestStringProducer(strings2);
+    TestProducer<String> stringProducer2 = new TestProducer(strings2,1);
 //    Producer<String> stringProducer3 = planner.concat(stringProducer1, stringProducer2);
     System.out.println("Creating TestStringBuilder...");
     TestStringBuilder stringBuilder = new TestStringBuilder();
@@ -163,9 +162,9 @@ public class IterateeApiTests {
     assertTrue(result.status().isSuccess());
     System.out.println("Ok.");
     
-    System.out.print("Testing results...");
+    System.out.println("Testing results...");
     String actual = result.value().get();
-    System.out.print("results=" + actual);
+    System.out.println("results=" + actual);
     assertEquals("def", actual);
     System.out.println("Ok.");
   }
