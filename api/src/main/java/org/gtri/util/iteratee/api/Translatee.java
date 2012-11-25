@@ -22,16 +22,25 @@
 
 package org.gtri.util.iteratee.api;
 
+import scala.Tuple3;
+import scala.collection.immutable.List;
+
 /**
  * Try #4
  * @author Lance
  */
+public interface Translatee<A,B> {
+  Tuple3<Translatee<A,B>, List<B>, List<Issue>> apply(List<A> input, List<B> output, List<Issue> issues);
+}
+
+/*
+ * Try #4
 public interface Translatee<A,B,S> extends Iteratee<A,S> {
   
   Iteratee<B,S> downstream();
   <T> Translatee<A,B,T> attach(Iteratee<B,T> downstream);  
 }
-
+ */
 /*
  * Try #3: Reverted this. See Enumeratee try #1 for reasoning.
  *
