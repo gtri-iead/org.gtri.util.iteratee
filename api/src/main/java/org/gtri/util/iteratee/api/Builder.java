@@ -30,15 +30,9 @@ import scala.collection.immutable.List;
  * @author Lance
  */
 public interface Builder<A,V> {
-  public static interface State<V> {
-//    StatusCode status();
-//    
-//    List<Issue> issues();
-//  
-//    List<A> overflow();
-    
-    Option<V> value();
-  }
+//  public static interface State<V> {
+//    Option<V> value();
+//  }
   /**
    * An interface for a plan to stream input from a producer to a consumer
    * 
@@ -76,7 +70,7 @@ public interface Builder<A,V> {
 
     List<Issue> issues();
 
-    List<A> overflow();
+    List<B> overflow();
     
     Option<V> value();
     
@@ -92,11 +86,8 @@ public interface Builder<A,V> {
      *
      * @return the builder after processing
      */
-    Builder<A,V> builder();
+    Builder<B,V> builder();
   }
     
-//  Plan<A,V> createPlan(Producer<A> producer);  
-//  <C> Result<C,V> createResult(Enumeratee<C> enumeratee, Iteratee<C> iteratee);
-  
-  Iteratee<A,Builder.State<V>> iteratee();
+  Iteratee<A,Option<V>> iteratee();
 }
