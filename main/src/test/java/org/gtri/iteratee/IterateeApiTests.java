@@ -116,7 +116,7 @@ public class IterateeApiTests {
   public void testStringToStringBuilder() {
     System.out.println("===testStringToStringBuilder===");
     System.out.println("Creating TestStringProducer...");
-    TestProducer<String> stringProducer = new TestProducer(strings,1);
+    TestProducer<String> stringProducer = new TestProducer(strings,256);
     
     System.out.println("Creating TestStringConsumer...");
     List<String> output = new ArrayList<String>();
@@ -146,9 +146,9 @@ public class IterateeApiTests {
   public void testStringConcat() {
     System.out.println("===testStringConcat===");
     System.out.println("Creating TestStringProducer...");
-    TestProducer<String> stringProducer1 = new TestProducer(strings,1);
+    TestProducer<String> stringProducer1 = new TestProducer(strings,2);
     System.out.println("Creating TestStringProducer...");
-    TestProducer<String> stringProducer2 = new TestProducer(strings2,1);
+    TestProducer<String> stringProducer2 = new TestProducer(strings2,2);
 //    Producer<String> stringProducer3 = planner.concat(stringProducer1, stringProducer2);
     System.out.println("Creating TestStringBuilder...");
     TestStringBuilder stringBuilder = new TestStringBuilder();
