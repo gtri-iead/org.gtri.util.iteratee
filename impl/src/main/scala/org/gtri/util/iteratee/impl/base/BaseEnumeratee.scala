@@ -36,10 +36,7 @@ object BaseEnumeratee {
   val STD_CHUNK_SIZE = 256
   object base {
     abstract class Cont[A,S](
-      val stream : Stream[A],
-      val iteratee : Iteratee[A,S],
-      val issues : List[Issue] = Nil,
-      val chunkSize : Int = STD_CHUNK_SIZE
+      val issues : List[Issue] = Nil
     ) extends Enumeratee[A,S] {
       def status = StatusCode.CONTINUE
 

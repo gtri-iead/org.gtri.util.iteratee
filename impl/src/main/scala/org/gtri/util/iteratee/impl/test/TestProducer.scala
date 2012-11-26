@@ -25,8 +25,7 @@ package org.gtri.util.iteratee.impl.test
 import org.gtri.util.iteratee.api
 import api._
 import scala.collection.JavaConversions._
-import org.gtri.util.iteratee.impl.base.BaseEnumeratee.base
-import org.gtri.util.iteratee.impl.base.BaseEnumeratee
+import org.gtri.util.iteratee.impl.util.StreamEnumeratee
 
 /**
 * Created with IntelliJ IDEA.
@@ -36,21 +35,5 @@ import org.gtri.util.iteratee.impl.base.BaseEnumeratee
 * To change this template use File | Settings | File Templates.
 */
 class TestProducer[A](iterable : java.lang.Iterable[A], chunkSize : java.lang.Integer) extends Producer[A] {
-  case class Cont[S](_stream : Stream[A], _iteratee : Iteratee[A,S], _issues : List[Issue], _chunkSize : Int) extends base.Cont(_stream, _iteratee, _issues, _chunkSize) {
-
-    def attach[T](i: Iteratee[A, T]) = Cont(stream, i, issues, chunkSize)
-
-    def step = {
-      val (chunk, nextS) = stream.splitAt(chunkSize)
-      println("producing chunk=" + chunk)
-      val nextI = iteratee(chunk.toList)
-      if(nextS.isEmpty) {
-        Success(nextI, issues)
-      } else {
-        Cont(nextS, nextI, issues, chunkSize)
-      }
-    }
-  }
-  case class Success[S](_iteratee : Iteratee[A,S], _issues : List[Issue]) extends base.Success(_iteratee, _issues)
-  def enumeratee[S](i: Iteratee[A,S]) = Cont(iterable.iterator.toStream,i,Nil,chunkSize)
+  def enumeratee[S](i: Iteratee[A,S]) = StreamEnumeratee(iterable.iterator.toStream,i,chunkSize)
 }
