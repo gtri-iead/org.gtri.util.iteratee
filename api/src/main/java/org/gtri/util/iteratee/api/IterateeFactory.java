@@ -33,7 +33,7 @@ public interface IterateeFactory {
   IssueHandlingCode issueHandlingCode();
   
   Planner createPlanner();
-  <A,S> Producer<A> createProducer(Enumeratee<A,S> enumeratee);
+  <A> Producer<A> createProducer(Enumeratee<A> enumeratee);
   <A,S> Consumer<A,S> createConsumer(Iteratee<A,S> iteratee);
   <A,V> Builder<A,V> createBuilder(Iteratee<A,Option<V>> iteratee);
   <A,B> Translator<A,B> createTranslator(Function1<A,B> f);

@@ -28,7 +28,7 @@ package org.gtri.util.iteratee.api;
  * @author Lance
  */
 public interface Producer<A> {
-  <S> Enumeratee<A,S> enumeratee(Iteratee<A,S> downstream);
+  Enumeratee<A> enumeratee();
 }
 
 /*

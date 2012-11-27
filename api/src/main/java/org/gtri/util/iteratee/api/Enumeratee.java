@@ -22,7 +22,7 @@
 
 package org.gtri.util.iteratee.api;
 
-import scala.collection.immutable.List;
+import scala.collection.Traversable;
 
 
 /**
@@ -30,15 +30,16 @@ import scala.collection.immutable.List;
  * @author Lance
  */
 
-public interface Enumeratee<A,S> {
+public interface Enumeratee<A> {
   StatusCode status();
   
-  List<Issue> issues();
+  public interface Result<A> {
+    Enumeratee<A> next();
+    Traversable<A> output();
+    Traversable<Issue> issues();
+  }
   
-  Iteratee<A,S> iteratee();
-  <T> Enumeratee<A,T> attach(Iteratee<A,T> iteratee);
-  
-  Enumeratee<A,S> step();
+  Result<A> step();
 }
 
 /*

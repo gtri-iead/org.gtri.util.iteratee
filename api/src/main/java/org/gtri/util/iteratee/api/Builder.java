@@ -23,7 +23,7 @@
 package org.gtri.util.iteratee.api;
 
 import scala.Option;
-import scala.collection.immutable.List;
+import scala.collection.Traversable;
 
 /**
  *
@@ -68,9 +68,9 @@ public interface Builder<A,V> {
   public static interface Result<A,B,V> {
     StatusCode status();
 
-    List<Issue> issues();
+    Traversable<Issue> issues();
 
-    List<B> overflow();
+    Traversable<B> overflow();
     
     Option<V> value();
     

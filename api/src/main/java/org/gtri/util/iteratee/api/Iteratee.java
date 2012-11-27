@@ -22,7 +22,7 @@
 
 package org.gtri.util.iteratee.api;
 
-import scala.collection.immutable.List;
+import scala.collection.Traversable;
 
 /**
  *
@@ -31,13 +31,16 @@ import scala.collection.immutable.List;
 public interface Iteratee<A,S> {
   StatusCode status();
 
-  List<Issue> issues();
-  List<A> overflow();
-
   S state();
   
-  Iteratee<A,S> apply(List<A> a);
-  Iteratee<A,S> endOfInput();
+  public interface Result<A,S> {
+    Iteratee<A,S> next();
+    Traversable<Issue> issues();
+    Traversable<A> overflow();
+  }
+  
+  Result<A,S> apply(Traversable<A> input);
+  Result<A,S> endOfInput();
 }
 
 /* Try #1

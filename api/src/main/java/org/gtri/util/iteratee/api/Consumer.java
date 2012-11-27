@@ -22,7 +22,7 @@
 
 package org.gtri.util.iteratee.api;
 
-import scala.collection.immutable.List;
+import scala.collection.Traversable;
 
 /**
  * An interface for a consumer of the output of a producer.
@@ -60,9 +60,9 @@ public interface Consumer<A,S> {
   public static interface Result<A,B,S> {
     StatusCode status();
 
-    List<Issue> issues();
+    Traversable<Issue> issues();
 
-    List<B> overflow();
+    Traversable<B> overflow();
     
     S state();
     /**

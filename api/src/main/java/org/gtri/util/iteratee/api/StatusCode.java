@@ -62,4 +62,34 @@ public enum StatusCode {
     }
     return true;    
   }
+  public static StatusCode And(StatusCode lhs, StatusCode rhs) {
+    switch(lhs) {
+      case CONTINUE :
+        return rhs;
+      case SUCCESS :
+        switch(rhs) {
+          case CONTINUE :
+            return SUCCESS;
+          case SUCCESS :
+            return SUCCESS;
+          case RECOVERABLE_ERROR:
+            return SUCCESS;
+          case FATAL_ERROR :         
+            return FATAL_ERROR;
+        }
+      case RECOVERABLE_ERROR:
+        switch(rhs) {
+          case CONTINUE :
+            return RECOVERABLE_ERROR;
+          case SUCCESS :
+            return SUCCESS;
+          case RECOVERABLE_ERROR:
+            return RECOVERABLE_ERROR;
+          case FATAL_ERROR :         
+            return FATAL_ERROR;
+        }
+      case FATAL_ERROR :
+    }
+    return FATAL_ERROR;
+  }
 }  

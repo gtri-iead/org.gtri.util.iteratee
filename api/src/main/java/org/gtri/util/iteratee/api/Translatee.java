@@ -22,15 +22,22 @@
 
 package org.gtri.util.iteratee.api;
 
-import scala.Tuple3;
-import scala.collection.immutable.List;
+import scala.collection.Traversable;
 
 /**
  * Try #4
  * @author Lance
  */
 public interface Translatee<A,B> {
-  Tuple3<Translatee<A,B>, List<B>, List<Issue>> apply(List<A> input, List<B> output, List<Issue> issues);
+  StatusCode status();
+  
+  public interface Result<A,B> {
+    Translatee<A,B> next();
+    Traversable<B> output();
+    Traversable<Issue> issues();
+  }
+  
+  Result<A,B> apply(Traversable<A> input);
 }
 
 /*
