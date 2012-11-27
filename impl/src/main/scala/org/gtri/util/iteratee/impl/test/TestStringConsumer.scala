@@ -23,7 +23,7 @@
 package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.base.BaseIteratee.base
+import org.gtri.util.iteratee.impl.Iteratees._
 
 /**
 * Created with IntelliJ IDEA.
@@ -33,16 +33,16 @@ import org.gtri.util.iteratee.impl.base.BaseIteratee.base
 * To change this template use File | Settings | File Templates.
 */
 class TestStringConsumer(list : java.util.List[String]) extends Consumer[String, Unit] {
-  case class Step() extends base.Cont[String, Unit](()) {
-    def apply(items: List[String]) = {
+  case class Step() extends IterS.Cont[String] {
+    def apply(items: Traversable[String]) = {
       println("received=" + items)
       for (item <- items) {
         list.add(item)
       }
-      this
+      Result(this)
     }
 
-    def endOfInput() = base.Success(())
+    def endOfInput() = Result(IterS.Success())
   }
   def iteratee = Step()
 }

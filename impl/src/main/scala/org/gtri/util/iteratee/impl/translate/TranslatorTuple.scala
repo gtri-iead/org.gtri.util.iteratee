@@ -22,7 +22,8 @@
 
 package org.gtri.util.iteratee.impl.translate
 
-import org.gtri.util.iteratee.api.{Issue, Translatee, Iteratee, Translator}
+import org.gtri.util.iteratee.api.{StatusCode, Issue, Translatee, Translator}
+import org.gtri.util.iteratee.impl.Translatees._
 
 /**
  * Created with IntelliJ IDEA.
@@ -35,10 +36,13 @@ case class TranslateeTuple2[A,B,C](
   t1 : Translatee[A,B],
   t2 : Translatee[B,C]
 ) extends Translatee[A,C] {
-  def apply(input: List[A], output: List[C], issues: List[Issue]) = {
-    val (nextT1, output1, nextIssues1) = t1.apply(input, Nil, issues)
-    val (nextT2, output2, nextIssues2) = t2.apply(output1, output, nextIssues1)
-    (TranslateeTuple2(nextT1, nextT2), output2, nextIssues2)
+
+  def status = StatusCode.CONTINUE
+
+  def apply(input: Traversable[A]) = {
+    val resultT1 = t1.apply(input)
+    val resultT2 = t2.apply(resultT1.output)
+    Result(TranslateeTuple2(resultT1.next, resultT2.next), resultT2.output, resultT1.issues ++ resultT2.issues)
   }
 }
 case class TranslatorTuple2[A,B,C](
@@ -53,11 +57,13 @@ case class TranslateeTuple3[A,B,C,D](
   t2 : Translatee[B,C],
   t3 : Translatee[C,D]
 ) extends Translatee[A,D] {
-  def apply(input: List[A], output: List[D], issues: List[Issue]) = {
-    val (nextT1, output1, nextIssues1) = t1.apply(input, Nil, issues)
-    val (nextT2, output2, nextIssues2) = t2.apply(output1, Nil, nextIssues1)
-    val (nextT3, output3, nextIssues3) = t3.apply(output2, output, nextIssues2)
-    (TranslateeTuple3(nextT1, nextT2, nextT3), output3, nextIssues3)
+  def status = StatusCode.CONTINUE
+
+  def apply(input: Traversable[A]) = {
+    val resultT1 = t1.apply(input)
+    val resultT2 = t2.apply(resultT1.output)
+    val resultT3 = t3.apply(resultT2.output)
+    Result(TranslateeTuple3(resultT1.next, resultT2.next, resultT3.next), resultT3.output, resultT1.issues ++ resultT2.issues ++ resultT3.issues)
   }
 }
 case class TranslatorTuple3[A,B,C,D](
@@ -74,12 +80,14 @@ case class TranslateeTuple4[A,B,C,D,E](
   t3 : Translatee[C,D],
   t4 : Translatee[D,E]
 ) extends Translatee[A,E] {
-  def apply(input: List[A], output: List[E], issues: List[Issue]) = {
-    val (nextT1, output1, nextIssues1) = t1.apply(input, Nil, issues)
-    val (nextT2, output2, nextIssues2) = t2.apply(output1, Nil, nextIssues1)
-    val (nextT3, output3, nextIssues3) = t3.apply(output2, Nil, nextIssues2)
-    val (nextT4, output4, nextIssues4) = t4.apply(output3, output, nextIssues3)
-    (TranslateeTuple4(nextT1, nextT2, nextT3, nextT4), output4, nextIssues4)
+  def status = StatusCode.CONTINUE
+
+  def apply(input: Traversable[A]) = {
+    val resultT1 = t1.apply(input)
+    val resultT2 = t2.apply(resultT1.output)
+    val resultT3 = t3.apply(resultT2.output)
+    val resultT4 = t4.apply(resultT3.output)
+    Result(TranslateeTuple4(resultT1.next, resultT2.next, resultT3.next, resultT4.next), resultT4.output, resultT1.issues ++ resultT2.issues ++ resultT3.issues ++ resultT4.issues)
   }
 }
 case class TranslatorTuple4[A,B,C,D,E](
@@ -98,13 +106,15 @@ case class TranslateeTuple5[A,B,C,D,E,F](
   t4 : Translatee[D,E],
   t5 : Translatee[E,F]
 ) extends Translatee[A,F] {
-  def apply(input: List[A], output: List[F], issues: List[Issue]) = {
-    val (nextT1, output1, nextIssues1) = t1.apply(input, Nil, issues)
-    val (nextT2, output2, nextIssues2) = t2.apply(output1, Nil, nextIssues1)
-    val (nextT3, output3, nextIssues3) = t3.apply(output2, Nil, nextIssues2)
-    val (nextT4, output4, nextIssues4) = t4.apply(output3, Nil, nextIssues3)
-    val (nextT5, output5, nextIssues5) = t5.apply(output4, output, nextIssues4)
-    (TranslateeTuple5(nextT1, nextT2, nextT3, nextT4, nextT5), output5, nextIssues5)
+  def status = StatusCode.CONTINUE
+
+  def apply(input: Traversable[A]) = {
+    val resultT1 = t1.apply(input)
+    val resultT2 = t2.apply(resultT1.output)
+    val resultT3 = t3.apply(resultT2.output)
+    val resultT4 = t4.apply(resultT3.output)
+    val resultT5 = t5.apply(resultT4.output)
+    Result(TranslateeTuple5(resultT1.next, resultT2.next, resultT3.next, resultT4.next, resultT5.next), resultT5.output, resultT1.issues ++ resultT2.issues ++ resultT3.issues ++ resultT4.issues ++ resultT5.issues)
   }
 }
 case class TranslatorTuple5[A,B,C,D,E,F](

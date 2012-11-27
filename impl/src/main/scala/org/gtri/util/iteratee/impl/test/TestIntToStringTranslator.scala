@@ -22,9 +22,8 @@
 
 package org.gtri.util.iteratee.impl.test
 
-import org.gtri.util.iteratee.api
-import api._
-
+import org.gtri.util.iteratee.api._
+import org.gtri.util.iteratee.impl.Translatees._
 
 /**
 * Created with IntelliJ IDEA.
@@ -35,14 +34,17 @@ import api._
 */
 class TestIntToStringTranslator extends Translator[java.lang.Integer, String] {
   class Cont extends Translatee[java.lang.Integer,String]  {
-    def apply(items: List[java.lang.Integer], output: List[String], issues: List[Issue]) = {
+
+    def status = StatusCode.CONTINUE
+
+    def apply(items: Traversable[java.lang.Integer]) = {
       println("translating=" + items)
-      val nextOutput = items.foldLeft(output) {
+      val nextOutput = items.foldLeft(List[String]()) {
         (list,item) => {
           item.toString :: list
         }
       }
-      (this, nextOutput, issues)
+      Result(this, nextOutput)
     }
   }
   def translatee = new Cont()

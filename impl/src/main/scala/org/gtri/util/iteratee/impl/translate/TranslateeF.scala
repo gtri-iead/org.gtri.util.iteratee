@@ -22,7 +22,8 @@
 
 package org.gtri.util.iteratee.impl.translate
 
-import org.gtri.util.iteratee.api.{Issue, Translatee}
+import org.gtri.util.iteratee.api.{StatusCode, Issue, Translatee}
+import org.gtri.util.iteratee.impl.Translatees._
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,12 +33,15 @@ import org.gtri.util.iteratee.api.{Issue, Translatee}
  * To change this template use File | Settings | File Templates.
  */
 class TranslateeF[A,B](f: A => B) extends Translatee[A,B]{
-  def apply(input: List[A], output: List[B], issues: List[Issue]) = {
-    val nextOutput = input.foldLeft(output) {
+
+  def status() = StatusCode.CONTINUE
+
+  def apply(input: Traversable[A]) = {
+    val nextOutput = input.foldLeft(List[B]()) {
       (list,item) => {
          f(item) :: list
       }
     }
-    (this, nextOutput, issues)
+    Result(this, nextOutput, Nil)
   }
 }

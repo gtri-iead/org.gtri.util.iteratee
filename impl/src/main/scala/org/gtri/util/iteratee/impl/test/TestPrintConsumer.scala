@@ -23,7 +23,7 @@
 package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.base.BaseIteratee.base
+import org.gtri.util.iteratee.impl.Iteratees._
 
 /**
 * Created with IntelliJ IDEA.
@@ -33,16 +33,16 @@ import org.gtri.util.iteratee.impl.base.BaseIteratee.base
 * To change this template use File | Settings | File Templates.
 */
 class TestPrintConsumer[A] extends Consumer[A, Unit] {
-  case class Cont[A]() extends base.Cont[A, Unit](()) {
-    def apply(items: List[A]) = {
+  case class Cont[A]() extends IterS.Cont[A] {
+    def apply(items: Traversable[A]) = {
       println("received=" + items)
       for (item <- items) {
         println(item)
       }
-      this
+      Result(this)
     }
 
-    def endOfInput() = base.Success(())
+    def endOfInput() = Result(IterS.Success())
   }
 
   def iteratee = Cont()

@@ -1,8 +1,7 @@
 package org.gtri.util.iteratee.impl.util
 
-import org.gtri.util.iteratee.api.{Producer, Enumeratee, Issue, Iteratee}
-import org.gtri.util.iteratee.impl.base.BaseEnumeratee.base
-import org.gtri.util.iteratee.impl.base.BaseEnumeratee
+import org.gtri.util.iteratee.api._
+import org.gtri.util.iteratee.impl.Enumeratees.Result
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,31 +12,28 @@ import org.gtri.util.iteratee.impl.base.BaseEnumeratee
  */
 // No Producer class or Enumeratee class to discourage holding onto head of stream
 object StreamEnumeratee {
-  def apply[A,S](
-    stream : Stream[A],
-    iteratee : Iteratee[A,S],
-    chunkSize : Int = BaseEnumeratee.STD_CHUNK_SIZE
-  ) : Enumeratee[A,S] = new Cont(stream, iteratee, Nil, chunkSize)
+  val STD_CHUNK_SIZE = 256
+  def apply[A](stream : Stream[A], chunkSize : Int = STD_CHUNK_SIZE) : Enumeratee[A] =
+    new Cont(stream, chunkSize)
 
-  private class Cont[S,A](
-                 stream : Stream[A],
-                 val iteratee : Iteratee[A,S],
-                 _issues : List[Issue],
-                 chunkSize : Int
-                 ) extends base.Cont[A,S](_issues) {
+  private class Cont[A](stream : Stream[A],chunkSize : Int) extends Enumeratee[A] {
 
-    def attach[T](i: Iteratee[A, T]) = new Cont(stream, i, issues, chunkSize)
+    def status = StatusCode.CONTINUE
 
     def step = {
-      val (chunk, nextS) = stream.splitAt(chunkSize)
-      val nextI = iteratee(chunk.toList)
+      val (nextChunk, nextS) = stream.splitAt(chunkSize)
       if(nextS.isEmpty) {
-        new Success(nextI, issues)
+        Result(new Success(), nextChunk)
       } else {
-        new Cont(nextS, nextI, issues, chunkSize)
+        Result(new Cont(nextS, chunkSize), nextChunk)
       }
     }
   }
-  private class Success[S,A](_iteratee : Iteratee[A,S], _issues : List[Issue]) extends base.Success(_iteratee, _issues)
+
+  private class Success[A] extends Enumeratee[A] {
+    def status = StatusCode.SUCCESS
+
+    def step = Result(this, Nil)
+  }
 
 }

@@ -24,10 +24,9 @@ package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api
 import api._
-import api.Issue.ImpactCode
 import translate._
-import annotation.tailrec
-import util.{PullIteratee, IterateeUtil}
+import util.Looper
+
 
 /**
 * Created with IntelliJ IDEA.
@@ -46,21 +45,23 @@ class Planner(val factory : api.IterateeFactory) extends api.Planner {
       def consumer = c
 
       def run = {
-        val e = p.enumeratee(c.iteratee)
-        val lastE = IterateeUtil.run[A,S,Enumeratee[A,S]](factory.issueHandlingCode,e, { _.step() })
-        val lastI = lastE.iteratee
+        // TODO: find a way to do this without identity translatee
+        val looper = new Looper(p.enumeratee, new IdentityTranslatee[A], c.iteratee)
+        val lastL = looper.run(factory.issueHandlingCode())
+        val lastE = lastL.enumeratee
+        val lastI = lastL.iteratee
         // Feed EOI to lastI to force it to complete
-        val eoiI = lastI.endOfInput()
+        val eoiResult = lastI.endOfInput()
 
         new Consumer.Result[A,A,S] {
 
-          def state = eoiI.state
+          def state = eoiResult.next.state
 
-          def status = eoiI.status
+          def status = eoiResult.next.status
 
-          def issues = eoiI.issues
+          def issues = eoiResult.issues ++ looper.issues
 
-          def overflow = eoiI.overflow
+          def overflow = eoiResult.overflow ++ looper.overflow
 
           def producer = factory.createProducer(lastE)
 
@@ -77,24 +78,24 @@ class Planner(val factory : api.IterateeFactory) extends api.Planner {
       def consumer = c
 
       def run = {
-        val innerE = p.enumeratee(PullIteratee())
-        val translatedE = new TranslatedEnumeratee(innerE, t.translatee, Nil, c.iteratee())
-        val lastE = IterateeUtil.run[B,S,TranslatedEnumeratee[A,B,S]](factory.issueHandlingCode,translatedE, { _.step() })
-        val lastI = lastE.iteratee
+        val looper = new Looper(p.enumeratee, t.translatee, c.iteratee)
+        val lastL = looper.run(factory.issueHandlingCode())
+        val lastE  = lastL.enumeratee
+        val lastI = lastL.iteratee
         // Feed EOI to lastI to force it to complete
-        val eoiI = lastI.endOfInput()
+        val eoiResult = lastI.endOfInput()
 
         new Consumer.Result[A,B,S] {
 
-          def state() = eoiI.state
+          def state = eoiResult.next.state
 
-          def status = eoiI.status
+          def status = eoiResult.next.status
 
-          def issues = eoiI.issues
+          def issues = eoiResult.issues
 
-          def overflow = eoiI.overflow
+          def overflow = eoiResult.overflow
 
-          def producer = factory.createProducer(lastE.innerEnumeratee)
+          def producer = factory.createProducer(lastE)
 
           def consumer = factory.createConsumer(lastI)
         }
@@ -110,20 +111,22 @@ class Planner(val factory : api.IterateeFactory) extends api.Planner {
       def builder = b
 
       def run = {
-        val e = p.enumeratee(b.iteratee)
-        val lastE = IterateeUtil.run[A,Option[V],Enumeratee[A,Option[V]]](factory.issueHandlingCode, e, { _.step() })
-        val lastI = lastE.iteratee
+        // TODO: find a way to do this without identity translatee
+        val looper = new Looper(p.enumeratee, new IdentityTranslatee[A], b.iteratee)
+        val lastL = looper.run(factory.issueHandlingCode())
+        val lastE = lastL.enumeratee
+        val lastI = lastL.iteratee
         // Feed EOI to lastI to force it to complete
-        val eoiI = lastI.endOfInput()
+        val eoiResult = lastI.endOfInput()
 
         new Builder.Result[A,A,V] {
-          def value = eoiI.state
+          def value = eoiResult.next.state
 
-          def status = eoiI.status
+          def status = eoiResult.next.status
 
-          def issues = eoiI.issues
+          def issues = eoiResult.issues
 
-          def overflow = eoiI.overflow
+          def overflow = eoiResult.overflow
 
           def producer = factory.createProducer(lastE)
 
@@ -141,24 +144,24 @@ class Planner(val factory : api.IterateeFactory) extends api.Planner {
       def builder = b
 
       def run = {
-        val innerE = p.enumeratee(PullIteratee())
-        val translatedE = new TranslatedEnumeratee(innerE, t.translatee, Nil, b.iteratee())
-        val lastE = IterateeUtil.run[B,Option[V],TranslatedEnumeratee[A,B,Option[V]]](factory.issueHandlingCode, translatedE, { _.step() })
-        val lastI = lastE.iteratee
+        val looper = new Looper(p.enumeratee, t.translatee, b.iteratee)
+        val lastL = looper.run(factory.issueHandlingCode())
+        val lastE  = lastL.enumeratee
+        val lastI = lastL.iteratee
         // Feed EOI to lastI to force it to complete
-        val eoiI = lastI.endOfInput()
+        val eoiResult = lastI.endOfInput()
 
         new Builder.Result[A,B,V] {
 
-          def value = eoiI.state
+          def value = eoiResult.next.state
 
-          def status = eoiI.status
+          def status = eoiResult.next.status
 
-          def issues = eoiI.issues
+          def issues = eoiResult.issues
 
-          def overflow = eoiI.overflow
+          def overflow = eoiResult.overflow
 
-          def producer = factory.createProducer(lastE.innerEnumeratee)
+          def producer = factory.createProducer(lastE)
 
           def builder = factory.createBuilder(lastI)
         }

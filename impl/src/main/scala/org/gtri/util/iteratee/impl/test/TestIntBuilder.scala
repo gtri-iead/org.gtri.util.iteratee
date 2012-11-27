@@ -23,7 +23,8 @@
 package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.base.BaseIterV.base
+import org.gtri.util.iteratee.impl.Iteratees._
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,11 +35,11 @@ import org.gtri.util.iteratee.impl.base.BaseIterV.base
  */
 class TestIntegerBuilder extends Builder[Int, Int] {
 
-  case class Cont(acc: Int) extends base.Cont[Int, Int] {
+  case class Cont(acc: Int) extends IterV.Cont[Int, Int] {
 
-    def apply(items: List[Int]) = Cont(items.fold(acc) { _ + _ })
+    def apply(items: Traversable[Int]) = Result(Cont(items.fold(acc) { _ + _ }))
 
-    def endOfInput() = base.Success(Some(acc))
+    def endOfInput() = Result(IterV.Success(Some(acc)))
   }
 
   def iteratee = Cont(0)

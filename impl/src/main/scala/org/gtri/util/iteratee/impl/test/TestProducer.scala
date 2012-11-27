@@ -35,5 +35,6 @@ import org.gtri.util.iteratee.impl.util.StreamEnumeratee
 * To change this template use File | Settings | File Templates.
 */
 class TestProducer[A](iterable : java.lang.Iterable[A], chunkSize : java.lang.Integer) extends Producer[A] {
-  def enumeratee[S](i: Iteratee[A,S]) = StreamEnumeratee(iterable.iterator.toStream,i,chunkSize)
+
+  def enumeratee() = StreamEnumeratee(iterable.iterator.toStream,chunkSize)
 }

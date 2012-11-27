@@ -20,7 +20,7 @@
 
 */
 
-package org.gtri.util.iteratee.impl.base
+package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api
 import org.gtri.util.iteratee.api.ImmutableDiagnosticLocator
@@ -34,7 +34,7 @@ import java.lang.StackTraceElement
  * Time: 12:01 AM
  * To change this template use File | Settings | File Templates.
  */
-object BaseIssues {
+object Issues {
   case class FatalError(throwable : Throwable, locator : ImmutableDiagnosticLocator) extends api.Issue {
 
     def message = throwable.getMessage
