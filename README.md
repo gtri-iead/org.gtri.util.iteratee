@@ -47,7 +47,6 @@ class TestIntToStringTranslator extends Translator[java.lang.Integer, String] {
     def status = StatusCode.CONTINUE
 
     def apply(items: Traversable[java.lang.Integer]) = {
-      println("translating=" + items)
       val nextOutput = items.foldLeft(List[String]()) {
         (list,item) => {
           item.toString :: list
