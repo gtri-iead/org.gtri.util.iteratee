@@ -32,6 +32,23 @@ public enum StatusCode {
   RECOVERABLE_ERROR,
   FATAL_ERROR;
 
+  private final int completedItems;
+  private final int totalItems;
+  
+  StatusCode() {
+    completedItems = 0;
+    totalItems = 0;
+  }
+  
+  StatusCode(final int completedItems, final int totalItems) {
+    this.completedItems = completedItems;
+    this.totalItems = totalItems;
+  }
+  
+  public int completedItems() { return completedItems; }
+  
+  public int totalItems() { return totalItems; }
+  
   public boolean isDone() { 
     switch(this) {
       case RECOVERABLE_ERROR:
