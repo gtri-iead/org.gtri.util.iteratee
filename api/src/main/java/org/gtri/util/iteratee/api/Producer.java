@@ -23,18 +23,14 @@
 package org.gtri.util.iteratee.api;
 
 /**
- * An interface for a producer of output.
- * 
+ * An interface for a producer (enumerator) of output items.
+ * @param <A> the item type
  * @author Lance
  */
 public interface Producer<A> {
+  /**
+   * Get an initial enumeratee (producer/enumerator state) for the producer
+   * @return an initial enumeratee (producer/enumerator state) for the producer
+   */
   Enumeratee<A> enumeratee();
 }
-
-/*
- * Try #1 : See Enumeratee #1 for why this didn't work
-public interface Producer<A> {
-  <S, I extends Iteratee<A,S>> Enumeratee<A,S,I> enumeratee(I downstream);
-}
-
- */

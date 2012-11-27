@@ -23,8 +23,8 @@
 package org.gtri.util.iteratee.api;
 
 /**
- * An interface for an error, warning or informative message that occurred during
- * processing.
+ * An interface for an error, warning or informative message that occurred 
+ * during processing.
  * 
  * @author Lance
  */
@@ -40,12 +40,12 @@ public interface Issue {
     FATAL_ERROR, 
     /**
      * An error which is recoverable by ignoring or substituting invalid input
-     * with correct values and will result in the output differing from 
+     * with correct values but will result in the output differing from 
      * expectations
      */
     RECOVERABLE_ERROR, 
     /**
-     * A warning that an issue may result in an output that differs from 
+     * A warning that an input may cause an output that differs from 
      * expectations
      */
     WARNING,
@@ -61,8 +61,8 @@ public interface Issue {
   /**
    * Get an object that can be converted to a string that displays the location
    * of the source of the issue within the original producer.
-   * @return an object that can be converted to a string that displays the location
-   * of the source of the issue within the original producer.
+   * @return an object that can be converted to a string that displays the 
+   * location of the source of the issue within the original producer.
    */
   ImmutableDiagnosticLocator locator();
   
@@ -74,16 +74,16 @@ public interface Issue {
   
   /**
    * Get the stack trace for the source code location where the issue was 
-   * identified.
+   * raised.
    * 
    * @return the stack trace for the source code location where the issue was 
-   * identified.
+   * raised.
    */
   StackTraceElement[] stackTrace();
   
   /**
-   * Get the level code of the issue
-   * @return the level code of the issue
+   * Get the impact code of the issue
+   * @return the impact code of the issue
    */
   ImpactCode impactCode();
 }

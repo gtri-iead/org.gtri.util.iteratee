@@ -25,8 +25,20 @@ package org.gtri.util.iteratee.api;
 import scala.collection.Traversable;
 
 /**
- * Try #4
+ * An interface that represents the immutable state of a translator that can
+ * translate a buffer of input items into a buffer of output items. The apply
+ * method can be used to translate a buffer of input items into an immutable 
+ * result object that contains a buffer of output items, a list of issues that
+ * occurred during processing and the next Translatee.
+ * 
+ * Note1: Translatee implementations should not throw exceptions. Instead,
+ * exceptions should be returned as issues in the result and the 
+ * status of the next Translatee set to FATAL_ERROR (should processing stop) or 
+ * RECOVERABLE_ERROR (if processing may continue).
+ * 
  * @author Lance
+ * @param <A> the input type
+ * @param <B> the output type
  */
 public interface Translatee<A,B> {
   StatusCode status();
@@ -39,48 +51,3 @@ public interface Translatee<A,B> {
   
   Result<A,B> apply(Traversable<A> input);
 }
-
-/*
- * Try #4
-public interface Translatee<A,B,S> extends Iteratee<A,S> {
-  
-  Iteratee<B,S> downstream();
-  <T> Translatee<A,B,T> attach(Iteratee<B,T> downstream);  
-}
- */
-/*
- * Try #3: Reverted this. See Enumeratee try #1 for reasoning.
- *
-public interface Translatee<A,B,S,Ib extends Iteratee<B,S>> extends Iteratee<A,S> {
-  
-  List<Issue> issues();
-  
-  StatusCode status();
-  
-  Ib downstream();
-  <T, Jb extends Iteratee<B,T>> Translatee<A,B,T,Jb> attach(Jb downstream);
-  
-  @Override
-  Translatee<A,B,S,Ib> apply(A a);
-  @Override
-  Translatee<A,B,S,Ib> apply(Signals.EndOfInput unused);  
-}
- */
-/* Try #2: I was confused here
- * 
-public interface Translatee<A,B,Sa extends State<A>, Sb extends State<B>> extends Iteratee<A,Sa> {
-  
-  Iteratee<B,Sb> downstream();
-  <Ta extends State<A>, Tb extends State<B>> Translatee<A,B,Ta,Tb> attach(Iteratee<B,Tb> downstream);
-
-*/
-/* Try #1: in the impl for this, an iteratee to attach to the inner enumeratee 
- * is still required
- * 
-public interface Translatee<A,B,S> extends Enumeratee<B,S> {
-  
-  Enumeratee<A,S> upstream();
-  <T> Translatee<A,B,T> attach(Enumeratee<A,T> upstream);
-  
-}
- */

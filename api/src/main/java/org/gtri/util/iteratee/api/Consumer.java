@@ -26,7 +26,8 @@ import scala.collection.Traversable;
 
 /**
  * An interface for a consumer of the output of a producer.
- * 
+ * @param <A> The type
+ * @param <S>
  * @author Lance
  */
 public interface Consumer<A,S> {
@@ -57,6 +58,12 @@ public interface Consumer<A,S> {
     Result<A,B,S> run();
   }
   
+  /**
+   * An Interface
+   * @param <A>
+   * @param <B>
+   * @param <S> 
+   */
   public static interface Result<A,B,S> {
     StatusCode status();
 

@@ -29,40 +29,10 @@ package org.gtri.util.iteratee.api;
  * @author Lance
  */
 public interface Translator<A, B>  {
+  /**
+   * Get the initial state of the translator.
+   * 
+   * @return the initial state of the translator.
+   */
   Translatee<A,B> translatee();
 }
-/*
- * Try #5:
-public interface Translator<A, B>  {
-  <S> Iteratee<A,S> translatee(Iteratee<B,S> i);
-}
- */
-/* Try #4: Issues when composing Translatees, implementation becomes much easier
- * if the translatee function simply returns an iteratee
- * 
-public interface Translator<A, B>  {
-  <S> Translatee<A,B,S> translatee(Iteratee<B,S> i);
-}
- */
-/*
- * Try #3 See Enumeratee #1 for deatils why this doesn't work
-public interface Translator<A, B>  {
-  <S,Ib extends Iteratee<B,S>> Translatee<A,B,S,Ib> translatee(Ib i);
-}
-
- */
-/*
- * Try #2: See Translatee for why this didn't work.
-public interface Translator<A, B>  {
-  <S> Enumeratee<B,S> translate(Enumeratee<A,S> e);
-}
-
- */
-/*
- * Try #1: only allowing translation of IterS,IterV. Still might do this.
-public interface Translator<A, B>  {
-  IterS<A> translate(IterS<B> translate);
-  <V> IterV<A,V> translate(IterV<B,V> translate);
-}
-
- */

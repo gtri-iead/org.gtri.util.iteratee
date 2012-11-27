@@ -23,11 +23,22 @@
 package org.gtri.util.iteratee.api;
 
 /**
- *
+ * A code that identifies the strategy to be used when handling issues as they 
+ * occur.
+ * 
  * @author Lance
  */
 public enum IssueHandlingCode {
-  NORMAL, // stop on any error
-  LAX, // recover from recoverable errors when possible - stop only on fatal errors
-  STRICT; // stop on any warning or error
+  /**
+   * Stop on any recoverable error or fatal error
+   */
+  NORMAL, 
+  /**
+   * Recover from recoverable errors when possible - stop only on fatal errors
+   */
+  LAX,
+  /**
+   * Stop on any warning, recoverable error or fatal error
+   */
+  STRICT; 
 }

@@ -23,19 +23,23 @@
 package org.gtri.util.iteratee.api;
 
 /**
- * An interface that it used to perform planning operations on Producer, 
+ * An interface that it used to plan streaming operations on Producer, 
  * Consumer and Translator objects.
  * 
  * @author Lance
  */
 public interface Planner {
   
+  /**
+   * Get the factory that was used to create this planner. 
+   * @return the factory that was used to create this planner. 
+   */
   IterateeFactory factory();
   
   /**
-   * Create a plan to connect a producer and a consumer.
+   * Create a plan to stream items from a producer and a consumer.
    * 
-   * @param <A> the input/output type
+   * @param <A> the item type
    * @param producer 
    * @param consumer
    * @return a plan that can be run to obtain results
@@ -43,20 +47,22 @@ public interface Planner {
   <A,S> Consumer.Plan<A,A,S> connect(Producer<A> producer, Consumer<A,S> consumer);
   
   /**
-   * Create a plan to connect a producer, a translator and a consumer.
+   * Create a plan to stream items from a producer to a consumer by translating
+   * the items using the given translator.
    * 
-   * @param <A> the input/output type
+   * @param <A> the produced type
+   * @param <B> the consumed type
    * @param producer 
+   * @param translator
    * @param consumer
    * @return a plan that can be run to obtain results
    */
   <A,B,S> Consumer.Plan<A,B,S> connect(Producer<A> producer, Translator<A,B> translator, Consumer<B,S> consumer);
   
   /**
-   * Create a plan to connect a producer and a builder.
+   * Create a plan to stream items from a producer to a builder.
    * 
-   * @param <A> the input/output type
-   * @param <A> the value type 
+   * @param <A> the item type
    * @param producer 
    * @param builder
    * @return a plan that can be run to obtain results
@@ -64,11 +70,13 @@ public interface Planner {
   <A,V> Builder.Plan<A,A,V> connect(Producer<A> producer, Builder<A,V> builder);
 
   /**
-   * Create a plan to connect a producer, a translator and a builder.
+   * Create a plan to stream items from a producer to a builder by translating
+   * the items using the given translator.
    * 
-   * @param <A> the input/output type
-   * @param <A> the value type 
+   * @param <A> the produced type
+   * @param <B> the type consumed by the builder
    * @param producer 
+   * @param translator
    * @param builder
    * @return a plan that can be run to obtain results
    */
