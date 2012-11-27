@@ -60,12 +60,12 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.IterateeFacto
   }
 
   @Override
-  public <A, S> Producer<A> createProducer(final Enumeratee<A, S> e) {
+  public <A> Producer<A> createProducer(final Enumeratee<A> e) {
     return new Producer<A>() {
 
       @Override
-      public <S> Enumeratee<A, S> enumeratee(final Iteratee<A, S> i) {
-        return e.attach(i);
+      public Enumeratee<A> enumeratee() {
+        return e;
       }
       
     };
@@ -101,7 +101,7 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.IterateeFacto
 
       @Override
       public Translatee<A, B> translatee() {
-        return new org.gtri.util.iteratee.impl.TranslateeF(f);
+        return new org.gtri.util.iteratee.impl.translate.TranslateeF(f);
       }
       
     };
