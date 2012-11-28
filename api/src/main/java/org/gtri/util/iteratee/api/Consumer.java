@@ -22,7 +22,7 @@
 
 package org.gtri.util.iteratee.api;
 
-import scala.collection.Traversable;
+import scala.collection.immutable.Traversable;
 
 /**
  * An interface for a consumer of the output of a producer.

@@ -23,7 +23,7 @@
 package org.gtri.util.iteratee.api;
 
 import scala.Option;
-import scala.collection.Traversable;
+import scala.collection.immutable.Traversable;
 
 /**
  *

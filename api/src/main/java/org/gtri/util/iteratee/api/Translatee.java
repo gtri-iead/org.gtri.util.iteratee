@@ -22,7 +22,7 @@
 
 package org.gtri.util.iteratee.api;
 
-import scala.collection.Traversable;
+import scala.collection.immutable.Traversable;
 
 /**
  * An interface that represents the immutable state of a translator that can
