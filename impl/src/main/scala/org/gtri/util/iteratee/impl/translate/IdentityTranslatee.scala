@@ -1,5 +1,6 @@
 package org.gtri.util.iteratee.impl.translate
 
+import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api.{StatusCode, Translatee}
 import org.gtri.util.iteratee.impl.Translatees.Result
 

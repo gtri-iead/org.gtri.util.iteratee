@@ -1,6 +1,8 @@
 package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api
+import scala.collection.immutable.Traversable
+
 /**
  * Created with IntelliJ IDEA.
  * User: Lance

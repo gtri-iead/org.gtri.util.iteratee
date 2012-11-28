@@ -22,6 +22,7 @@
 
 package org.gtri.util.iteratee.impl.translate
 
+import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api.{StatusCode, Issue, Translatee}
 import org.gtri.util.iteratee.impl.Translatees._
 

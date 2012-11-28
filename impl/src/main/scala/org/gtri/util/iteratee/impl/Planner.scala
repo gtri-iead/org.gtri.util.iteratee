@@ -22,6 +22,7 @@
 
 package org.gtri.util.iteratee.impl
 
+import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api
 import api._
 import translate._
