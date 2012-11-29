@@ -12,12 +12,12 @@ import scala.collection.immutable.Traversable
  * To change this template use File | Settings | File Templates.
  */
 object BuilderStates {
-  case class Result[A,V](next : BuilderState[A,V], overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends MachineState.Result[A,Option[V],BuilderState[A,V]] {
+  case class Result[A,V](next : Builder.State[A,V], overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends Machine.State.Result[A,Option[V],Builder.State[A,V]] {
     def output = next.value
   }
 //  type IterV[A,V] = Iteratee[A, Option[V]]
 //  object IterV {
-  abstract class BaseCont[A,V] extends BuilderState[A,V] {
+  abstract class BaseCont[A,V] extends Builder.State[A,V] {
 
     def value = None
   }
@@ -30,7 +30,7 @@ object BuilderStates {
     def status = StatusCode.RECOVERABLE_ERROR
   }
 
-  abstract class BaseDone[A,V](val value : Option[V]) extends BuilderState[A,V] {
+  abstract class BaseDone[A,V](val value : Option[V]) extends Builder.State[A,V] {
     def endOfInput = Result(this)
   }
 

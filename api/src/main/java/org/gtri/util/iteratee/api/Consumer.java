@@ -22,6 +22,7 @@
 
 package org.gtri.util.iteratee.api;
 
+import scala.Unit;
 import scala.collection.immutable.Traversable;
 
 /**
@@ -31,7 +32,13 @@ import scala.collection.immutable.Traversable;
  * @param <A> the input type
  * @author lance.gatlin@gmail.com
  */
-public interface Consumer<A> {
+public interface Consumer<A> extends Machine<A,Unit,Consumer.State<A>> {
+  /**
+   *
+   * @author Lance
+   */
+  public interface State<A> extends Machine.State<A,Unit,Consumer.State<A>> {
+  }
   /**
    * An interface for a plan to stream input from a producer to a consumer
    * 
@@ -90,5 +97,6 @@ public interface Consumer<A> {
    * Get the initial state of the consumer
    * @return the initial state of the consumer
    */
-  ConsumerState<A> initialState();
+  @Override
+  Consumer.State<A> initialState();
 }

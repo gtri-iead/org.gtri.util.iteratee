@@ -27,11 +27,18 @@ package org.gtri.util.iteratee.api;
  * @param <A> the output type
  * @author lance.gatlin@gmail.com
  */
-public interface Producer<A> extends Enumerator<A,ProducerState<A>> {
+public interface Producer<A> extends Enumerator<A,Producer.State<A>> {
+  /**
+   * An interface that represents the immutable state of a producer
+   * 
+   * @author Lance
+   */
+  public static interface State<A> extends Enumerator.State<A, org.gtri.util.iteratee.api.Producer.State<A>> {
+  }
   /**
    * Get the initial state of the producer
    * @return the initial state of the producer
    */
   @Override
-  ProducerState<A> initialState();
+  Producer.State<A> initialState();
 }

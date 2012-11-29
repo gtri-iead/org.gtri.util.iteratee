@@ -12,12 +12,12 @@ import scala.collection.immutable.Traversable
  * To change this template use File | Settings | File Templates.
  */
 object ConsumerStates {
-  case class Result[A](next : ConsumerState[A], overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends MachineState.Result[A,Unit,ConsumerState[A]] {
+  case class Result[A](next : Consumer.State[A], overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends Machine.State.Result[A,Unit,Consumer.State[A]] {
     def output() {}
   }
   //  type IterS[A] = Iteratee[A, Unit]
 //  object IterS {
-  abstract class BaseCont[A] extends ConsumerState[A] {
+  abstract class BaseCont[A] extends Consumer.State[A] {
   }
 
   abstract class Cont[A] extends BaseCont[A] {
@@ -28,7 +28,7 @@ object ConsumerStates {
     def status = StatusCode.RECOVERABLE_ERROR
   }
 
-  abstract class BaseDone[A] extends ConsumerState[A] {
+  abstract class BaseDone[A] extends Consumer.State[A] {
     def endOfInput = Result(this)
   }
 

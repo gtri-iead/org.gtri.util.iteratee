@@ -47,7 +47,7 @@ class Planner(val factory : api.Factory) extends api.Planner {
 
       def run = {
         // TODO: find a way to do this without identity translatee
-        val looper = new Looper[A,A,Unit,ProducerState[A],ConsumerState[A]](p.initialState, new IdentityTranslator[A]().initialState, c.initialState)
+        val looper = new Looper[A,A,Unit,Producer.State[A],Consumer.State[A]](p.initialState, new IdentityTranslator[A]().initialState, c.initialState)
         val lastL = looper.run(factory.issueHandlingCode())
         val lastP = lastL.enumerator
         val lastC = lastL.machine
@@ -79,7 +79,7 @@ class Planner(val factory : api.Factory) extends api.Planner {
       def consumer = c
 
       def run = {
-        val looper = new Looper[A,B,Unit,ProducerState[A],ConsumerState[B]](p.initialState, t.initialState, c.initialState)
+        val looper = new Looper[A,B,Unit,Producer.State[A],Consumer.State[B]](p.initialState, t.initialState, c.initialState)
         val lastL = looper.run(factory.issueHandlingCode())
         val lastP  = lastL.enumerator
         val lastC = lastL.machine
@@ -112,7 +112,7 @@ class Planner(val factory : api.Factory) extends api.Planner {
 
       def run = {
         // TODO: find a way to do this without identity translatee
-        val looper = new Looper[A,A,S,ProducerState[A], IterateeState[A,S]](p.initialState, new IdentityTranslator[A]().initialState, i.initialState)
+        val looper = new Looper[A,A,S,Producer.State[A], Iteratee.State[A,S]](p.initialState, new IdentityTranslator[A]().initialState, i.initialState)
         val lastL = looper.run(factory.issueHandlingCode())
         val lastP = lastL.enumerator
         val lastI = lastL.machine
@@ -144,7 +144,7 @@ class Planner(val factory : api.Factory) extends api.Planner {
       def iteratee = i
 
       def run = {
-        val looper = new Looper[A,B,S,ProducerState[A],IterateeState[B,S]](p.initialState, t.initialState, i.initialState)
+        val looper = new Looper[A,B,S,Producer.State[A],Iteratee.State[B,S]](p.initialState, t.initialState, i.initialState)
         val lastL = looper.run(factory.issueHandlingCode())
         val lastP  = lastL.enumerator
         val lastI = lastL.machine
@@ -177,7 +177,7 @@ class Planner(val factory : api.Factory) extends api.Planner {
 
       def run = {
         // TODO: find a way to do this without identity translatee
-        val looper = new Looper[A,A,Option[V],ProducerState[A], BuilderState[A,V]](p.initialState, new IdentityTranslator[A]().initialState, b.initialState)
+        val looper = new Looper[A,A,Option[V],Producer.State[A], Builder.State[A,V]](p.initialState, new IdentityTranslator[A]().initialState, b.initialState)
         val lastL = looper.run(factory.issueHandlingCode())
         val lastP = lastL.enumerator
         val lastB = lastL.machine
@@ -209,7 +209,7 @@ class Planner(val factory : api.Factory) extends api.Planner {
       def builder = b
 
       def run = {
-        val looper = new Looper[A,B,Option[V],ProducerState[A],BuilderState[B,V]](p.initialState, t.initialState, b.initialState)
+        val looper = new Looper[A,B,Option[V],Producer.State[A],Builder.State[B,V]](p.initialState, t.initialState, b.initialState)
         val lastL = looper.run(factory.issueHandlingCode())
         val lastP  = lastL.enumerator
         val lastB = lastL.machine

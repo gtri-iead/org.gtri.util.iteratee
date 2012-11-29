@@ -25,7 +25,6 @@ package org.gtri.util.iteratee.impl
 import org.gtri.util.iteratee.api
 import org.gtri.util.iteratee.api.ImmutableDiagnosticLocator
 import org.gtri.util.iteratee.api.Issue.ImpactCode
-import java.lang.StackTraceElement
 
 /**
  * Created with IntelliJ IDEA.
@@ -52,15 +51,15 @@ object Issues {
     def impactCode = ImpactCode.RECOVERABLE_ERROR
   }
 
-  case class Warning(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[StackTraceElement] = Array()) extends api.Issue {
+  case class Warning(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[java.lang.StackTraceElement] = Array()) extends api.Issue {
     def impactCode = ImpactCode.WARNING
   }
 
-  case class Info(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[StackTraceElement] = Array()) extends api.Issue {
+  case class Info(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[java.lang.StackTraceElement] = Array()) extends api.Issue {
     def impactCode = ImpactCode.INFO
   }
 
-  case class Debug(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[StackTraceElement] = Array()) extends api.Issue {
+  case class Debug(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[java.lang.StackTraceElement] = Array()) extends api.Issue {
     def impactCode = ImpactCode.DEBUG
   }
 }

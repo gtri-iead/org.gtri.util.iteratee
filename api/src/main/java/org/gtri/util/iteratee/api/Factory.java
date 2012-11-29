@@ -51,7 +51,7 @@ public interface Factory {
    * @return a producer whose initialState method will return the provided
    * state
    */
-  <A> Producer<A> createProducer(ProducerState<A> state);
+  <A> Producer<A> createProducer(Producer.State<A> state);
   /**
    * Create a producer from a consumer state.
    * @param <A> the input type
@@ -60,7 +60,7 @@ public interface Factory {
    * @return a consumer whose initialState method will return the provided
    * state
    */
-  <A> Consumer<A> createConsumer(ConsumerState<A> state);
+  <A> Consumer<A> createConsumer(Consumer.State<A> state);
   
   /**
    * Create an iteratee from an iteratee state.
@@ -70,7 +70,7 @@ public interface Factory {
    * @return an iteratee whose initialState method will return the provided
    * state
    */
-  <A,S> Iteratee<A,S> createIteratee(IterateeState<A,S> state);
+  <A,S> Iteratee<A,S> createIteratee(Iteratee.State<A,S> state);
   
   /**
    * Create a builder from a builder iteratee
@@ -80,7 +80,7 @@ public interface Factory {
    * @return a builder whose initialState method will return the provided
    * state
    */
-  <A,V> Builder<A,V> createBuilder(BuilderState<A,V> state);
+  <A,V> Builder<A,V> createBuilder(Builder.State<A,V> state);
   /**
    * Create a simple stateless translator from a function
    * @param <A> the input type

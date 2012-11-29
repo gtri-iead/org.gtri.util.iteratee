@@ -30,7 +30,18 @@ import scala.collection.immutable.Traversable;
  * @param <S> the state type
  * @author lance.gatlin@gmail.com
  */
-public interface Iteratee<A,S> extends Machine<A,S, IterateeState<A,S>> {
+public interface Iteratee<A,S> extends Machine<A,S, Iteratee.State<A,S>> {
+  /**
+   * An interface for the immutable state of an Iteratee
+   * 
+   * @author lance.gatlin@gmail.com
+   * @param <A> the input type
+   * @param <S> the loop state type
+   */
+  public static interface State<A,S> extends Machine.State<A,S,Iteratee.State<A,S>> {
+    S loopState();
+  }
+  
   /**
    * An interface for a plan to stream input from a producer to a consumer
    * 
@@ -98,5 +109,5 @@ public interface Iteratee<A,S> extends Machine<A,S, IterateeState<A,S>> {
    * @return the initial state of the consumer
    */
   @Override
-  IterateeState<A,S> initialState();
+  Iteratee.State<A,S> initialState();
 }

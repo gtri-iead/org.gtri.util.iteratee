@@ -1,7 +1,7 @@
 package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api
-import api.{EnumeratorState, ProducerState }
+import api.{Enumerator, Producer }
 import scala.collection.immutable.Traversable
 
 /**
@@ -12,5 +12,5 @@ import scala.collection.immutable.Traversable
  * To change this template use File | Settings | File Templates.
  */
 object ProducerStates {
-  case class Result[A](next : ProducerState[A], output : Traversable[A], issues : Traversable[api.Issue] = Nil) extends EnumeratorState.Result[A,ProducerState[A]]
+  case class Result[A](next : Producer.State[A], output : Traversable[A], issues : Traversable[api.Issue] = Nil) extends Enumerator.State.Result[A,Producer.State[A]]
 }

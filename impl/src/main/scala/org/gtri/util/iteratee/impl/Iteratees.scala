@@ -12,11 +12,11 @@ import api._
 * To change this template use File | Settings | File Templates.
 */
 object Iteratees {
-  case class Result[A,S](next : IterateeState[A,S], overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends MachineState.Result[A,S,IterateeState[A,S]] {
+  case class Result[A,S](next : Iteratee.State[A,S], overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends Machine.State.Result[A,S,Iteratee.State[A,S]] {
     def output() = next.loopState
   }
 
-  abstract class BaseCont[A,S](val loopState : S) extends IterateeState[A,S]
+  abstract class BaseCont[A,S](val loopState : S) extends Iteratee.State[A,S]
 
   abstract class Cont[A,S](loopState : S) extends BaseCont[A,S](loopState) {
     def status = StatusCode.CONTINUE
@@ -26,7 +26,7 @@ object Iteratees {
     def status = StatusCode.RECOVERABLE_ERROR
   }
 
-  abstract class BaseDone[A,S](val loopState : S) extends IterateeState[A,S] {
+  abstract class BaseDone[A,S](val loopState : S) extends Iteratee.State[A,S] {
     def endOfInput = Result(this)
   }
 

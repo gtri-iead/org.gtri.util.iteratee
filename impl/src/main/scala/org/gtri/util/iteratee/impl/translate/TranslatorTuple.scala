@@ -23,7 +23,7 @@
 package org.gtri.util.iteratee.impl.translate
 
 import scala.collection.immutable.Traversable
-import org.gtri.util.iteratee.api.{StatusCode, Issue, TranslatorState, Translator}
+import org.gtri.util.iteratee.api.Translator
 import org.gtri.util.iteratee.impl.TranslatorStates._
 import org.gtri.util.iteratee.impl.TranslatorStates
 
@@ -35,8 +35,8 @@ import org.gtri.util.iteratee.impl.TranslatorStates
  * To change this template use File | Settings | File Templates.
  */
 case class TranslatorStateTuple2[A,B,C](
-  t1 : TranslatorState[A,B],
-  t2 : TranslatorState[B,C]
+  t1 : Translator.State[A,B],
+  t2 : Translator.State[B,C]
 ) extends TranslatorStates.Cont[A,C] {
 
   def apply(input: Traversable[A]) = {
@@ -56,9 +56,9 @@ case class TranslatorTuple2[A,B,C](
 }
 
 case class TranslatorStateTuple3[A,B,C,D](
-  t1 : TranslatorState[A,B],
-  t2 : TranslatorState[B,C],
-  t3 : TranslatorState[C,D]
+  t1 : Translator.State[A,B],
+  t2 : Translator.State[B,C],
+  t3 : Translator.State[C,D]
 ) extends TranslatorStates.Cont[A,D] {
   def apply(input: Traversable[A]) = {
     val resultT1 = t1.apply(input)
@@ -78,10 +78,10 @@ case class TranslatorTuple3[A,B,C,D](
 }
 
 case class TranslatorStateTuple4[A,B,C,D,E](
-  t1 : TranslatorState[A,B],
-  t2 : TranslatorState[B,C],
-  t3 : TranslatorState[C,D],
-  t4 : TranslatorState[D,E]
+  t1 : Translator.State[A,B],
+  t2 : Translator.State[B,C],
+  t3 : Translator.State[C,D],
+  t4 : Translator.State[D,E]
 ) extends TranslatorStates.Cont[A,E] {
 
   def apply(input: Traversable[A]) = {
@@ -104,11 +104,11 @@ case class TranslatorTuple4[A,B,C,D,E](
 }
 
 case class TranslatorStateTuple5[A,B,C,D,E,F](
-  t1 : TranslatorState[A,B],
-  t2 : TranslatorState[B,C],
-  t3 : TranslatorState[C,D],
-  t4 : TranslatorState[D,E],
-  t5 : TranslatorState[E,F]
+  t1 : Translator.State[A,B],
+  t2 : Translator.State[B,C],
+  t3 : Translator.State[C,D],
+  t4 : Translator.State[D,E],
+  t5 : Translator.State[E,F]
 ) extends TranslatorStates.Cont[A,F] {
   def apply(input: Traversable[A]) = {
     val resultT1 = t1.apply(input)

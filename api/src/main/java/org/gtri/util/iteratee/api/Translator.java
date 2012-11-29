@@ -22,17 +22,30 @@
 
 package org.gtri.util.iteratee.api;
 
+import scala.collection.immutable.Traversable;
+
 /**
  * An interface for a translator which translates input of one type into output 
  * of another type.
  * 
  * @author lance.gatlin@gmail.com
  */
-public interface Translator<A, B>  {
+public interface Translator<A,B>  extends Machine<A, Traversable<B>, Translator.State<A,B>> {
+  /**
+   * An interface that represents the immutable state of a translator that can
+   * translate a buffer of input items into a buffer of output items. 
+   * 
+   * @author lance.gatlin@gmail.com
+   * @param <A> the input type
+   * @param <B> the output type
+   */
+  public static interface State<A,B> extends Machine.State<A,Traversable<B>,Translator.State<A,B>> {
+  }
   /**
    * Get the initial state of the translator.
    * 
    * @return the initial state of the translator.
    */
-  TranslatorState<A,B> initialState();
+  @Override
+  Translator.State<A,B> initialState();
 }

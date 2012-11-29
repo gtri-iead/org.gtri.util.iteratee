@@ -23,15 +23,11 @@
 package org.gtri.util.iteratee;
 
 import org.gtri.util.iteratee.api.Builder;
-import org.gtri.util.iteratee.api.BuilderState;
 import org.gtri.util.iteratee.api.Consumer;
-import org.gtri.util.iteratee.api.ConsumerState;
 import org.gtri.util.iteratee.api.IssueHandlingCode;
 import org.gtri.util.iteratee.api.Iteratee;
-import org.gtri.util.iteratee.api.IterateeState;
 import org.gtri.util.iteratee.api.Planner;
 import org.gtri.util.iteratee.api.Producer;
-import org.gtri.util.iteratee.api.ProducerState;
 import org.gtri.util.iteratee.api.Translator;
 import scala.Function1;
 
@@ -61,11 +57,11 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.Factory {
   }
 
   @Override
-  public <A> Producer<A> createProducer(final ProducerState<A> p) {
+  public <A> Producer<A> createProducer(final Producer.State<A> p) {
     return new Producer<A>() {
 
       @Override
-      public ProducerState<A> initialState() {
+      public Producer.State<A> initialState() {
         return p;
       }
 
@@ -74,11 +70,11 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.Factory {
   }
 
   @Override
-  public <A> Consumer<A> createConsumer(final ConsumerState<A> c) {
+  public <A> Consumer<A> createConsumer(final Consumer.State<A> c) {
     return new Consumer<A>() {
 
       @Override
-      public ConsumerState<A> initialState() {
+      public Consumer.State<A> initialState() {
         return c;
       }
 
@@ -87,11 +83,11 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.Factory {
   }
 
   @Override
-  public <A,S> Iteratee<A,S> createIteratee(final IterateeState<A,S> i) {
+  public <A,S> Iteratee<A,S> createIteratee(final Iteratee.State<A,S> i) {
     return new Iteratee<A,S>() {
 
       @Override
-      public IterateeState<A,S> initialState() {
+      public Iteratee.State<A,S> initialState() {
         return i;
       }
 
@@ -100,11 +96,11 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.Factory {
   }
   
   @Override
-  public <A, V> Builder<A, V> createBuilder(final BuilderState<A,V> b) {
+  public <A, V> Builder<A, V> createBuilder(final Builder.State<A,V> b) {
     return new Builder<A,V>() {
 
       @Override
-      public BuilderState<A, V> initialState() {
+      public Builder.State<A, V> initialState() {
         return b;
       }
 

@@ -12,17 +12,17 @@ import org.gtri.util.iteratee.api._
  * To change this template use File | Settings | File Templates.
  */
 object TranslatorStates {
-  case class Result[A,B](next : TranslatorState[A,B], output : Traversable[B] = Nil, overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends MachineState.Result[A,Traversable[B], TranslatorState[A,B]]
+  case class Result[A,B](next : Translator.State[A,B], output : Traversable[B] = Nil, overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends Machine.State.Result[A,Traversable[B], Translator.State[A,B]]
 
-  abstract class Cont[A,B] extends TranslatorState[A,B] {
+  abstract class Cont[A,B] extends Translator.State[A,B] {
     def status = StatusCode.CONTINUE
   }
 
-  abstract class RecoverableError[A,B] extends TranslatorState[A,B] {
+  abstract class RecoverableError[A,B] extends Translator.State[A,B] {
     def status = StatusCode.RECOVERABLE_ERROR
   }
 
-  abstract class BaseDone[A,B] extends TranslatorState[A,B] {
+  abstract class BaseDone[A,B] extends Translator.State[A,B] {
     def endOfInput = Result(this)
   }
 

@@ -29,7 +29,15 @@ import scala.collection.immutable.Traversable;
  *
  * @author lance.gatlin@gmail.com
  */
-public interface Builder<A,V> extends Machine<A, Option<V>, BuilderState<A,V>> {
+public interface Builder<A,V> extends Machine<A, Option<V>, Builder.State<A,V>> {
+  /**
+   * An interface for the immutable state of a builder.
+   * @author Lance
+   */
+  public static interface State<A,V> extends Machine.State<A,Option<V>,Builder.State<A,V>> {
+    Option<V> value();
+  }
+  
   /**
    * An interface for a plan to stream input from a producer to a consumer
    * 
@@ -91,5 +99,5 @@ public interface Builder<A,V> extends Machine<A, Option<V>, BuilderState<A,V>> {
    * @return the initial state of the builder
    */
   @Override
-  BuilderState<A,V> initialState();
+  Builder.State<A,V> initialState();
 }

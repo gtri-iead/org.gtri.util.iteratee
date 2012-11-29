@@ -13,10 +13,10 @@ import org.gtri.util.iteratee.impl.ProducerStates.Result
 // No Producer class or Enumeratee class to discourage holding onto head of stream
 object StreamEnumeratee {
   val STD_CHUNK_SIZE = 256
-  def apply[A](stream : Stream[A], chunkSize : Int = STD_CHUNK_SIZE) : ProducerState[A] =
+  def apply[A](stream : Stream[A], chunkSize : Int = STD_CHUNK_SIZE) : Producer.State[A] =
     new Cont(stream, chunkSize)
 
-  private class Cont[A](stream : Stream[A],chunkSize : Int) extends ProducerState[A] {
+  private class Cont[A](stream : Stream[A],chunkSize : Int) extends Producer.State[A] {
 
     def status = StatusCode.CONTINUE
 
@@ -31,7 +31,7 @@ object StreamEnumeratee {
     }
   }
 
-  private class Success[A] extends ProducerState[A] {
+  private class Success[A] extends Producer.State[A] {
     def status = StatusCode.SUCCESS
 
     def step = Result(this, Nil)

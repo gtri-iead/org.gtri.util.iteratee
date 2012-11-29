@@ -11,7 +11,7 @@ import org.gtri.util.iteratee.api.Issue.ImpactCode
  * Time: 1:40 PM
  * To change this template use File | Settings | File Templates.
  */
-class Looper[A,B,C,E <: EnumeratorState[A,E], M <: MachineState[B,C,M]](val enumerator : E, val translator : TranslatorState[A,B], val machine : M, val issues : Traversable[Issue] = Traversable.empty, val overflow : Traversable[B] = Traversable.empty) {
+class Looper[A,B,C,E <: Enumerator.State[A,E], M <: Machine.State[B,C,M]](val enumerator : E, val translator : Translator.State[A,B], val machine : M, val issues : Traversable[Issue] = Traversable.empty, val overflow : Traversable[B] = Traversable.empty) {
   def loopOnce() : Looper[A,B,C,E,M] = {
     val eResult = enumerator.step()
     val tResult = translator(eResult.output)
