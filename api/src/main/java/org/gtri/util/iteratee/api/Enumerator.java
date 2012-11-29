@@ -44,7 +44,7 @@ public interface Enumerator<O,E> {
    * @param <O> the output type
    * @param <E> the most derived type of the Enumerator
      */  
-    public interface Result<O,E> {
+    public static interface Result<O,E> {
       /**
        * Get the next immutable state of the Enumerator
        * @return the next immutable state of the Enumerator

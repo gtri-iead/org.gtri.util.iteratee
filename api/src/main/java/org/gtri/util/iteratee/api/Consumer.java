@@ -37,7 +37,7 @@ public interface Consumer<A> extends Machine<A,Unit,Consumer.State<A>> {
    *
    * @author Lance
    */
-  public interface State<A> extends Machine.State<A,Unit,Consumer.State<A>> {
+  public static interface State<A> extends Machine.State<A,Unit,Consumer.State<A>> {
   }
   /**
    * An interface for a plan to stream input from a producer to a consumer

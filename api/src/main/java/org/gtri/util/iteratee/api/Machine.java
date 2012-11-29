@@ -71,7 +71,7 @@ public interface Machine<I,O,M extends Machine.State<I,O,M>> {
      * @param <O> the output type
      * @param <M> the most derived type of the Machine
      */  
-    public interface Result<I,O,M> {
+    public static interface Result<I,O,M> {
       /**
        * Get the next immutable state of the Machine
        * @return the next immutable state of the Machine
