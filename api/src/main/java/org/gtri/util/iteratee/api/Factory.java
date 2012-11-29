@@ -23,15 +23,14 @@
 package org.gtri.util.iteratee.api;
 
 import scala.Function1;
-import scala.Option;
 
 /**
  * An interface for a factory that can create implementations of various 
  * interfaces in the iteratee library.
  * 
- * @author Lance
+ * @author lance.gatlin@gmail.com
  */
-public interface IterateeFactory {
+public interface Factory {
   /**
    * Get the issue handling strategy for this factory.
    * @return the issue handling strategy for this factory
@@ -45,30 +44,43 @@ public interface IterateeFactory {
    */
   Planner createPlanner();
   /**
-   * Create a producer from an enumeratee.
+   * Create a producer from a producer state.
    * 
    * @param <A> the output type
-   * @param enumeratee an enumeratee
-   * @return a producer whose enumeratee method will return the passed 
-   * enumeratee
+   * @param state state of some producer
+   * @return a producer whose initialState method will return the provided
+   * state
    */
-  <A> Producer<A> createProducer(Enumeratee<A> enumeratee);
+  <A> Producer<A> createProducer(ProducerState<A> state);
   /**
-   * Create a consumer from an iteratee
+   * Create a producer from a consumer state.
    * @param <A> the input type
    * @param <S> the state type
-   * @param iteratee an iteratee
-   * @return a consumer whose iteratee method will return the passed iteratee
+   * @param state state of some consumer
+   * @return a consumer whose initialState method will return the provided
+   * state
    */
-  <A,S> Consumer<A,S> createConsumer(Iteratee<A,S> iteratee);
+  <A> Consumer<A> createConsumer(ConsumerState<A> state);
+  
+  /**
+   * Create an iteratee from an iteratee state.
+   * @param <A> the input type
+   * @param <S> the loop state type
+   * @param state state of some iteratee
+   * @return an iteratee whose initialState method will return the provided
+   * state
+   */
+  <A,S> Iteratee<A,S> createIteratee(IterateeState<A,S> state);
+  
   /**
    * Create a builder from a builder iteratee
    * @param <A> the input type
    * @param <V> the value type
-   * @param iteratee a builder iteratee
-   * @return a builder whose iteratee method will return the passed iteratee
+   * @param state state of some builder
+   * @return a builder whose initialState method will return the provided
+   * state
    */
-  <A,V> Builder<A,V> createBuilder(Iteratee<A,Option<V>> iteratee);
+  <A,V> Builder<A,V> createBuilder(BuilderState<A,V> state);
   /**
    * Create a simple stateless translator from a function
    * @param <A> the input type

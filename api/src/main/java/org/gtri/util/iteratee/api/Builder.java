@@ -27,16 +27,13 @@ import scala.collection.immutable.Traversable;
 
 /**
  *
- * @author Lance
+ * @author lance.gatlin@gmail.com
  */
-public interface Builder<A,V> {
-//  public static interface State<V> {
-//    Option<V> value();
-//  }
+public interface Builder<A,V> extends Machine<A, Option<V>, BuilderState<A,V>> {
   /**
    * An interface for a plan to stream input from a producer to a consumer
    * 
-   * @author Lance
+   * @author lance.gatlin@gmail.com
    */
   public static interface Plan<A,B,V> {
     /**
@@ -88,6 +85,11 @@ public interface Builder<A,V> {
      */
     Builder<B,V> builder();
   }
-    
-  Iteratee<A,Option<V>> iteratee();
+   
+  /**
+   * Get the initial state of the builder
+   * @return the initial state of the builder
+   */
+  @Override
+  BuilderState<A,V> initialState();
 }

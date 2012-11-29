@@ -23,8 +23,10 @@
 package org.gtri.util.iteratee.impl.translate
 
 import scala.collection.immutable.Traversable
-import org.gtri.util.iteratee.api.{StatusCode, Issue, Translatee}
-import org.gtri.util.iteratee.impl.Translatees._
+import org.gtri.util.iteratee.api._
+import org.gtri.util.iteratee.impl.TranslatorStates._
+import org.gtri.util.iteratee.impl.TranslatorStates.Result
+import org.gtri.util.iteratee.impl.TranslatorStates
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,16 +35,19 @@ import org.gtri.util.iteratee.impl.Translatees._
  * Time: 6:16 AM
  * To change this template use File | Settings | File Templates.
  */
-class TranslateeF[A,B](f: A => B) extends Translatee[A,B]{
+class TranslatorF[A,B](f: A => B) extends Translator[A,B]{
 
-  def status() = StatusCode.CONTINUE
-
-  def apply(input: Traversable[A]) = {
-    val nextOutput = input.foldLeft(List[B]()) {
-      (list,item) => {
-         f(item) :: list
+  class Cont extends TranslatorStates.Cont[A,B] {
+    def apply(input: Traversable[A]) = {
+      val nextOutput = input.foldLeft(List[B]()) {
+        (list,item) => {
+           f(item) :: list
+        }
       }
+      Result(this, nextOutput, Nil)
     }
-    Result(this, nextOutput, Nil)
+    def endOfInput = Result(Success())
   }
+
+  def initialState() = new Cont
 }

@@ -26,7 +26,7 @@ package org.gtri.util.iteratee.api;
  * A code that identifies the strategy to be used when handling issues as they 
  * occur.
  * 
- * @author Lance
+ * @author lance.gatlin@gmail.com
  */
 public enum IssueHandlingCode {
   /**

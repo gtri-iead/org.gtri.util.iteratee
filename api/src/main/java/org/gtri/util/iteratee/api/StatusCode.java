@@ -24,7 +24,7 @@ package org.gtri.util.iteratee.api;
 
 /**
  *
- * @author Lance
+ * @author lance.gatlin@gmail.com
  */
 public enum StatusCode {
   CONTINUE,

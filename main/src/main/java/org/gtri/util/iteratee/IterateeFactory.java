@@ -23,22 +23,23 @@
 package org.gtri.util.iteratee;
 
 import org.gtri.util.iteratee.api.Builder;
+import org.gtri.util.iteratee.api.BuilderState;
 import org.gtri.util.iteratee.api.Consumer;
-import org.gtri.util.iteratee.api.Enumeratee;
+import org.gtri.util.iteratee.api.ConsumerState;
 import org.gtri.util.iteratee.api.IssueHandlingCode;
 import org.gtri.util.iteratee.api.Iteratee;
+import org.gtri.util.iteratee.api.IterateeState;
 import org.gtri.util.iteratee.api.Planner;
 import org.gtri.util.iteratee.api.Producer;
-import org.gtri.util.iteratee.api.Translatee;
+import org.gtri.util.iteratee.api.ProducerState;
 import org.gtri.util.iteratee.api.Translator;
 import scala.Function1;
-import scala.Option;
 
 /**
  *
- * @author Lance
+ * @author lance.gatlin@gmail.com
  */
-public class IterateeFactory implements org.gtri.util.iteratee.api.IterateeFactory {
+public class IterateeFactory implements org.gtri.util.iteratee.api.Factory {
   
   private final IssueHandlingCode issueHandlingCode;
   
@@ -60,51 +61,60 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.IterateeFacto
   }
 
   @Override
-  public <A> Producer<A> createProducer(final Enumeratee<A> e) {
+  public <A> Producer<A> createProducer(final ProducerState<A> p) {
     return new Producer<A>() {
 
       @Override
-      public Enumeratee<A> enumeratee() {
-        return e;
+      public ProducerState<A> initialState() {
+        return p;
       }
+
       
     };
   }
 
   @Override
-  public <A, S> Consumer<A, S> createConsumer(final Iteratee<A, S> i) {
-    return new Consumer<A,S>() {
+  public <A> Consumer<A> createConsumer(final ConsumerState<A> c) {
+    return new Consumer<A>() {
 
       @Override
-      public Iteratee<A, S> iteratee() {
-        return i;
+      public ConsumerState<A> initialState() {
+        return c;
       }
+
       
     };
   }
 
   @Override
-  public <A, V> Builder<A, V> createBuilder(final Iteratee<A, Option<V>> i) {
+  public <A,S> Iteratee<A,S> createIteratee(final IterateeState<A,S> i) {
+    return new Iteratee<A,S>() {
+
+      @Override
+      public IterateeState<A,S> initialState() {
+        return i;
+      }
+
+      
+    };
+  }
+  
+  @Override
+  public <A, V> Builder<A, V> createBuilder(final BuilderState<A,V> b) {
     return new Builder<A,V>() {
 
       @Override
-      public Iteratee<A, Option<V>> iteratee() {
-        return i;
+      public BuilderState<A, V> initialState() {
+        return b;
       }
+
     
     };
   }
 
   @Override
   public <A, B> Translator<A, B> createTranslator(final Function1<A, B> f) {
-    return new Translator<A,B>() {
-
-      @Override
-      public Translatee<A, B> translatee() {
-        return new org.gtri.util.iteratee.impl.translate.TranslateeF(f);
-      }
-      
-    };
+    return new org.gtri.util.iteratee.impl.translate.TranslatorF<A,B>(f);
   }
   
 }

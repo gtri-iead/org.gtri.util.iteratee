@@ -37,5 +37,5 @@ import org.gtri.util.iteratee.impl.util.StreamEnumeratee
 */
 class TestProducer[A](iterable : java.lang.Iterable[A], chunkSize : java.lang.Integer) extends Producer[A] {
 
-  def enumeratee() = StreamEnumeratee(iterable.iterator.toStream,chunkSize)
+  def initialState = StreamEnumeratee(iterable.iterator.toStream,chunkSize)
 }

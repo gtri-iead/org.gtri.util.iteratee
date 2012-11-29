@@ -23,8 +23,9 @@
 package org.gtri.util.iteratee.impl.translate
 
 import scala.collection.immutable.Traversable
-import org.gtri.util.iteratee.api.{StatusCode, Issue, Translatee, Translator}
-import org.gtri.util.iteratee.impl.Translatees._
+import org.gtri.util.iteratee.api.{StatusCode, Issue, TranslatorState, Translator}
+import org.gtri.util.iteratee.impl.TranslatorStates._
+import org.gtri.util.iteratee.impl.TranslatorStates
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,63 +34,65 @@ import org.gtri.util.iteratee.impl.Translatees._
  * Time: 1:32 AM
  * To change this template use File | Settings | File Templates.
  */
-case class TranslateeTuple2[A,B,C](
-  t1 : Translatee[A,B],
-  t2 : Translatee[B,C]
-) extends Translatee[A,C] {
-
-  def status = StatusCode.CONTINUE
+case class TranslatorStateTuple2[A,B,C](
+  t1 : TranslatorState[A,B],
+  t2 : TranslatorState[B,C]
+) extends TranslatorStates.Cont[A,C] {
 
   def apply(input: Traversable[A]) = {
     val resultT1 = t1.apply(input)
     val resultT2 = t2.apply(resultT1.output)
-    Result(TranslateeTuple2(resultT1.next, resultT2.next), resultT2.output, resultT1.issues ++ resultT2.issues)
+    Result(TranslatorStateTuple2(resultT1.next, resultT2.next), resultT2.output, resultT1.overflow, resultT1.issues ++ resultT2.issues)
   }
+
+  def endOfInput() = Result(Success())
 }
+
 case class TranslatorTuple2[A,B,C](
   t1 : Translator[A,B],
   t2 : Translator[B,C]
   ) extends Translator[A,C] {
-  def translatee = TranslateeTuple2(t1.translatee, t2.translatee)
+  def initialState = TranslatorStateTuple2(t1.initialState, t2.initialState)
 }
 
-case class TranslateeTuple3[A,B,C,D](
-  t1 : Translatee[A,B],
-  t2 : Translatee[B,C],
-  t3 : Translatee[C,D]
-) extends Translatee[A,D] {
-  def status = StatusCode.CONTINUE
-
+case class TranslatorStateTuple3[A,B,C,D](
+  t1 : TranslatorState[A,B],
+  t2 : TranslatorState[B,C],
+  t3 : TranslatorState[C,D]
+) extends TranslatorStates.Cont[A,D] {
   def apply(input: Traversable[A]) = {
     val resultT1 = t1.apply(input)
     val resultT2 = t2.apply(resultT1.output)
     val resultT3 = t3.apply(resultT2.output)
-    Result(TranslateeTuple3(resultT1.next, resultT2.next, resultT3.next), resultT3.output, resultT1.issues ++ resultT2.issues ++ resultT3.issues)
+    Result(TranslatorStateTuple3(resultT1.next, resultT2.next, resultT3.next), resultT3.output, resultT1.overflow, resultT1.issues ++ resultT2.issues ++ resultT3.issues)
   }
+
+  def endOfInput() = Result(Success())
 }
 case class TranslatorTuple3[A,B,C,D](
   t1 : Translator[A,B],
   t2 : Translator[B,C],
   t3 : Translator[C,D]
 ) extends Translator[A,D] {
-  def translatee = TranslateeTuple3(t1.translatee, t2.translatee, t3.translatee)
+  def initialState = TranslatorStateTuple3(t1.initialState, t2.initialState, t3.initialState)
 }
 
-case class TranslateeTuple4[A,B,C,D,E](
-  t1 : Translatee[A,B],
-  t2 : Translatee[B,C],
-  t3 : Translatee[C,D],
-  t4 : Translatee[D,E]
-) extends Translatee[A,E] {
-  def status = StatusCode.CONTINUE
+case class TranslatorStateTuple4[A,B,C,D,E](
+  t1 : TranslatorState[A,B],
+  t2 : TranslatorState[B,C],
+  t3 : TranslatorState[C,D],
+  t4 : TranslatorState[D,E]
+) extends TranslatorStates.Cont[A,E] {
 
   def apply(input: Traversable[A]) = {
     val resultT1 = t1.apply(input)
     val resultT2 = t2.apply(resultT1.output)
     val resultT3 = t3.apply(resultT2.output)
     val resultT4 = t4.apply(resultT3.output)
-    Result(TranslateeTuple4(resultT1.next, resultT2.next, resultT3.next, resultT4.next), resultT4.output, resultT1.issues ++ resultT2.issues ++ resultT3.issues ++ resultT4.issues)
+    Result(TranslatorStateTuple4(resultT1.next, resultT2.next, resultT3.next, resultT4.next), resultT4.output, resultT1.overflow, resultT1.issues ++ resultT2.issues ++ resultT3.issues ++ resultT4.issues)
   }
+
+  def endOfInput() = Result(Success())
 }
 case class TranslatorTuple4[A,B,C,D,E](
   t1 : Translator[A,B],
@@ -97,26 +100,26 @@ case class TranslatorTuple4[A,B,C,D,E](
   t3 : Translator[C,D],
   t4 : Translator[D,E]
 ) extends Translator[A,E] {
-  def translatee = TranslateeTuple4(t1.translatee, t2.translatee, t3.translatee, t4.translatee)
+  def initialState = TranslatorStateTuple4(t1.initialState, t2.initialState, t3.initialState, t4.initialState)
 }
 
-case class TranslateeTuple5[A,B,C,D,E,F](
-  t1 : Translatee[A,B],
-  t2 : Translatee[B,C],
-  t3 : Translatee[C,D],
-  t4 : Translatee[D,E],
-  t5 : Translatee[E,F]
-) extends Translatee[A,F] {
-  def status = StatusCode.CONTINUE
-
+case class TranslatorStateTuple5[A,B,C,D,E,F](
+  t1 : TranslatorState[A,B],
+  t2 : TranslatorState[B,C],
+  t3 : TranslatorState[C,D],
+  t4 : TranslatorState[D,E],
+  t5 : TranslatorState[E,F]
+) extends TranslatorStates.Cont[A,F] {
   def apply(input: Traversable[A]) = {
     val resultT1 = t1.apply(input)
     val resultT2 = t2.apply(resultT1.output)
     val resultT3 = t3.apply(resultT2.output)
     val resultT4 = t4.apply(resultT3.output)
     val resultT5 = t5.apply(resultT4.output)
-    Result(TranslateeTuple5(resultT1.next, resultT2.next, resultT3.next, resultT4.next, resultT5.next), resultT5.output, resultT1.issues ++ resultT2.issues ++ resultT3.issues ++ resultT4.issues ++ resultT5.issues)
+    Result(TranslatorStateTuple5(resultT1.next, resultT2.next, resultT3.next, resultT4.next, resultT5.next), resultT5.output, resultT1.overflow, resultT1.issues ++ resultT2.issues ++ resultT3.issues ++ resultT4.issues ++ resultT5.issues)
   }
+
+  def endOfInput() = Result(Success())
 }
 case class TranslatorTuple5[A,B,C,D,E,F](
   t1 : Translator[A,B],
@@ -125,5 +128,5 @@ case class TranslatorTuple5[A,B,C,D,E,F](
   t4 : Translator[D,E],
   t5 : Translator[E,F]
 ) extends Translator[A,F] {
-  def translatee = TranslateeTuple5(t1.translatee, t2.translatee, t3.translatee, t4.translatee, t5.translatee)
+  def initialState = TranslatorStateTuple5(t1.initialState, t2.initialState, t3.initialState, t4.initialState, t5.initialState)
 }

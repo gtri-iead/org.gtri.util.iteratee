@@ -26,7 +26,7 @@ package org.gtri.util.iteratee.api;
  * An interface for a translator which translates input of one type into output 
  * of another type.
  * 
- * @author Lance
+ * @author lance.gatlin@gmail.com
  */
 public interface Translator<A, B>  {
   /**
@@ -34,5 +34,5 @@ public interface Translator<A, B>  {
    * 
    * @return the initial state of the translator.
    */
-  Translatee<A,B> translatee();
+  TranslatorState<A,B> initialState();
 }

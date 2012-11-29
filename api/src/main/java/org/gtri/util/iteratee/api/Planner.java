@@ -26,7 +26,7 @@ package org.gtri.util.iteratee.api;
  * An interface that it used to plan streaming operations on Producer, 
  * Consumer and Translator objects.
  * 
- * @author Lance
+ * @author lance.gatlin@gmail.com
  */
 public interface Planner {
   
@@ -34,17 +34,17 @@ public interface Planner {
    * Get the factory that was used to create this planner. 
    * @return the factory that was used to create this planner. 
    */
-  IterateeFactory factory();
+  Factory factory();
   
   /**
-   * Create a plan to stream items from a producer and a consumer.
+   * Create a plan to stream items from a producer to a consumer.
    * 
    * @param <A> the item type
    * @param producer 
    * @param consumer
    * @return a plan that can be run to obtain results
    */
-  <A,S> Consumer.Plan<A,A,S> connect(Producer<A> producer, Consumer<A,S> consumer);
+  <A> Consumer.Plan<A,A> connect(Producer<A> producer, Consumer<A> consumer);
   
   /**
    * Create a plan to stream items from a producer to a consumer by translating
@@ -57,7 +57,30 @@ public interface Planner {
    * @param consumer
    * @return a plan that can be run to obtain results
    */
-  <A,B,S> Consumer.Plan<A,B,S> connect(Producer<A> producer, Translator<A,B> translator, Consumer<B,S> consumer);
+  <A,B> Consumer.Plan<A,B> connect(Producer<A> producer, Translator<A,B> translator, Consumer<B> consumer);
+  
+  /**
+   * Create a plan to stream items from a producer to an iteratee.
+   * 
+   * @param <A> the item type
+   * @param producer 
+   * @param iteratee
+   * @return a plan that can be run to obtain results
+   */
+  <A,S> Iteratee.Plan<A,A,S> connect(Producer<A> producer, Iteratee<A,S> iteratee);
+  
+  /**
+   * Create a plan to stream items from a producer to an iteratee by translating
+   * the items using the given translator.
+   * 
+   * @param <A> the producer output type
+   * @param <B> the iteratee input type
+   * @param producer 
+   * @param translator
+   * @param iteratee
+   * @return a plan that can be run to obtain results
+   */
+  <A,B,S> Iteratee.Plan<A,B,S> connect(Producer<A> producer, Translator<A,B> translator, Iteratee<B,S> iteratee);
   
   /**
    * Create a plan to stream items from a producer to a builder.

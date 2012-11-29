@@ -25,18 +25,19 @@ package org.gtri.util.iteratee.api;
 import scala.collection.immutable.Traversable;
 
 /**
- * An interface for a consumer of the output of a producer.
- * @param <A> The type
- * @param <S>
- * @author Lance
+ * An interface for a consumer of the output of a producer that causes 
+ * side-effects
+ * 
+ * @param <A> the input type
+ * @author lance.gatlin@gmail.com
  */
-public interface Consumer<A,S> {
+public interface Consumer<A> {
   /**
    * An interface for a plan to stream input from a producer to a consumer
    * 
-   * @author Lance
+   * @author lance.gatlin@gmail.com
    */
-  public static interface Plan<A,B,S> {
+  public static interface Plan<A,B> {
     /**
      * Get the producer for the plan
      *
@@ -49,29 +50,27 @@ public interface Consumer<A,S> {
      *
      * @return a consumer for the plan
      */
-    Consumer<B,S> consumer();
+    Consumer<B> consumer();
     /**
      * Run the plan to get results
      * 
      * @return results
      */
-    Result<A,B,S> run();
+    Result<A,B> run();
   }
   
   /**
-   * An Interface
-   * @param <A>
-   * @param <B>
-   * @param <S> 
+   * An interface for the immutable result of running a plan
+   * @param <A> the input type
+   * @param <B> the output type
    */
-  public static interface Result<A,B,S> {
+  public static interface Result<A,B> {
     StatusCode status();
 
     Traversable<Issue> issues();
 
     Traversable<B> overflow();
     
-    S state();
     /**
      * Get the producer after processing
      *
@@ -84,14 +83,12 @@ public interface Consumer<A,S> {
      *
      * @return the builder after processing
      */
-    Consumer<B,S> consumer();
+    Consumer<B> consumer();
     
   }
   /**
-   * The results of running a plan
-   *
-   * @param <A> the input/output type
+   * Get the initial state of the consumer
+   * @return the initial state of the consumer
    */
-  
-  Iteratee<A,S> iteratee();
+  ConsumerState<A> initialState();
 }

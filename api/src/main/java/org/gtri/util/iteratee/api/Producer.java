@@ -23,14 +23,15 @@
 package org.gtri.util.iteratee.api;
 
 /**
- * An interface for a producer (enumerator) of output items.
- * @param <A> the item type
- * @author Lance
+ * An interface for a producer of output items.
+ * @param <A> the output type
+ * @author lance.gatlin@gmail.com
  */
-public interface Producer<A> {
+public interface Producer<A> extends Enumerator<A,ProducerState<A>> {
   /**
-   * Get an initial enumeratee (producer/enumerator state) for the producer
-   * @return an initial enumeratee (producer/enumerator state) for the producer
+   * Get the initial state of the producer
+   * @return the initial state of the producer
    */
-  Enumeratee<A> enumeratee();
+  @Override
+  ProducerState<A> initialState();
 }

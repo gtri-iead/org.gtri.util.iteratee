@@ -24,7 +24,8 @@ package org.gtri.util.iteratee.impl.test
 
 import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.Iteratees._
+import org.gtri.util.iteratee.impl.BuilderStates._
+import org.gtri.util.iteratee.impl.BuilderStates
 
 /**
 * Created with IntelliJ IDEA.
@@ -34,14 +35,17 @@ import org.gtri.util.iteratee.impl.Iteratees._
 * To change this template use File | Settings | File Templates.
 */
 class TestStringBuilder extends Builder[String, String] {
-  case class Cont(acc : String) extends IterV.Cont[String, String] {
+  case class Cont(acc : String) extends BuilderStates.Cont[String, String] {
 
     def apply(items: Traversable[String]) = {
       println("received=" + items)
       Result(Cont(items.fold(acc) { _ + _ }))
     }
 
-    def endOfInput() = Result(IterV.Success(Some(acc)))
+    def endOfInput() = {
+      println("eoi=" + Some(acc))
+      Result(Success(Some(acc)))
+    }
   }
-  def iteratee = Cont("")
+  def initialState = Cont("")
 }

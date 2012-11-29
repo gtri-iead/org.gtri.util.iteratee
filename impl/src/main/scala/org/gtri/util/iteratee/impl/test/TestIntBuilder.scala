@@ -24,7 +24,8 @@ package org.gtri.util.iteratee.impl.test
 
 import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.Iteratees._
+import org.gtri.util.iteratee.impl.BuilderStates._
+import org.gtri.util.iteratee.impl.BuilderStates
 
 
 /**
@@ -36,12 +37,12 @@ import org.gtri.util.iteratee.impl.Iteratees._
  */
 class TestIntegerBuilder extends Builder[Int, Int] {
 
-  case class Cont(acc: Int) extends IterV.Cont[Int, Int] {
+  case class Cont(acc: Int) extends BuilderStates.Cont[Int, Int] {
 
     def apply(items: Traversable[Int]) = Result(Cont(items.fold(acc) { _ + _ }))
 
-    def endOfInput() = Result(IterV.Success(Some(acc)))
+    def endOfInput() = Result(Success(Some(acc)))
   }
 
-  def iteratee = Cont(0)
+  def initialState = Cont(0)
 }

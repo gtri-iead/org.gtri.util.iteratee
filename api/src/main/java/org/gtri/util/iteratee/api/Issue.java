@@ -26,7 +26,7 @@ package org.gtri.util.iteratee.api;
  * An interface for an error, warning or informative message that occurred 
  * during processing.
  * 
- * @author Lance
+ * @author lance.gatlin@gmail.com
  */
 public interface Issue {
   /**

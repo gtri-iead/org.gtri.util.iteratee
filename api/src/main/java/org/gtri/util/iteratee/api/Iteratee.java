@@ -25,82 +25,78 @@ package org.gtri.util.iteratee.api;
 import scala.collection.immutable.Traversable;
 
 /**
- * An interface that represents the immutable state of a loop. An Iteratee is 
- * advanced to the next state by calling the apply method with a buffer of 
- * input. The apply method returns an immutable result object that contains a 
- * list of issues that occurred during processing, any input that was not used 
- * by the Iteratee and the next immutable Iteratee. The Iteratee's state method 
- * may be called to retrieve the state of the loop after each application of 
- * input. An Iteratee signals completion (or the presence of errors) by way of 
- * the status method. Further calls to the apply method after an Iteratee's 
- * status method has indicated completion are a noop and will result in all 
- * applied input being returned as overflow in the result. Additionally, once 
- * all input has been applied to an Iteratee, the endOfInput method should be 
- * called to signal to the Iteratee to move to a completion status (either 
- * SUCCESS or FATAL_ERROR).
- * 
- * Note1: Iteratee implementations should not throw exceptions. Instead,
- * exceptions should be returned as issues in the result and the 
- * status of the next Iteratee set to FATAL_ERROR (should processing stop) or 
- * RECOVERABLE_ERROR (if processing may continue).
- * 
- * @author Lance
+ * An interface for a consumer of the output of a producer.
+ * @param <A> the input type
+ * @param <S> the state type
+ * @author lance.gatlin@gmail.com
  */
-public interface Iteratee<A,S> {
+public interface Iteratee<A,S> extends Machine<A,S, IterateeState<A,S>> {
   /**
-   * Get the status of the iteratee
-   * @return status of the iteratee
-   */
-  StatusCode status();
-
-  /**
-   * Get the immutable state of the iteratee
-   * @return the immutable state of the iteratee
-   */
-  S state();
-  
-  /**
-   * The immutable result of applying input to an iteratee
+   * An interface for a plan to stream input from a producer to a consumer
    * 
-   * @param <A> the output type
-   * @param <S> the state type
+   * @author lance.gatlin@gmail.com
    */
-  public interface Result<A,S> {
+  public static interface Plan<A,B,S> {
     /**
-     * Get the next iteratee
-     * @return the next iteratee
+     * Get the producer for the plan
+     *
+     * @return a producer for the plan
      */
-    Iteratee<A,S> next();
+    Producer<A> producer();
+
     /**
-     * Get the issues that occurred during processing this result
-     * @return the issues that occurred during processing this result
+     * Get the consumer for the plan
+     *
+     * @return a consumer for the plan
      */
-    Traversable<Issue> issues();
+    Iteratee<B,S> iteratee();
     /**
-     * Get any remaining input that was not used. Only occurs if iteratee
-     * completes on part of the applied input.
-     * @return any remaining input that was not used
+     * Run the plan to get the final loop state
+     * 
+     * @return results
      */
-    Traversable<A> overflow();
+    Result<A,B,S> run();
+//    /**
+//     * Step the plan to get the next loop state
+//     * 
+//     * @return results
+//     */
+//    Result<A,B,S> step();
   }
   
   /**
-   * Apply input to the iteratee and return an immutable result object that 
-   * contains a list of issues that occurred during processing, 
-   * any input that was not used and the next immutable iteratee
-   * @param input a buffer of input items
-   * @return an immutable result object that contains a list of issues that 
-   * occurred during processing, any input that was not used and the next 
-   * immutable iteratee
+   * An interface for the immutable result of running a plan
+   * @param <A> the input type
+   * @param <B> the output type
+   * @param <S> the state type
    */
-  Result<A,S> apply(Traversable<A> input);
+  public static interface Result<A,B,S> {
+    StatusCode status();
+
+    Traversable<Issue> issues();
+
+    Traversable<B> overflow();
+    
+    S loopState();
+    /**
+     * Get the producer after processing
+     *
+     * @return the producer after processing
+     */
+    Producer<A> producer();
+
+    /**
+     * Get the builder after processing
+     *
+     * @return the builder after processing
+     */
+    Iteratee<B,S> iteratee();
+    
+  }
   /**
-   * Signal to the iteratee that no further input will occur. Implementations
-   * should ensure that the status of the next Iteratee is SUCCESS or 
-   * FATAL_ERROR.
-   * @return an immutable result object that contains the next immutable 
-   * iteratee and a list of issues that occurred during processing and any 
-   * cached input from previous applications that was not used
+   * Get the initial state of the consumer
+   * @return the initial state of the consumer
    */
-  Result<A,S> endOfInput();
+  @Override
+  IterateeState<A,S> initialState();
 }

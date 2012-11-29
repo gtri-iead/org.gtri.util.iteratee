@@ -28,6 +28,7 @@ import org.gtri.util.iteratee.api.*;
 import org.gtri.util.iteratee.api.Consumer;
 import org.gtri.util.iteratee.impl.test.TestIntToStringTranslator;
 import org.gtri.util.iteratee.impl.test.TestProducer;
+import org.gtri.util.iteratee.impl.test.TestIntIteratee;
 import org.gtri.util.iteratee.impl.test.TestStringBuilder;
 import org.gtri.util.iteratee.impl.test.TestStringConsumer;
 import org.junit.After;
@@ -37,12 +38,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.gtri.util.iteratee.IterateeFactory;
-import scala.Unit;
-import scala.runtime.BoxedUnit;
 
 /**
  *
- * @author Lance
+ * @author lance.gatlin@gmail.com
  */
 public class IterateeApiTests {
   List<Integer> integers = new ArrayList<Integer>();
@@ -93,9 +92,9 @@ public class IterateeApiTests {
     TestStringConsumer stringConsumer = new TestStringConsumer(output);
     
     System.out.println("Connecting TestIntegerProducer to TestStringConsumer...");
-    Consumer.Plan<Integer,String,BoxedUnit> plan = planner.connect(integerProducer, intToString, stringConsumer);
+    Consumer.Plan<Integer,String> plan = planner.connect(integerProducer, intToString, stringConsumer);
     System.out.println("Running plan...");
-    Consumer.Result<Integer,String,BoxedUnit> result = plan.run();
+    Consumer.Result<Integer,String> result = plan.run();
         
     System.out.print("Successful? ");
     assertTrue(result.status().isSuccess());
@@ -123,9 +122,9 @@ public class IterateeApiTests {
     TestStringConsumer stringConsumer = new TestStringConsumer(output);
     
     System.out.println("Connecting TestStringProducer to TestStringConsumer...");
-    Consumer.Plan<String, String, BoxedUnit> plan = planner.connect(stringProducer, stringConsumer);
+    Consumer.Plan<String, String> plan = planner.connect(stringProducer, stringConsumer);
     System.out.println("Running plan...");
-    Consumer.Result<String, String, BoxedUnit> result = plan.run();
+    Consumer.Result<String, String> result = plan.run();
     
     System.out.print("Successful? ");
     assertTrue(result.status().isSuccess());
@@ -166,6 +165,31 @@ public class IterateeApiTests {
     String actual = result.value().get();
     System.out.println("results=" + actual);
     assertEquals("def", actual);
+    System.out.println("Ok.");
+  }
+
+  @Test
+  public void testIteratee() {
+    System.out.println("===testIteratee===");
+    System.out.println("Creating TestIntProducer...");
+    TestProducer<Integer> integerProducer = new TestProducer(integers,1);
+    
+    System.out.println("Creating TestIntIteratee...");
+    TestIntIteratee testIntIteratee = new TestIntIteratee();
+    
+    System.out.println("Connecting TestIntegerProducer to TestIntIteratee...");
+    Iteratee.Plan<Integer,Integer,Integer> plan = planner.connect(integerProducer, testIntIteratee);
+    System.out.println("Running plan...");
+    Iteratee.Result<Integer,Integer,Integer> result = plan.run();
+        
+    System.out.print("Successful? ");
+    assertTrue(result.status().isSuccess());
+    System.out.println("Ok.");
+    
+    System.out.println("Testing output... ");
+    Integer actual = result.loopState();
+    System.out.println("results=" + actual);
+    assertEquals(6, actual.intValue());
     System.out.println("Ok.");
   }
 }

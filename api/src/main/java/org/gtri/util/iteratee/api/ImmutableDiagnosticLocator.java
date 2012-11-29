@@ -28,7 +28,7 @@ package org.gtri.util.iteratee.api;
  * the source of any issues within the input supplied, such as the XML file
  * name and line number or the database name, table and record, etc.
  *
- * @author Lance
+ * @author lance.gatlin@gmail.com
  */
 public interface ImmutableDiagnosticLocator {
 
