@@ -24,8 +24,8 @@ package org.gtri.util.iteratee.impl.test
 
 import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.TranslatorStates._
-import org.gtri.util.iteratee.impl.TranslatorStates
+import org.gtri.util.iteratee.impl.Translators._
+import org.gtri.util.iteratee.impl.Translators
 
 /**
 * Created with IntelliJ IDEA.
@@ -35,7 +35,7 @@ import org.gtri.util.iteratee.impl.TranslatorStates
 * To change this template use File | Settings | File Templates.
 */
 class TestIntToStringTranslator extends Translator[java.lang.Integer, String] {
-  class Cont extends TranslatorStates.Cont[java.lang.Integer,String]  {
+  class Cont extends Translators.Cont[java.lang.Integer,String]  {
 
     def apply(items: Traversable[java.lang.Integer]) = {
       println("translating=" + items)

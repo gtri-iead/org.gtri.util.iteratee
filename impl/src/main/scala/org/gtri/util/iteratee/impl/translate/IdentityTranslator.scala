@@ -2,8 +2,8 @@ package org.gtri.util.iteratee.impl.translate
 
 import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api.Translator
-import org.gtri.util.iteratee.impl.TranslatorStates._
-import org.gtri.util.iteratee.impl.TranslatorStates
+import org.gtri.util.iteratee.impl.Translators._
+import org.gtri.util.iteratee.impl.Translators
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,7 +14,7 @@ import org.gtri.util.iteratee.impl.TranslatorStates
  */
 class IdentityTranslator[A] extends Translator[A,A] {
 
-  class Cont extends TranslatorStates.Cont[A,A] {
+  class Cont extends Translators.Cont[A,A] {
     def apply(items: Traversable[A]) = Result(this, items, Nil)
 
     def endOfInput() = Result(Success())

@@ -24,8 +24,8 @@ package org.gtri.util.iteratee.impl.test
 
 import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.ConsumerStates._
-import org.gtri.util.iteratee.impl.ConsumerStates
+import org.gtri.util.iteratee.impl.Consumers._
+import org.gtri.util.iteratee.impl.Consumers
 
 /**
 * Created with IntelliJ IDEA.
@@ -35,7 +35,7 @@ import org.gtri.util.iteratee.impl.ConsumerStates
 * To change this template use File | Settings | File Templates.
 */
 class TestStringConsumer(list : java.util.List[String]) extends Consumer[String] {
-  case class Step() extends ConsumerStates.Cont[String] {
+  case class Step() extends Consumers.Cont[String] {
     def apply(items: Traversable[String]) = {
       println("received=" + items)
       for (item <- items) {

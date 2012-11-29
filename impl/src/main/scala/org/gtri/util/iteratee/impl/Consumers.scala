@@ -11,7 +11,7 @@ import scala.collection.immutable.Traversable
  * Time: 4:57 PM
  * To change this template use File | Settings | File Templates.
  */
-object ConsumerStates {
+object Consumers {
   case class Result[A](next : Consumer.State[A], overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends Machine.State.Result[A,Unit,Consumer.State[A]] {
     def output() {}
   }

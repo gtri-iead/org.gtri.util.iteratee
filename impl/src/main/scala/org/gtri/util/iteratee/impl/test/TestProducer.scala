@@ -26,7 +26,7 @@ import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api
 import api._
 import scala.collection.JavaConversions._
-import org.gtri.util.iteratee.impl.util.StreamEnumeratee
+import org.gtri.util.iteratee.impl.util.CollectionProducer
 
 /**
 * Created with IntelliJ IDEA.
@@ -37,5 +37,5 @@ import org.gtri.util.iteratee.impl.util.StreamEnumeratee
 */
 class TestProducer[A](iterable : java.lang.Iterable[A], chunkSize : java.lang.Integer) extends Producer[A] {
 
-  def initialState = StreamEnumeratee(iterable.iterator.toStream,chunkSize)
+  def initialState = new CollectionProducer(iterable.iterator.toStream,chunkSize).initialState
 }

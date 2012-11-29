@@ -24,8 +24,8 @@ package org.gtri.util.iteratee.impl.translate
 
 import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api.Translator
-import org.gtri.util.iteratee.impl.TranslatorStates._
-import org.gtri.util.iteratee.impl.TranslatorStates
+import org.gtri.util.iteratee.impl.Translators._
+import org.gtri.util.iteratee.impl.Translators
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,7 +37,7 @@ import org.gtri.util.iteratee.impl.TranslatorStates
 case class TranslatorStateTuple2[A,B,C](
   t1 : Translator.State[A,B],
   t2 : Translator.State[B,C]
-) extends TranslatorStates.Cont[A,C] {
+) extends Translators.Cont[A,C] {
 
   def apply(input: Traversable[A]) = {
     val resultT1 = t1.apply(input)
@@ -59,7 +59,7 @@ case class TranslatorStateTuple3[A,B,C,D](
   t1 : Translator.State[A,B],
   t2 : Translator.State[B,C],
   t3 : Translator.State[C,D]
-) extends TranslatorStates.Cont[A,D] {
+) extends Translators.Cont[A,D] {
   def apply(input: Traversable[A]) = {
     val resultT1 = t1.apply(input)
     val resultT2 = t2.apply(resultT1.output)
@@ -82,7 +82,7 @@ case class TranslatorStateTuple4[A,B,C,D,E](
   t2 : Translator.State[B,C],
   t3 : Translator.State[C,D],
   t4 : Translator.State[D,E]
-) extends TranslatorStates.Cont[A,E] {
+) extends Translators.Cont[A,E] {
 
   def apply(input: Traversable[A]) = {
     val resultT1 = t1.apply(input)
@@ -109,7 +109,7 @@ case class TranslatorStateTuple5[A,B,C,D,E,F](
   t3 : Translator.State[C,D],
   t4 : Translator.State[D,E],
   t5 : Translator.State[E,F]
-) extends TranslatorStates.Cont[A,F] {
+) extends Translators.Cont[A,F] {
   def apply(input: Traversable[A]) = {
     val resultT1 = t1.apply(input)
     val resultT2 = t2.apply(resultT1.output)

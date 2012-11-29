@@ -11,7 +11,7 @@ import scala.collection.immutable.Traversable
  * Time: 4:58 PM
  * To change this template use File | Settings | File Templates.
  */
-object BuilderStates {
+object Builders {
   case class Result[A,V](next : Builder.State[A,V], overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends Machine.State.Result[A,Option[V],Builder.State[A,V]] {
     def output = next.value
   }

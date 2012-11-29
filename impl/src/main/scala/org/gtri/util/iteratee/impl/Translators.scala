@@ -2,6 +2,7 @@ package org.gtri.util.iteratee.impl
 
 import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
+import translate.TranslatorF
 
 
 /**
@@ -11,7 +12,9 @@ import org.gtri.util.iteratee.api._
  * Time: 5:41 PM
  * To change this template use File | Settings | File Templates.
  */
-object TranslatorStates {
+object Translators {
+  def apply[A,B](f: A => B) = new TranslatorF(f)
+
   case class Result[A,B](next : Translator.State[A,B], output : Traversable[B] = Nil, overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends Machine.State.Result[A,Traversable[B], Translator.State[A,B]]
 
   abstract class Cont[A,B] extends Translator.State[A,B] {

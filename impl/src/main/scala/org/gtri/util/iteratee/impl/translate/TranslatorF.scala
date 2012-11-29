@@ -24,9 +24,9 @@ package org.gtri.util.iteratee.impl.translate
 
 import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.TranslatorStates._
-import org.gtri.util.iteratee.impl.TranslatorStates.Result
-import org.gtri.util.iteratee.impl.TranslatorStates
+import org.gtri.util.iteratee.impl.Translators._
+import org.gtri.util.iteratee.impl.Translators.Result
+import org.gtri.util.iteratee.impl.Translators
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,7 +37,7 @@ import org.gtri.util.iteratee.impl.TranslatorStates
  */
 class TranslatorF[A,B](f: A => B) extends Translator[A,B]{
 
-  class Cont extends TranslatorStates.Cont[A,B] {
+  class Cont extends Translators.Cont[A,B] {
     def apply(input: Traversable[A]) = {
       val nextOutput = input.foldLeft(List[B]()) {
         (list,item) => {
