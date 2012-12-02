@@ -12,39 +12,37 @@ import api._
 * To change this template use File | Settings | File Templates.
 */
 object Iteratees {
-  case class Result[A,S](next : Iteratee.State[A,S], overflow : Traversable[A] = Nil, issues : Traversable[Issue] = Nil) extends Machine.State.Result[A,S,Iteratee.State[A,S]] {
-    def output() = next.loopState
+  case class Result[I,O](next : Iteratee.State[I,O], output : Traversable[O] = Traversable.empty, overflow : Traversable[I] = Nil, issues : Traversable[Issue] = Nil) extends Iteratee.State.Result[I,O]
+
+  abstract class Cont[I,O] extends Iteratee.State[I,O] {
+    def status = Status.CONTINUE
   }
 
-  abstract class BaseCont[A,S](val loopState : S) extends Iteratee.State[A,S]
-
-  abstract class Cont[A,S](loopState : S) extends BaseCont[A,S](loopState) {
-    def status = StatusCode.CONTINUE
+  abstract class RecoverableError[I,O] extends Iteratee.State[I,O] {
+    def status = Status.RECOVERABLE_ERROR
   }
 
-  abstract class RecoverableError[A,S](loopState : S) extends BaseCont[A,S](loopState) {
-    def status = StatusCode.RECOVERABLE_ERROR
+  class Success[I,O] extends Iteratee.State[I,O] {
+    def status = Status.SUCCESS
+
+    def apply(items: Traversable[I]) = Result(this, Nil, items)
+
+    def endOfInput() = Result(this, Nil, Nil)
   }
 
-  abstract class BaseDone[A,S](val loopState : S) extends Iteratee.State[A,S] {
-    def endOfInput = Result(this)
-  }
-
-  class Success[A,S](loopState : S) extends BaseDone[A,S](loopState) {
-    def status = StatusCode.SUCCESS
-
-    def apply(items: Traversable[A]) = Result(this, items)
-  }
   object Success {
-    def apply[A,S](loopState : S) = new Success[A,S](loopState)
+    def apply[I,O]() = new Success[I,O]
   }
-  class FatalError[A,S](loopState : S) extends BaseDone[A,S](loopState) {
-    def status = StatusCode.FATAL_ERROR
 
-    def apply(items: Traversable[A]) = Result(this, items)
+  class FatalError[I,O] extends Iteratee.State[I,O] {
+    def status = Status.FATAL_ERROR
+
+    def apply(items: Traversable[I]) = Result(this, Nil, items)
+
+    def endOfInput() = Result(this, Nil, Nil)
   }
   object FatalError {
-    def apply[A,S](loopState : S) = new FatalError[A,S](loopState)
+    def apply[I,O]() = new FatalError[I,O]()
   }
 
 

@@ -22,20 +22,18 @@
 
 package org.gtri.util.iteratee;
 
-import org.gtri.util.iteratee.api.Builder;
-import org.gtri.util.iteratee.api.Consumer;
 import org.gtri.util.iteratee.api.IssueHandlingCode;
 import org.gtri.util.iteratee.api.Iteratee;
-import org.gtri.util.iteratee.api.Planner;
-import org.gtri.util.iteratee.api.Producer;
-import org.gtri.util.iteratee.api.Translator;
+import org.gtri.util.iteratee.api.Enumerator;
+import org.gtri.util.iteratee.api.Plan2;
+import org.gtri.util.iteratee.api.Plan3;
 import scala.Function1;
 
 /**
  *
  * @author lance.gatlin@gmail.com
  */
-public class IterateeFactory implements org.gtri.util.iteratee.api.Factory {
+public class IterateeFactory implements org.gtri.util.iteratee.api.IterateeFactory {
   
   private final IssueHandlingCode issueHandlingCode;
   
@@ -52,16 +50,11 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.Factory {
   }
 
   @Override
-  public Planner createPlanner() {
-    return new org.gtri.util.iteratee.impl.Planner(this);
-  }
-
-  @Override
-  public <A> Producer<A> createProducer(final Producer.State<A> p) {
-    return new Producer<A>() {
+  public <A> Enumerator<A> createEnumerator(final Enumerator.State<A> p) {
+    return new Enumerator<A>() {
 
       @Override
-      public Producer.State<A> initialState() {
+      public Enumerator.State<A> initialState() {
         return p;
       }
 
@@ -70,12 +63,12 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.Factory {
   }
 
   @Override
-  public <A> Consumer<A> createConsumer(final Consumer.State<A> c) {
-    return new Consumer<A>() {
+  public <I,O> Iteratee<I,O> createIteratee(final Iteratee.State<I,O> iteratee) {
+    return new Iteratee<I,O>() {
 
       @Override
-      public Consumer.State<A> initialState() {
-        return c;
+      public Iteratee.State<I,O> initialState() {
+        return iteratee;
       }
 
       
@@ -83,34 +76,39 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.Factory {
   }
 
   @Override
-  public <A,S> Iteratee<A,S> createIteratee(final Iteratee.State<A,S> i) {
-    return new Iteratee<A,S>() {
-
-      @Override
-      public Iteratee.State<A,S> initialState() {
-        return i;
-      }
-
-      
-    };
-  }
-  
-  @Override
-  public <A, V> Builder<A, V> createBuilder(final Builder.State<A,V> b) {
-    return new Builder<A,V>() {
-
-      @Override
-      public Builder.State<A, V> initialState() {
-        return b;
-      }
-
-    
-    };
+  public <A, B> Iteratee<A, B> createTranslator(final Function1<A, B> f) {
+    return new org.gtri.util.iteratee.impl.TranslatorF<A,B>(f);
   }
 
   @Override
-  public <A, B> Translator<A, B> createTranslator(final Function1<A, B> f) {
-    return new org.gtri.util.iteratee.impl.translate.TranslatorF<A,B>(f);
+  public <I, O> Plan2<I, O> createPlan(Enumerator<I> enumerator, Iteratee<I, O> iteratee) {
+    return new org.gtri.util.iteratee.impl.Plan2(this, enumerator, iteratee);
   }
+
+  @Override
+  public <I1, I2, O> Plan3<I1, I2, O> createPlan(Enumerator<I1> enumerator, Iteratee<I1, I2> translator, Iteratee<I2, O> iteratee) {
+    return new org.gtri.util.iteratee.impl.Plan3(this, enumerator, translator, iteratee);
+  }
+
+  @Override
+  public <A, B, C> Iteratee<A, C> compose(Iteratee<A, B> first, Iteratee<B, C> second) {
+    return new org.gtri.util.iteratee.impl.IterateeTuple2(first,second);
+  }
+
+  @Override
+  public <A, B, C, D> Iteratee<A, D> compose(Iteratee<A, B> first, Iteratee<B, C> second, Iteratee<C, D> third) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public <A, B, C, D, E> Iteratee<A, E> compose(Iteratee<A, B> first, Iteratee<B, C> second, Iteratee<C, D> third, Iteratee<D, E> fourth) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public <A, B, C, D, E, F> Iteratee<A, F> compose(Iteratee<A, B> first, Iteratee<B, C> second, Iteratee<C, D> third, Iteratee<D, E> fourth, Iteratee<E, F> fifth) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+ 
   
 }

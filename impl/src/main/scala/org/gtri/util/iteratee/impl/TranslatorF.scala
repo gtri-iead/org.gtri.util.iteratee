@@ -20,25 +20,32 @@
 
 */
 
-package org.gtri.util.iteratee.api;
+package org.gtri.util.iteratee.impl
+
+import scala.collection.immutable.Traversable
+import org.gtri.util.iteratee.api._
+import org.gtri.util.iteratee.impl.Iteratees._
 
 /**
- * An interface for a producer of output items.
- * @param <A> the output type
- * @author lance.gatlin@gmail.com
+ * Created with IntelliJ IDEA.
+ * User: Lance
+ * Date: 11/21/12
+ * Time: 6:16 AM
+ * To change this template use File | Settings | File Templates.
  */
-public interface Producer<A> extends Enumerator<A,Producer.State<A>> {
-  /**
-   * An interface that represents the immutable state of a producer
-   * 
-   * @author Lance
-   */
-  public static interface State<A> extends Enumerator.State<A, org.gtri.util.iteratee.api.Producer.State<A>> {
+class TranslatorF[A,B](f: A => B) extends Iteratee[A,B]{
+
+  class Cont extends Iteratees.Cont[A,B] {
+    def apply(input: Traversable[A]) = {
+      val nextOutput = input.foldLeft(List[B]()) {
+        (list,item) => {
+           f(item) :: list
+        }
+      }
+      Result(this, nextOutput, Nil)
+    }
+    def endOfInput = Result(Success())
   }
-  /**
-   * Get the initial state of the producer
-   * @return the initial state of the producer
-   */
-  @Override
-  Producer.State<A> initialState();
+
+  def initialState() = new Cont
 }

@@ -32,23 +32,6 @@ public enum StatusCode {
   RECOVERABLE_ERROR,
   FATAL_ERROR;
 
-  private final int completedItems;
-  private final int totalItems;
-  
-  StatusCode() {
-    completedItems = 0;
-    totalItems = 0;
-  }
-  
-  StatusCode(final int completedItems, final int totalItems) {
-    this.completedItems = completedItems;
-    this.totalItems = totalItems;
-  }
-  
-  public int completedItems() { return completedItems; }
-  
-  public int totalItems() { return totalItems; }
-  
   public boolean isDone() { 
     switch(this) {
       case RECOVERABLE_ERROR:
@@ -79,7 +62,16 @@ public enum StatusCode {
     }
     return true;    
   }
-  public static StatusCode And(StatusCode lhs, StatusCode rhs) {
+  
+  public static StatusCode and(StatusCode ... statusCodes) {
+    StatusCode current = StatusCode.CONTINUE;
+    for(StatusCode status : statusCodes) {
+      current = and(current, status);
+    }
+    return current;
+  }
+  
+  public static StatusCode and(StatusCode lhs, StatusCode rhs) {
     switch(lhs) {
       case CONTINUE :
         return rhs;
@@ -103,6 +95,46 @@ public enum StatusCode {
           case RECOVERABLE_ERROR:
             return RECOVERABLE_ERROR;
           case FATAL_ERROR :         
+            return FATAL_ERROR;
+        }
+      case FATAL_ERROR :
+    }
+    return FATAL_ERROR;
+  }
+
+  public static StatusCode or(StatusCode lhs, StatusCode rhs) {
+    switch(lhs) {
+      case CONTINUE :
+        switch(rhs) {
+          case CONTINUE :
+            return CONTINUE;
+          case SUCCESS :
+            return CONTINUE;
+          case RECOVERABLE_ERROR:
+            return RECOVERABLE_ERROR;
+          case FATAL_ERROR :
+            return FATAL_ERROR;
+        }
+      case SUCCESS :
+        switch(rhs) {
+          case CONTINUE :
+            return CONTINUE;
+          case SUCCESS :
+            return SUCCESS;
+          case RECOVERABLE_ERROR:
+            return RECOVERABLE_ERROR;
+          case FATAL_ERROR :
+            return FATAL_ERROR;
+        }
+      case RECOVERABLE_ERROR:
+        switch(rhs) {
+          case CONTINUE :
+            return RECOVERABLE_ERROR;
+          case SUCCESS :
+            return RECOVERABLE_ERROR;
+          case RECOVERABLE_ERROR:
+            return RECOVERABLE_ERROR;
+          case FATAL_ERROR :
             return FATAL_ERROR;
         }
       case FATAL_ERROR :

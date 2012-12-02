@@ -34,7 +34,10 @@ import org.gtri.util.iteratee.api.Issue.ImpactCode
  * To change this template use File | Settings | File Templates.
  */
 object Issues {
-  case class FatalError(throwable : Throwable, locator : ImmutableDiagnosticLocator) extends api.Issue {
+  private val nowhere = new ImmutableDiagnosticLocator {
+    override def toString = ""
+  }
+  case class FatalError(throwable : java.lang.Throwable, locator : ImmutableDiagnosticLocator = nowhere) extends api.Issue {
 
     def message = throwable.getMessage
 
@@ -43,7 +46,7 @@ object Issues {
     def impactCode = ImpactCode.FATAL_ERROR
   }
 
-  case class RecoverableError(throwable : Throwable, locator : ImmutableDiagnosticLocator) extends api.Issue {
+  case class RecoverableError(throwable : java.lang.Throwable, locator : ImmutableDiagnosticLocator = nowhere) extends api.Issue {
     def message = throwable.getMessage
 
     def stackTrace = throwable.getStackTrace
@@ -51,15 +54,15 @@ object Issues {
     def impactCode = ImpactCode.RECOVERABLE_ERROR
   }
 
-  case class Warning(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[java.lang.StackTraceElement] = Array()) extends api.Issue {
+  case class Warning(message : String, locator : ImmutableDiagnosticLocator = nowhere, stackTrace : Array[java.lang.StackTraceElement] = Array()) extends api.Issue {
     def impactCode = ImpactCode.WARNING
   }
 
-  case class Info(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[java.lang.StackTraceElement] = Array()) extends api.Issue {
+  case class Info(message : String, locator : ImmutableDiagnosticLocator = nowhere, stackTrace : Array[java.lang.StackTraceElement] = Array()) extends api.Issue {
     def impactCode = ImpactCode.INFO
   }
 
-  case class Debug(message : String, locator : ImmutableDiagnosticLocator, stackTrace : Array[java.lang.StackTraceElement] = Array()) extends api.Issue {
+  case class Debug(message : String, locator : ImmutableDiagnosticLocator = nowhere, stackTrace : Array[java.lang.StackTraceElement] = Array()) extends api.Issue {
     def impactCode = ImpactCode.DEBUG
   }
 }

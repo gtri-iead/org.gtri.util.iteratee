@@ -25,9 +25,8 @@ package org.gtri.iteratee;
 import java.util.ArrayList;
 import java.util.List;
 import org.gtri.util.iteratee.api.*;
-import org.gtri.util.iteratee.api.Consumer;
 import org.gtri.util.iteratee.impl.test.TestIntToStringTranslator;
-import org.gtri.util.iteratee.impl.test.TestProducer;
+import org.gtri.util.iteratee.impl.test.TestEnumerator;
 import org.gtri.util.iteratee.impl.test.TestIntIteratee;
 import org.gtri.util.iteratee.impl.test.TestStringBuilder;
 import org.gtri.util.iteratee.impl.test.TestStringConsumer;
@@ -38,7 +37,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.gtri.util.iteratee.IterateeFactory;
-
+import scala.collection.immutable.Traversable;
+import scala.runtime.BoxedUnit;
+        
 /**
  *
  * @author lance.gatlin@gmail.com
@@ -48,7 +49,6 @@ public class IterateeApiTests {
   List<String> strings = new ArrayList<String>();
   List<String> strings2 = new ArrayList<String>();
   IterateeFactory factory = new IterateeFactory();
-  Planner planner = factory.createPlanner();
   
   public IterateeApiTests() {
     integers.add(1);
@@ -81,8 +81,8 @@ public class IterateeApiTests {
   @Test
   public void testIntToString() {
     System.out.println("===testIntToString===");
-    System.out.println("Creating TestIntProducer...");
-    TestProducer<Integer> integerProducer = new TestProducer(integers,1);
+    System.out.println("Creating TestIntEnumerator...");
+    TestEnumerator<Integer> integerProducer = new TestEnumerator<Integer>(integers,1);
     
     System.out.println("Creating TestIntToStringTranslator...");
     TestIntToStringTranslator intToString = new TestIntToStringTranslator();
@@ -92,10 +92,10 @@ public class IterateeApiTests {
     TestStringConsumer stringConsumer = new TestStringConsumer(output);
     
     System.out.println("Connecting TestIntegerProducer to TestStringConsumer...");
-    Consumer.Plan<Integer,String> plan = planner.connect(integerProducer, intToString, stringConsumer);
+    Plan3<Integer,String,BoxedUnit> plan = factory.createPlan(integerProducer, intToString, stringConsumer);
     System.out.println("Running plan...");
-    Consumer.Result<Integer,String> result = plan.run();
-        
+    Plan3.RunResult<Integer,String,BoxedUnit> result = plan.run();
+    
     System.out.print("Successful? ");
     assertTrue(result.status().isSuccess());
     System.out.println("Ok.");
@@ -114,17 +114,17 @@ public class IterateeApiTests {
   @Test
   public void testStringToStringBuilder() {
     System.out.println("===testStringToStringBuilder===");
-    System.out.println("Creating TestStringProducer...");
-    TestProducer<String> stringProducer = new TestProducer(strings,256);
+    System.out.println("Creating TestStringEnumerator...");
+    TestEnumerator<String> stringProducer = new TestEnumerator(strings,256);
     
     System.out.println("Creating TestStringConsumer...");
     List<String> output = new ArrayList<String>();
     TestStringConsumer stringConsumer = new TestStringConsumer(output);
     
     System.out.println("Connecting TestStringProducer to TestStringConsumer...");
-    Consumer.Plan<String, String> plan = planner.connect(stringProducer, stringConsumer);
+    Plan2<String, BoxedUnit> plan = factory.createPlan(stringProducer, stringConsumer);
     System.out.println("Running plan...");
-    Consumer.Result<String, String> result = plan.run();
+    Plan2.RunResult<String, BoxedUnit> result = plan.run();
     
     System.out.print("Successful? ");
     assertTrue(result.status().isSuccess());
@@ -144,25 +144,25 @@ public class IterateeApiTests {
   @Test
   public void testStringConcat() {
     System.out.println("===testStringConcat===");
-    System.out.println("Creating TestStringProducer...");
-    TestProducer<String> stringProducer1 = new TestProducer(strings,2);
-    System.out.println("Creating TestStringProducer...");
-    TestProducer<String> stringProducer2 = new TestProducer(strings2,2);
+    System.out.println("Creating TestStringEnumerator...");
+    TestEnumerator<String> stringProducer1 = new TestEnumerator(strings,2);
+    System.out.println("Creating TestStringEnumerator...");
+    TestEnumerator<String> stringProducer2 = new TestEnumerator(strings2,2);
 //    Producer<String> stringProducer3 = planner.concat(stringProducer1, stringProducer2);
     System.out.println("Creating TestStringBuilder...");
     TestStringBuilder stringBuilder = new TestStringBuilder();
 
     System.out.println("Connecting TestStringProducer to TestStringBuilder...");
-    Builder.Plan<String,String,String> plan = planner.connect(stringProducer2, stringBuilder);
+    Plan2<String,String> plan = factory.createPlan(stringProducer2, stringBuilder);
     System.out.println("Running plan...");
-    Builder.Result<String,String,String> result = plan.run();
+    Plan2.RunResult<String,String> result = plan.run();
     
     System.out.print("Success? ");
     assertTrue(result.status().isSuccess());
     System.out.println("Ok.");
     
     System.out.println("Testing results...");
-    String actual = result.value().get();
+    String actual = result.allOutput().head().head();
     System.out.println("results=" + actual);
     assertEquals("def", actual);
     System.out.println("Ok.");
@@ -172,22 +172,22 @@ public class IterateeApiTests {
   public void testIteratee() {
     System.out.println("===testIteratee===");
     System.out.println("Creating TestIntProducer...");
-    TestProducer<Integer> integerProducer = new TestProducer(integers,1);
+    TestEnumerator<Integer> integerProducer = new TestEnumerator(integers,1);
     
     System.out.println("Creating TestIntIteratee...");
     TestIntIteratee testIntIteratee = new TestIntIteratee();
     
     System.out.println("Connecting TestIntegerProducer to TestIntIteratee...");
-    Iteratee.Plan<Integer,Integer,Integer> plan = planner.connect(integerProducer, testIntIteratee);
+    Plan2<Integer,Integer> plan = factory.createPlan(integerProducer, testIntIteratee);
     System.out.println("Running plan...");
-    Iteratee.Result<Integer,Integer,Integer> result = plan.run();
+    Plan2.RunResult<Integer,Integer> result = plan.run();
         
     System.out.print("Successful? ");
     assertTrue(result.status().isSuccess());
     System.out.println("Ok.");
     
     System.out.println("Testing output... ");
-    Integer actual = result.loopState();
+    Integer actual = result.allOutput().head().head();
     System.out.println("results=" + actual);
     assertEquals(6, actual.intValue());
     System.out.println("Ok.");

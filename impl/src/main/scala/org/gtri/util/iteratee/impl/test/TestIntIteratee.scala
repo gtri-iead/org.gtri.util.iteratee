@@ -13,13 +13,13 @@ import collection.immutable.Traversable
  * To change this template use File | Settings | File Templates.
  */
 class TestIntIteratee extends Iteratee[java.lang.Integer, java.lang.Integer] {
-  class Cont(loopState : java.lang.Integer) extends Iteratees.Cont[java.lang.Integer, java.lang.Integer](loopState) {
+  class Cont(loopState : java.lang.Integer) extends Iteratees.Cont[java.lang.Integer, java.lang.Integer] {
     def apply(items: Traversable[java.lang.Integer]) = {
       println("items=" + items + " loopState=" + loopState)
       Result(new Cont(items.fold(loopState) { _ + _ }))
     }
 
-    def endOfInput() = Result(Success(loopState))
+    def endOfInput() = Result(Success(), Traversable(loopState))
   }
   def initialState() = new Cont(0)
 }

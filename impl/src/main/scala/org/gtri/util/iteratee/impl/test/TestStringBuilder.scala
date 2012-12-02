@@ -24,8 +24,8 @@ package org.gtri.util.iteratee.impl.test
 
 import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.Builders._
-import org.gtri.util.iteratee.impl.Builders
+import org.gtri.util.iteratee.impl.Iteratees._
+import org.gtri.util.iteratee.impl.Iteratees
 
 /**
 * Created with IntelliJ IDEA.
@@ -34,8 +34,8 @@ import org.gtri.util.iteratee.impl.Builders
 * Time: 5:25 PM
 * To change this template use File | Settings | File Templates.
 */
-class TestStringBuilder extends Builder[String, String] {
-  case class Cont(acc : String) extends Builders.Cont[String, String] {
+class TestStringBuilder extends Iteratee[String, String] {
+  case class Cont(acc : String) extends Iteratees.Cont[String, String] {
 
     def apply(items: Traversable[String]) = {
       println("received=" + items)
@@ -44,7 +44,7 @@ class TestStringBuilder extends Builder[String, String] {
 
     def endOfInput() = {
       println("eoi=" + Some(acc))
-      Result(Success(Some(acc)))
+      Result(Success(), Traversable(acc))
     }
   }
   def initialState = Cont("")
