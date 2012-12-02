@@ -97,7 +97,7 @@ public class IterateeApiTests {
     Plan3.RunResult<Integer,String,BoxedUnit> result = plan.run();
     
     System.out.print("Successful? ");
-    assertTrue(result.status().isSuccess());
+    assertTrue(result.statusCode().isSuccess());
     System.out.println("Ok.");
     
     System.out.println("Testing output... ");
@@ -127,7 +127,7 @@ public class IterateeApiTests {
     Plan2.RunResult<String, BoxedUnit> result = plan.run();
     
     System.out.print("Successful? ");
-    assertTrue(result.status().isSuccess());
+    assertTrue(result.statusCode().isSuccess());
     System.out.println("Ok.");
     
     System.out.println("Testing output... ");
@@ -158,7 +158,7 @@ public class IterateeApiTests {
     Plan2.RunResult<String,String> result = plan.run();
     
     System.out.print("Success? ");
-    assertTrue(result.status().isSuccess());
+    assertTrue(result.statusCode().isSuccess());
     System.out.println("Ok.");
     
     System.out.println("Testing results...");
@@ -183,7 +183,7 @@ public class IterateeApiTests {
     Plan2.RunResult<Integer,Integer> result = plan.run();
         
     System.out.print("Successful? ");
-    assertTrue(result.status().isSuccess());
+    assertTrue(result.statusCode().isSuccess());
     System.out.println("Ok.");
     
     System.out.println("Testing output... ");

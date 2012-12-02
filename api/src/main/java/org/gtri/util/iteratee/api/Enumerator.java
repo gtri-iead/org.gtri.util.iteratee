@@ -37,11 +37,17 @@ public interface Enumerator<O> {
    */
   public static interface State<O> {
     /**
-     * Get the status of the Enumerator
-     * @return status of the Enumerator
+     * Get the status code of the Enumerator
+     * @return status code of the Enumerator
      */
-    Status status();
+    StatusCode statusCode();
 
+    /**
+     * Get the progress of the Enumerator
+     * @return the progress of the Enumerator
+     */
+    Progress progress();
+    
     /**
      * Increment the Enumerator
      * @return an immutable result object

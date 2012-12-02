@@ -19,7 +19,8 @@ public interface Plan2<I, O> extends Enumerator<O> {
   Plan2.RunResult<I, O> run();
   
   public static interface RunResult<I,O> {
-    Status status();
+    Progress progress();
+    StatusCode statusCode();
     Traversable<Traversable<O>> allOutput();
     Traversable<I> overflow();
     Traversable<Issue> allIssues();

@@ -15,15 +15,15 @@ object Iteratees {
   case class Result[I,O](next : Iteratee.State[I,O], output : Traversable[O] = Traversable.empty, overflow : Traversable[I] = Nil, issues : Traversable[Issue] = Nil) extends Iteratee.State.Result[I,O]
 
   abstract class Cont[I,O] extends Iteratee.State[I,O] {
-    def status = Status.CONTINUE
+    def statusCode = StatusCode.CONTINUE
   }
 
   abstract class RecoverableError[I,O] extends Iteratee.State[I,O] {
-    def status = Status.RECOVERABLE_ERROR
+    def statusCode = StatusCode.RECOVERABLE_ERROR
   }
 
   class Success[I,O] extends Iteratee.State[I,O] {
-    def status = Status.SUCCESS
+    def statusCode = StatusCode.SUCCESS
 
     def apply(items: Traversable[I]) = Result(this, Nil, items)
 
@@ -35,7 +35,7 @@ object Iteratees {
   }
 
   class FatalError[I,O] extends Iteratee.State[I,O] {
-    def status = Status.FATAL_ERROR
+    def statusCode = StatusCode.FATAL_ERROR
 
     def apply(items: Traversable[I]) = Result(this, Nil, items)
 

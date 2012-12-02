@@ -14,19 +14,22 @@ import scala.collection.immutable.Traversable
 object Plan3 {
   case class Result[I1,I2,O](next : State[I1,I2,O], output : Traversable[O], overflow : Traversable[I2], issues : Traversable[Issue]) extends api.Plan3.State.Result[I1,I2,O]
 
-  case class State[I1,I2,O](val enumeratorState : Enumerator.State[I1], val translatorState : Iteratee.State[I1,I2], val iterateeState : Iteratee.State[I2,O], val status : Status) extends api.Plan3.State[I1,I2,O] {
+  case class State[I1,I2,O](val enumeratorState : Enumerator.State[I1], val translatorState : Iteratee.State[I1,I2], val iterateeState : Iteratee.State[I2,O], val statusCode : StatusCode) extends api.Plan3.State[I1,I2,O] {
+
+    def progress = enumeratorState.progress
+
     def step() = {
       val eResult = enumeratorState.step()
       val tResult = translatorState.apply(eResult.output)
       val iResult = iterateeState.apply(tResult.output)
-      val nextStatus = Status.and(eResult.next.status, tResult.next.status, iResult.next.status)
+      val nextStatus = StatusCode.and(eResult.next.statusCode, tResult.next.statusCode, iResult.next.statusCode)
       val nextState = State(eResult.next, tResult.next, iResult.next, nextStatus)
       Result[I1,I2,O](nextState, iResult.output, iResult.overflow, eResult.issues ++ iResult.issues)
     }
   }
   object State {
     def apply[I1,I2,O](enumeratorState : Enumerator.State[I1], translatorState : Iteratee.State[I1,I2], iterateeState : Iteratee.State[I2,O]) = {
-      new State[I1,I2,O](enumeratorState, translatorState, iterateeState, Status.and(enumeratorState.status, translatorState.status, iterateeState.status))
+      new State[I1,I2,O](enumeratorState, translatorState, iterateeState, StatusCode.and(enumeratorState.statusCode, translatorState.statusCode, iterateeState.statusCode))
     }
   }
 }
@@ -40,7 +43,9 @@ class Plan3[I1,I2,O](val factory: IterateeFactory, val enumerator : Enumerator[I
     val iResult_EOI = iResult.next.endOfInput()
     new api.Plan3.RunResult[I1,I2,O] {
 
-      def status = Status.and(result.next.enumeratorState.status,tResult_EOI.next.status, iResult_EOI.next.status)
+      def progress = result.next.progress
+
+      def statusCode = StatusCode.and(result.next.enumeratorState.statusCode,tResult_EOI.next.statusCode, iResult_EOI.next.statusCode)
 
       def allOutput = iResult_EOI.output :: iResult.output :: _allOutput
 

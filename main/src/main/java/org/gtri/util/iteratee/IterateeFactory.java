@@ -92,7 +92,7 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.IterateeFacto
 
   @Override
   public <A, B, C> Iteratee<A, C> compose(Iteratee<A, B> first, Iteratee<B, C> second) {
-    return new org.gtri.util.iteratee.impl.IterateeTuple2(first,second);
+    return new org.gtri.util.iteratee.impl.IterateeSerialTuple2(first,second);
   }
 
   @Override

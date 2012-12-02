@@ -63,6 +63,14 @@ public enum StatusCode {
     return true;    
   }
   
+  public static StatusCode and(Iterable<StatusCode> statusCodes) {
+    StatusCode current = StatusCode.CONTINUE;
+    for(StatusCode status : statusCodes) {
+      current = and(current, status);
+    }
+    return current;
+  }
+  
   public static StatusCode and(StatusCode ... statusCodes) {
     StatusCode current = StatusCode.CONTINUE;
     for(StatusCode status : statusCodes) {
@@ -102,6 +110,22 @@ public enum StatusCode {
     return FATAL_ERROR;
   }
 
+  public static StatusCode or(Iterable<StatusCode> statusCodes) {
+    StatusCode current = StatusCode.CONTINUE;
+    for(StatusCode status : statusCodes) {
+      current = or(current, status);
+    }
+    return current;
+  }
+  
+  public static StatusCode or(StatusCode ... statusCodes) {
+    StatusCode current = StatusCode.CONTINUE;
+    for(StatusCode status : statusCodes) {
+      current = or(current, status);
+    }
+    return current;
+  }
+  
   public static StatusCode or(StatusCode lhs, StatusCode rhs) {
     switch(lhs) {
       case CONTINUE :

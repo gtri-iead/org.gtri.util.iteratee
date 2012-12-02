@@ -54,7 +54,7 @@ public interface Iteratee<I,O> {
      * Get the status of the Machine
      * @return status of the Machine
      */
-    Status status();
+    StatusCode statusCode();
 
     /**
      * Apply input to the Machine

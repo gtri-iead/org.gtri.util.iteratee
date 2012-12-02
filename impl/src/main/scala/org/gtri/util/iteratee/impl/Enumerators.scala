@@ -15,34 +15,34 @@ import org.gtri.util.iteratee.api.Issue.ImpactCode
 object Enumerators {
   val STD_CHUNK_SIZE = 256
 
-  def apply[A](collection : Traversable[A]) = new TraversableEnumerator(collection)
+  def apply[A](traversable : Traversable[A]) = new TraversableEnumerator(traversable)
 
   case class Result[A](next : Enumerator.State[A], output : Traversable[A], issues : Traversable[Issue] = Nil) extends Enumerator.State.Result[A]
 
   abstract class Cont[A] extends Enumerator.State[A] {
-    def status = Status.CONTINUE
+    def statusCode = StatusCode.CONTINUE
   }
 
   abstract class RecoverableError[A] extends Enumerator.State[A] {
-    def status = Status.RECOVERABLE_ERROR
+    def statusCode = StatusCode.RECOVERABLE_ERROR
   }
 
-  class Success[A] extends Enumerator.State[A] {
-    def status = Status.SUCCESS
+  class Success[A](val progress : Progress) extends Enumerator.State[A] {
+    def statusCode = StatusCode.SUCCESS
 
     def step() = Result(this, Nil)
   }
   object Success {
-    def apply[A]() = new Success[A]()
+    def apply[A](progress : Progress) = new Success[A](progress)
 
   }
-  class FatalError[A] extends Enumerator.State[A] {
-    def status = Status.FATAL_ERROR
+  class FatalError[A](val progress : Progress) extends Enumerator.State[A] {
+    def statusCode = StatusCode.FATAL_ERROR
 
     def step() = Result(this, Nil)
   }
   object FatalError {
-    def apply[A]() = new FatalError[A]()
+    def apply[A](progress : Progress) = new FatalError[A](progress)
   }
 
   def run[O,R <: Enumerator.State.Result[O]](issueHandlingCode : IssueHandlingCode, r: R, step: R => R) : (R, List[Traversable[O]], Traversable[Issue]) = {
@@ -56,7 +56,7 @@ object Enumerators {
   final def doNormalRun[O,R <: Enumerator.State.Result[O]](r : R, step: R => R, output : List[Traversable[O]], issues : Traversable[Issue]) : (R, List[Traversable[O]], Traversable[Issue]) = {
     val nextIssues = r.issues ++ issues
     val nextOutput = r.output :: output
-    r.next.status.statusCode match {
+    r.next.statusCode match {
       case StatusCode.RECOVERABLE_ERROR=> (r, nextOutput, nextIssues)
       case StatusCode.CONTINUE => {
         doNormalRun(step(r), step, nextOutput, nextIssues)
@@ -70,7 +70,7 @@ object Enumerators {
   final def doLaxRun[O,R <: Enumerator.State.Result[O]](r : R, step: R => R, output : List[Traversable[O]], issues : Traversable[Issue]) : (R, List[Traversable[O]], Traversable[Issue]) = {
     val nextIssues = r.issues ++ issues
     val nextOutput = r.output :: output
-    r.next.status.statusCode match {
+    r.next.statusCode match {
       case StatusCode.RECOVERABLE_ERROR | StatusCode.CONTINUE => {
         doLaxRun(step(r), step, nextOutput, nextIssues)
       }
@@ -83,7 +83,7 @@ object Enumerators {
   final def doStrictRun[O,R <: Enumerator.State.Result[O]](r : R, step: R => R, output : List[Traversable[O]], issues : Traversable[Issue]) : (R, List[Traversable[O]], Traversable[Issue]) = {
     val nextIssues = r.issues ++ issues
     val nextOutput = r.output :: output
-    r.next.status.statusCode match {
+    r.next.statusCode match {
       case StatusCode.RECOVERABLE_ERROR=> (r, nextOutput, nextIssues)
       case StatusCode.CONTINUE => {
         if(r.issues.filter({ _.impactCode == ImpactCode.WARNING }).nonEmpty) {
