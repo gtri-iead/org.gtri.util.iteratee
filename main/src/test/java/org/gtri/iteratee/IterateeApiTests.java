@@ -37,7 +37,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.gtri.util.iteratee.IterateeFactory;
-import scala.runtime.BoxedUnit;
         
 /**
  *
@@ -91,9 +90,9 @@ public class IterateeApiTests {
     TestStringConsumer stringConsumer = new TestStringConsumer(output);
     
     System.out.println("Connecting TestIntegerProducer to TestStringConsumer...");
-    Plan3<Integer,String,BoxedUnit> plan = factory.createPlan(integerProducer, intToString, stringConsumer);
+    Plan3<Integer,String,?> plan = factory.createPlan(integerProducer, intToString, stringConsumer);
     System.out.println("Running plan...");
-    Plan3.RunResult<Integer,String,BoxedUnit> result = plan.run();
+    Plan3.RunResult<Integer,String,?> result = plan.run();
     
     System.out.print("Successful? ");
     assertTrue(result.statusCode().isSuccess());
@@ -121,9 +120,9 @@ public class IterateeApiTests {
     TestStringConsumer stringConsumer = new TestStringConsumer(output);
     
     System.out.println("Connecting TestStringProducer to TestStringConsumer...");
-    Plan2<String, BoxedUnit> plan = factory.createPlan(stringProducer, stringConsumer);
+    Plan2<String, ?> plan = factory.createPlan(stringProducer, stringConsumer);
     System.out.println("Running plan...");
-    Plan2.RunResult<String, BoxedUnit> result = plan.run();
+    Plan2.RunResult<String, ?> result = plan.run();
     
     System.out.print("Successful? ");
     assertTrue(result.statusCode().isSuccess());
