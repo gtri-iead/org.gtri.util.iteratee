@@ -8,9 +8,9 @@ The following example enumerates an array of integers to an iteratee that simply
 ```Java
 IterateeFactory factory = new IterateeFactory();
 Array<Integer> ints = { 1,2,3 }
-Producer<Integer> intProducer = new TestProducer<Integer>(ints);
-Translator<Integer,String> intToString = new TestIntToStringTranslator();
-Consumer<String> strConsumer = new TestPrintConsumer<String>(output);
+Enumerator<Integer> intProducer = new TestEnumerator<Integer>(ints);
+Iteratee<Integer,String> intToString = new TestIntToStringTranslator();
+Iteratee<String, Unit> printer = new TestPrintConsumer<String>();
 factory.createPlan(integerProducer, intToString, stringConsumer).run();
 assertTrue(result.statusCode().isSuccess());
 ```
