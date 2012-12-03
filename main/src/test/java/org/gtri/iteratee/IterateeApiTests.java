@@ -37,7 +37,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.gtri.util.iteratee.IterateeFactory;
-import scala.collection.immutable.Traversable;
 import scala.runtime.BoxedUnit;
         
 /**

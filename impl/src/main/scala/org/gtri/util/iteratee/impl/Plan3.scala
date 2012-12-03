@@ -24,7 +24,6 @@ package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api
 import api._
-import scala.collection.immutable.Traversable
 
 /**
  * Created with IntelliJ IDEA.

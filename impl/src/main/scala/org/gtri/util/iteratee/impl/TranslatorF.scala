@@ -22,7 +22,6 @@
 
 package org.gtri.util.iteratee.impl
 
-import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
 import ImmutableBuffers.Conversions._

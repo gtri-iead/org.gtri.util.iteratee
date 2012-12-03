@@ -23,7 +23,6 @@
 //package org.gtri.util.iteratee.impl
 //
 //import org.gtri.util.iteratee.api.{StatusCode, Iteratee, Status}
-//import collection.immutable.Traversable
 //import org.gtri.util.iteratee.impl.Iteratees._
 //
 ///**
