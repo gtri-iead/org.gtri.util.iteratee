@@ -22,12 +22,11 @@
 
 package org.gtri.util.iteratee;
 
+import org.gtri.util.iteratee.api.Enumerator;
 import org.gtri.util.iteratee.api.IssueHandlingCode;
 import org.gtri.util.iteratee.api.Iteratee;
-import org.gtri.util.iteratee.api.Enumerator;
 import org.gtri.util.iteratee.api.Plan2;
 import org.gtri.util.iteratee.api.Plan3;
-import scala.Function1;
 
 /**
  *
