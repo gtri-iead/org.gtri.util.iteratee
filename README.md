@@ -1,7 +1,7 @@
 org.gtri.util.iteratee
 ======================
 
-A Java interface-front-ended library implemented in Scala for streaming objects between producers and consumers.
+A Java interface-front-ended library implemented in Scala for streaming objects between producers(enumerators) and consumers(iteratees).
 
 <h3>Usage Example (Java)</h3>
 The following example enumerates an array of integers to an iteratee that simply prints them.
