@@ -4,8 +4,6 @@
  */
 package org.gtri.util.iteratee.api;
 
-import scala.collection.immutable.Traversable;
-
 /**
  * An interface for a Moore machine. A Moore machine is a finite state machine 
  * whose output is determined solely by its current state. 
@@ -69,12 +67,12 @@ public interface Enumerator<O> {
        * Get a buffer of output items
        * @return the buffer of output items
        */
-      Traversable<O> output();
+      ImmutableBuffer<O> output();
       /**
        * Get any issues raised during processing
        * @return any issues raised during processing
        */
-      Traversable<Issue> issues();
+      ImmutableBuffer<Issue> issues();
     }
 
   }

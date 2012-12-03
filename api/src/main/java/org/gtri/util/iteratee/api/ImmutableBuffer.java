@@ -4,18 +4,18 @@
  */
 package org.gtri.util.iteratee.api;
 
+import java.util.Iterator;
+
 /**
  *
  * @author lance.gatlin@gmail.com
  */
 public interface ImmutableBuffer<A> extends Iterable<A> {
-  static interface F<A> {
-    void apply(A input);
-  }
-  
-  void forEach(F f);
-  
   int length();
   
   A apply(int idx);
+  
+  // This is here because of an issue with Scala
+  @Override
+  Iterator<A> iterator();
 }

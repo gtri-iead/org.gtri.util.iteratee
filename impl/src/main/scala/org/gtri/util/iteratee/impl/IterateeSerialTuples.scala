@@ -1,8 +1,8 @@
 package org.gtri.util.iteratee.impl
 
-import org.gtri.util.iteratee.api.{Iteratee, StatusCode}
-import collection.immutable.Traversable
+import org.gtri.util.iteratee.api.{ImmutableBuffer, Iteratee, StatusCode}
 import org.gtri.util.iteratee.impl.Iteratees._
+import ImmutableBuffers.Conversions._
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,7 +27,7 @@ object IterateeSerialTuple2 {
     val statusCode : StatusCode
   ) extends Iteratee.State[A,C] {
 
-    def apply(input: Traversable[A]) = {
+    def apply(input: ImmutableBuffer[A]) = {
       val resultT1 = t1.apply(input)
       val resultT2 = t2.apply(resultT1.output)
       val issues = resultT1.issues ++ resultT2.issues
@@ -82,7 +82,7 @@ object IterateeSerialTuple3 {
     val statusCode : StatusCode
   ) extends Iteratee.State[A,D] {
 
-    def apply(input: Traversable[A]) = {
+    def apply(input: ImmutableBuffer[A]) = {
       val resultT1 = i1.apply(input)
       val resultT2 = i2.apply(resultT1.output)
       val resultT3 = i3.apply(resultT2.output)

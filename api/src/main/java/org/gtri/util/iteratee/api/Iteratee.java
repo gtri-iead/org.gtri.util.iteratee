@@ -4,8 +4,6 @@
  */
 package org.gtri.util.iteratee.api;
 
-import scala.collection.immutable.Traversable;
-
 /**
  * An interface for a Mealy machine. A Mealy machine is a finite state machine 
  * whose output is determined by both its current state and its input. The 
@@ -61,7 +59,7 @@ public interface Iteratee<I,O> {
      * @param input 
      * @return an immutable result object
      */  
-    Iteratee.State.Result<I,O> apply(Traversable<I> input);
+    Iteratee.State.Result<I,O> apply(ImmutableBuffer<I> input);
     /**
      * Signal to the Machine the end of input
      * @return an immutable result object
@@ -84,17 +82,17 @@ public interface Iteratee<I,O> {
        * Get the output
        * @return the output
        */
-      Traversable<O> output();
+      ImmutableBuffer<O> output();
       /**e
        * Get any unused input. May return input cached by previous states.
        * @return any unused input
        */
-      Traversable<I> overflow();
+      ImmutableBuffer<I> overflow();
       /**
        * Get issues raised during processing
        * @return issues raised during processing
        */
-      Traversable<Issue> issues();
+      ImmutableBuffer<Issue> issues();
     }
   }
   

@@ -1,7 +1,7 @@
 package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api._
-import scala.collection.immutable.Traversable
+import scala.collection.immutable.Seq
 import org.gtri.util.iteratee.impl.Enumerators._
 
 /**
@@ -11,9 +11,10 @@ import org.gtri.util.iteratee.impl.Enumerators._
  * Time: 8:15 PM
  * To change this template use File | Settings | File Templates.
  */
-class TraversableEnumerator[A](traversable : Traversable[A], chunkSize : Int = STD_CHUNK_SIZE) extends Enumerator[A] {
-
-  class Cont[A](current : Traversable[A]) extends Enumerators.Cont[A] {
+class SeqEnumerator[A](traversable : Seq[A], chunkSize : Int = STD_CHUNK_SIZE) extends Enumerator[A] {
+  import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
+  
+  class Cont[A](current : Seq[A]) extends Enumerators.Cont[A] {
     val progress = new Progress()
 
     def step = {
@@ -27,7 +28,7 @@ class TraversableEnumerator[A](traversable : Traversable[A], chunkSize : Int = S
     }
   }
 
-  class ContWithDefSize[A](current : Traversable[A]) extends Enumerators.Cont[A] {
+  class ContWithDefSize[A](current : Seq[A]) extends Enumerators.Cont[A] {
     val progress = new Progress(0,traversable.size - current.size, traversable.size)
 
     def step = {

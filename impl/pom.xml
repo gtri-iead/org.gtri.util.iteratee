@@ -87,7 +87,7 @@
     </dependency>
     <dependency>
       <groupId>org.gtri.util</groupId>
-      <artifactId>iteratee.api_${scalaVersion}</artifactId>
+      <artifactId>iteratee.api</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>

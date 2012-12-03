@@ -26,6 +26,7 @@ import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
 import org.gtri.util.iteratee.impl.Iteratees
+import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
 /**
 * Created with IntelliJ IDEA.
@@ -37,14 +38,14 @@ import org.gtri.util.iteratee.impl.Iteratees
 class TestStringBuilder extends Iteratee[String, String] {
   case class Cont(acc : String) extends Iteratees.Cont[String, String] {
 
-    def apply(items: Traversable[String]) = {
+    def apply(items: ImmutableBuffer[String]) = {
       println("received=" + items)
       Result(Cont(items.fold(acc) { _ + _ }))
     }
 
     def endOfInput() = {
       println("eoi=" + Some(acc))
-      Result(Success(), Traversable(acc))
+      Result(Success(), List(acc))
     }
   }
   def initialState = Cont("")

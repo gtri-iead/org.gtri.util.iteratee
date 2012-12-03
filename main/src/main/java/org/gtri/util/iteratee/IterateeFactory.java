@@ -75,10 +75,10 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.IterateeFacto
     };
   }
 
-  @Override
-  public <A, B> Iteratee<A, B> createTranslator(final Function1<A, B> f) {
-    return new org.gtri.util.iteratee.impl.TranslatorF<A,B>(f);
-  }
+//  @Override
+//  public <A, B> Iteratee<A, B> createTranslator(final Function1<A, B> f) {
+//    return new org.gtri.util.iteratee.impl.TranslatorF<A,B>(f);
+//  }
 
   @Override
   public <I, O> Plan2<I, O> createPlan(Enumerator<I> enumerator, Iteratee<I, O> iteratee) {

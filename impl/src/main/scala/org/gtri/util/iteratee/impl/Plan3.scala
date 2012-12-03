@@ -12,7 +12,9 @@ import scala.collection.immutable.Traversable
  * To change this template use File | Settings | File Templates.
  */
 object Plan3 {
-  case class Result[I1,I2,O](next : State[I1,I2,O], output : Traversable[O], overflow : Traversable[I2], issues : Traversable[Issue]) extends api.Plan3.State.Result[I1,I2,O]
+  import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
+
+  case class Result[I1,I2,O](next : State[I1,I2,O], output : ImmutableBuffer[O], overflow : ImmutableBuffer[I2], issues : ImmutableBuffer[Issue]) extends api.Plan3.State.Result[I1,I2,O]
 
   case class State[I1,I2,O](val enumeratorState : Enumerator.State[I1], val translatorState : Iteratee.State[I1,I2], val iterateeState : Iteratee.State[I2,O], val statusCode : StatusCode) extends api.Plan3.State[I1,I2,O] {
 
@@ -34,30 +36,32 @@ object Plan3 {
   }
 }
 class Plan3[I1,I2,O](val factory: IterateeFactory, val enumerator : Enumerator[I1], val translator : Iteratee[I1,I2], val iteratee : Iteratee[I2,O]) extends api.Plan3[I1,I2,O] {
+  import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
+
   def initialState = Plan3.State(enumerator.initialState, translator.initialState, iteratee.initialState)
 
   def run() = {
-    val (result, _allOutput,_allIssues) = Enumerators.run[O, Plan3.Result[I1,I2,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
-    val tResult_EOI = result.next.translatorState.endOfInput()
-    val iResult = result.next.iterateeState.apply(tResult_EOI.output())
+    val (lastResult, _allOutput,_allIssues) = Enumerators.runFlatten[O, Plan3.Result[I1,I2,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
+    val tResult_EOI = lastResult.next.translatorState.endOfInput()
+    val iResult = lastResult.next.iterateeState.apply(tResult_EOI.output())
     val iResult_EOI = iResult.next.endOfInput()
     new api.Plan3.RunResult[I1,I2,O] {
 
-      def progress = result.next.progress
+      def progress = lastResult.next.progress
 
-      def statusCode = StatusCode.and(result.next.enumeratorState.statusCode,tResult_EOI.next.statusCode, iResult_EOI.next.statusCode)
+      def statusCode = StatusCode.and(lastResult.next.enumeratorState.statusCode,tResult_EOI.next.statusCode, iResult_EOI.next.statusCode)
 
-      def allOutput = iResult_EOI.output :: iResult.output :: _allOutput
+      def allOutput = iResult_EOI.output ++ iResult.output ++ _allOutput
 
       def allIssues = tResult_EOI.issues ++ iResult.issues ++ iResult_EOI.issues ++ _allIssues
 
       def overflow = iResult_EOI.overflow
 
-      def enumerator = factory.createEnumerator(result.next.enumeratorState)
+      def enumerator = factory.createEnumerator(lastResult.next.enumeratorState)
 
-      def translator = factory.createIteratee(result.next.translatorState)
+      def translator = factory.createIteratee(lastResult.next.translatorState)
 
-      def iteratee = factory.createIteratee(result.next.iterateeState)
+      def iteratee = factory.createIteratee(lastResult.next.iterateeState)
     }
   }
 }

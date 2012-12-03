@@ -25,6 +25,7 @@ package org.gtri.util.iteratee.impl
 import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
+import ImmutableBuffers.Conversions._
 
 /**
  * Created with IntelliJ IDEA.
@@ -36,13 +37,13 @@ import org.gtri.util.iteratee.impl.Iteratees._
 class TranslatorF[A,B](f: A => B) extends Iteratee[A,B]{
 
   class Cont extends Iteratees.Cont[A,B] {
-    def apply(input: Traversable[A]) = {
+    def apply(input: ImmutableBuffer[A]) = {
       val nextOutput = input.foldLeft(List[B]()) {
         (list,item) => {
            f(item) :: list
         }
       }
-      Result(this, nextOutput, Nil)
+      Result(this, nextOutput, ImmutableBuffers.empty)
     }
     def endOfInput = Result(Success())
   }

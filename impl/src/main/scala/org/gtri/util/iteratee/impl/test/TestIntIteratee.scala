@@ -1,9 +1,9 @@
 package org.gtri.util.iteratee.impl.test
 
-import org.gtri.util.iteratee.api.Iteratee
+import org.gtri.util.iteratee.api.{ImmutableBuffer, Iteratee}
 import org.gtri.util.iteratee.impl.Iteratees._
 import org.gtri.util.iteratee.impl.Iteratees
-import collection.immutable.Traversable
+import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,12 +14,12 @@ import collection.immutable.Traversable
  */
 class TestIntIteratee extends Iteratee[java.lang.Integer, java.lang.Integer] {
   class Cont(loopState : java.lang.Integer) extends Iteratees.Cont[java.lang.Integer, java.lang.Integer] {
-    def apply(items: Traversable[java.lang.Integer]) = {
+    def apply(items: ImmutableBuffer[java.lang.Integer]) = {
       println("items=" + items + " loopState=" + loopState)
       Result(new Cont(items.fold(loopState) { _ + _ }))
     }
 
-    def endOfInput() = Result(Success(), Traversable(loopState))
+    def endOfInput() = Result(Success(), List(loopState))
   }
   def initialState() = new Cont(0)
 }

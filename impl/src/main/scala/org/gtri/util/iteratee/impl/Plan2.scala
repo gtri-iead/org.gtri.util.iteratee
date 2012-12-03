@@ -12,7 +12,9 @@ import scala.collection.immutable.Traversable
  * To change this template use File | Settings | File Templates.
  */
 object Plan2 {
-  case class Result[I,O](next : State[I,O], output : Traversable[O], overflow : Traversable[I], issues : Traversable[Issue]) extends api.Plan2.State.Result[I,O]
+  import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
+
+  case class Result[I,O](next : State[I,O], output : ImmutableBuffer[O], overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) extends api.Plan2.State.Result[I,O]
 
   case class State[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O], val statusCode : StatusCode) extends api.Plan2.State[I,O] {
 
@@ -33,24 +35,26 @@ object Plan2 {
   }
 }
 class Plan2[I,O](val factory : IterateeFactory, val enumerator : Enumerator[I], val iteratee : Iteratee[I,O]) extends api.Plan2[I,O] {
+  import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
+
   def initialState = Plan2.State(enumerator.initialState, iteratee.initialState)
 
   def run() = {
-    val (result, _allOutput, _allIssues) = Enumerators.run[O,Plan2.Result[I,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
-    val iResult_EOI = result.next.iterateeState.endOfInput()
+    val (lastResult, _allOutput, _allIssues) = Enumerators.runFlatten[O,Plan2.Result[I,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
+    val iResult_EOI = lastResult.next.iterateeState.endOfInput()
     new api.Plan2.RunResult[I,O] {
 
-      def progress = result.next.progress
+      def progress = lastResult.next.progress
 
-      def statusCode = StatusCode.and(result.next.enumeratorState.statusCode,iResult_EOI.next.statusCode)
+      def statusCode = StatusCode.and(lastResult.next.enumeratorState.statusCode,iResult_EOI.next.statusCode)
 
       def overflow = iResult_EOI.overflow
 
-      def enumerator = factory.createEnumerator(result.next.enumeratorState)
+      def enumerator = factory.createEnumerator(lastResult.next.enumeratorState)
 
-      def iteratee = factory.createIteratee(result.next.iterateeState)
+      def iteratee = factory.createIteratee(lastResult.next.iterateeState)
 
-      def allOutput = iResult_EOI.output :: _allOutput
+      def allOutput = iResult_EOI.output ++ _allOutput
 
       def allIssues = iResult_EOI.issues ++ _allIssues
     }

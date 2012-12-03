@@ -22,8 +22,6 @@
 
 package org.gtri.util.iteratee.api;
 
-import scala.Function1;
-
 /**
  * An interface for a factory that can create implementations of various 
  * interfaces in the iteratee library.
@@ -57,17 +55,17 @@ public interface IterateeFactory {
    */
   <I,O> Iteratee<I,O> createIteratee(Iteratee.State<I,O> state);
   
-  /**
-   * Create a simple stateless translating iteratee from a function
-   * 
-   * @param <A> the input type
-   * @param <B> the output type
-   * @param f a function that converts an item of the input type to an item of 
-   * the output type
-   * @return an iteratee that converts items of the input type to items of the
-   * output type
-   */
-  <A,B> Iteratee<A,B> createTranslator(Function1<A,B> f);
+//  /**
+//   * Create a simple stateless translating iteratee from a function
+//   * 
+//   * @param <A> the input type
+//   * @param <B> the output type
+//   * @param f a function that converts an item of the input type to an item of 
+//   * the output type
+//   * @return an iteratee that converts items of the input type to items of the
+//   * output type
+//   */
+//  <A,B> Iteratee<A,B> createTranslator(Function1<A,B> f);
   
   /**
    * Create a plan to stream items from a producer to an iteratee.

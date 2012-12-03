@@ -162,7 +162,7 @@ public class IterateeApiTests {
     System.out.println("Ok.");
     
     System.out.println("Testing results...");
-    String actual = result.allOutput().head().head();
+    String actual = result.allOutput().apply(0);
     System.out.println("results=" + actual);
     assertEquals("def", actual);
     System.out.println("Ok.");
@@ -187,7 +187,7 @@ public class IterateeApiTests {
     System.out.println("Ok.");
     
     System.out.println("Testing output... ");
-    Integer actual = result.allOutput().head().head();
+    Integer actual = result.allOutput().apply(0);
     System.out.println("results=" + actual);
     assertEquals(6, actual.intValue());
     System.out.println("Ok.");

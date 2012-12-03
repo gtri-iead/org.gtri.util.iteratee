@@ -26,7 +26,7 @@ import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api
 import api._
 import scala.collection.JavaConversions._
-import org.gtri.util.iteratee.impl.TraversableEnumerator
+import org.gtri.util.iteratee.impl.SeqEnumerator
 
 /**
 * Created with IntelliJ IDEA.
@@ -37,5 +37,5 @@ import org.gtri.util.iteratee.impl.TraversableEnumerator
 */
 class TestEnumerator[A](iterable : java.lang.Iterable[A], chunkSize : java.lang.Integer) extends Enumerator[A] {
 
-  def initialState = new TraversableEnumerator(iterable.iterator.toStream,chunkSize).initialState
+  def initialState = new SeqEnumerator(iterable.iterator.toStream,chunkSize).initialState
 }

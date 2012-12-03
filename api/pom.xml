@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.gtri.util</groupId>
-  <artifactId>iteratee.api_2.9.2</artifactId>
+  <artifactId>iteratee.api</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>iteratee.api_2.9.2</name>
+  <name>iteratee.api</name>
 
   <parent>
     <groupId>org.gtri</groupId>
@@ -28,7 +28,7 @@
     </distributionManagement>-->
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <scalaVersion>2.9.2</scalaVersion>
+<!--    <scalaVersion>2.9.2</scalaVersion>-->
   </properties>
 
   <dependencies>
@@ -38,7 +38,7 @@
       <version>4.10</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
+<!--    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>11.0.2</version>
@@ -47,7 +47,7 @@
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
       <version>${scalaVersion}</version>
-    </dependency>
+    </dependency>-->
   </dependencies>
   
   <build>

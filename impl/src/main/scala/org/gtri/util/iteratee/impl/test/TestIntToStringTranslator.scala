@@ -26,6 +26,7 @@ import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
 import org.gtri.util.iteratee.impl.Iteratees
+import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
 /**
 * Created with IntelliJ IDEA.
@@ -37,7 +38,7 @@ import org.gtri.util.iteratee.impl.Iteratees
 class TestIntToStringTranslator extends Iteratee[java.lang.Integer, String] {
   class Cont extends Iteratees.Cont[java.lang.Integer,String]  {
 
-    def apply(items: Traversable[java.lang.Integer]) = {
+    def apply(items: ImmutableBuffer[java.lang.Integer]) = {
       println("translating=" + items)
       val nextOutput = items.foldLeft(List[String]()) {
         (list,item) => {

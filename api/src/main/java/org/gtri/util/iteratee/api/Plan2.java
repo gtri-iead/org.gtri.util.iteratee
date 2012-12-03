@@ -4,8 +4,6 @@
  */
 package org.gtri.util.iteratee.api;
 
-import scala.collection.immutable.Traversable;
-
 /**
  *
  * @author lance.gatlin@gmail.com
@@ -21,9 +19,9 @@ public interface Plan2<I, O> extends Enumerator<O> {
   public static interface RunResult<I,O> {
     Progress progress();
     StatusCode statusCode();
-    Traversable<Traversable<O>> allOutput();
-    Traversable<I> overflow();
-    Traversable<Issue> allIssues();
+    ImmutableBuffer<O> allOutput();
+    ImmutableBuffer<I> overflow();
+    ImmutableBuffer<Issue> allIssues();
     Enumerator<I> enumerator();
     Iteratee<I, O> iteratee();
   }

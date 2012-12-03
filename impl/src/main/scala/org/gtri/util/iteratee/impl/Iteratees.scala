@@ -12,7 +12,7 @@ import api._
 * To change this template use File | Settings | File Templates.
 */
 object Iteratees {
-  case class Result[I,O](next : Iteratee.State[I,O], output : Traversable[O] = Traversable.empty, overflow : Traversable[I] = Nil, issues : Traversable[Issue] = Nil) extends Iteratee.State.Result[I,O]
+  case class Result[I,O](next : Iteratee.State[I,O], output : ImmutableBuffer[O] = ImmutableBuffers.empty[O], overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I], issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]) extends Iteratee.State.Result[I,O]
 
   abstract class Cont[I,O] extends Iteratee.State[I,O] {
     def statusCode = StatusCode.CONTINUE
@@ -25,9 +25,9 @@ object Iteratees {
   class Success[I,O] extends Iteratee.State[I,O] {
     def statusCode = StatusCode.SUCCESS
 
-    def apply(items: Traversable[I]) = Result(this, Nil, items)
+    def apply(items: ImmutableBuffer[I]) = Result(this, ImmutableBuffers.empty, items)
 
-    def endOfInput() = Result(this, Nil, Nil)
+    def endOfInput() = Result(this, ImmutableBuffers.empty, ImmutableBuffers.empty)
   }
 
   object Success {
@@ -37,9 +37,9 @@ object Iteratees {
   class FatalError[I,O] extends Iteratee.State[I,O] {
     def statusCode = StatusCode.FATAL_ERROR
 
-    def apply(items: Traversable[I]) = Result(this, Nil, items)
+    def apply(items: ImmutableBuffer[I]) = Result(this, ImmutableBuffers.empty, items)
 
-    def endOfInput() = Result(this, Nil, Nil)
+    def endOfInput() = Result(this, ImmutableBuffers.empty, ImmutableBuffers.empty)
   }
   object FatalError {
     def apply[I,O]() = new FatalError[I,O]()

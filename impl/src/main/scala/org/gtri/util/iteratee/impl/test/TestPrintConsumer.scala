@@ -26,6 +26,7 @@ import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
 import org.gtri.util.iteratee.impl.Iteratees
+import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
 /**
 * Created with IntelliJ IDEA.
@@ -36,7 +37,7 @@ import org.gtri.util.iteratee.impl.Iteratees
 */
 class TestPrintConsumer[A] extends Iteratee[A, Unit] {
   case class Cont[A]() extends Iteratees.Cont[A, Unit] {
-    def apply(items: Traversable[A]) = {
+    def apply(items: ImmutableBuffer[A]) = {
       println("received=" + items)
       for (item <- items) {
         println(item)

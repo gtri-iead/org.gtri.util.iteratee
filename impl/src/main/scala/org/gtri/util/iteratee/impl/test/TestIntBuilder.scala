@@ -26,7 +26,7 @@ import scala.collection.immutable.Traversable
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
 import org.gtri.util.iteratee.impl.Iteratees
-
+import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,7 +39,7 @@ class TestIntegerBuilder extends Iteratee[Int, Int] {
 
   case class Cont(acc: Int) extends Iteratees.Cont[Int, Int] {
 
-    def apply(items: Traversable[Int]) = Result(Cont(items.fold(acc) { _ + _ }))
+    def apply(items: ImmutableBuffer[Int]) = Result(Cont(items.fold(acc) { _ + _ }))
 
     def endOfInput() = Result(Success(),List(acc))
   }
