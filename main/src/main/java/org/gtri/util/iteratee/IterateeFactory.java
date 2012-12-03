@@ -96,7 +96,7 @@ public class IterateeFactory implements org.gtri.util.iteratee.api.IterateeFacto
 
   @Override
   public <A, B, C, D> Iteratee<A, D> compose(Iteratee<A, B> first, Iteratee<B, C> second, Iteratee<C, D> third) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new org.gtri.util.iteratee.impl.IterateeSerialTuple3(first,second, third);
   }
 
   @Override

@@ -44,6 +44,7 @@ public final class Progress {
   public int recoverableErrorItemCount() { return recoverableErrorItemCount; }
   public int successItemCount() { return successItemCount; }
   public int totalItemCount() { return totalItemCount; }
+  public double percentComplete() { return (recoverableErrorItemCount + successItemCount) / ((double)totalItemCount); }
   
   public static Progress sum(Progress lhs, Progress rhs) {
     return new Progress(

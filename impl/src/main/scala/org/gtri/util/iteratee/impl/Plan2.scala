@@ -24,6 +24,7 @@ package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api
 import api._
+import scala.collection.JavaConversions._
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,52 +33,108 @@ import api._
  * Time: 3:59 AM
  * To change this template use File | Settings | File Templates.
  */
-object Plan2 {
+class Plan2[I,O](val factory : IterateeFactory, val enumerator : Enumerator[I], val iteratee : Iteratee[I,O]) extends api.Plan2[I,O] {
   import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
-  case class Result[I,O](next : State[I,O], output : ImmutableBuffer[O], overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) extends api.Plan2.State.Result[I,O]
+  def initialState = new Cont(enumerator.initialState, iteratee.initialState)
 
-  case class State[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O], val statusCode : StatusCode) extends api.Plan2.State[I,O] {
+  case class Result[I,O](next : api.Plan2.State[I,O], output : ImmutableBuffer[O], overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) extends api.Plan2.State.Result[I,O]
+
+  abstract class BaseState[I,O](enumeratorState : Enumerator.State[I], iterateeState : Iteratee.State[I,O]) extends api.Plan2.State[I,O] {
+    val statusCode = StatusCode.and(enumeratorState.statusCode, iterateeState.statusCode)
 
     def progress = enumeratorState.progress
+
+    def endOfInput() = {
+      val iResult_EOI = iterateeState.endOfInput()
+      Result(Done(enumeratorState, iResult_EOI.next), iResult_EOI.output, iResult_EOI.overflow, iResult_EOI.issues)
+    }
+  }
+
+  // Enumerator is done and EOI fed to iteratee OR iteratee is DONE
+  case class Done[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O]) extends BaseState[I,O](enumeratorState, iterateeState) {
+
+    def step() = Result(this, ImmutableBuffers.empty, ImmutableBuffers.empty, ImmutableBuffers.empty)
+  }
+
+  // Enumerator is done, step causes EOI to be fed to iteratee
+  case class EOI[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O]) extends BaseState[I,O](enumeratorState, iterateeState) {
+    def statusCodes = iterateeState.statusCode
+
+    def step() = {
+      endOfInput()
+    }
+  }
+
+  case class Cont[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O]) extends BaseState[I,O](enumeratorState, iterateeState) {
 
     def step() = {
       val eResult = enumeratorState.step()
       val iResult = iterateeState.apply(eResult.output)
-      val nextStatus = StatusCode.and(eResult.next.statusCode, iResult.next.statusCode)
-      val nextState = State(eResult.next(), iResult.next, nextStatus)
+      val nextState = {
+        iResult.next.statusCode match {
+          case StatusCode.CONTINUE | StatusCode.RECOVERABLE_ERROR =>
+            eResult.next.statusCode match {
+              case StatusCode.CONTINUE | StatusCode.RECOVERABLE_ERROR => Cont(eResult.next, iResult.next)
+              case StatusCode.FATAL_ERROR => Done(eResult.next, iResult.next)
+              case StatusCode.SUCCESS => EOI(eResult.next, iResult.next)
+            }
+          case StatusCode.FATAL_ERROR => Done(eResult.next, iResult.next)
+          case StatusCode.SUCCESS => Done(eResult.next, iResult.next)
+        }
+      }
       Result(nextState, iResult.output, iResult.overflow, eResult.issues ++ iResult.issues)
     }
   }
-  object State {
-    def apply[I,O](enumeratorState : Enumerator.State[I], iterateeState : Iteratee.State[I,O]) = {
-      new State[I,O](enumeratorState, iterateeState, StatusCode.and(enumeratorState.statusCode, iterateeState.statusCode))
-    }
-  }
-}
-class Plan2[I,O](val factory : IterateeFactory, val enumerator : Enumerator[I], val iteratee : Iteratee[I,O]) extends api.Plan2[I,O] {
-  import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
-  def initialState = Plan2.State(enumerator.initialState, iteratee.initialState)
+//  def runFoldLeft[U](u: U, f: Function2[U, Plan2.State.Result[I, O], U]) = {
+//    val iterator : Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
+//    iterator.foldLeft(u) {
+//      (acc, result) =>
+//        f(acc, result)
+//    }
+//  }
+//
+//  def runForEach(f: Function1[Plan2.State.Result[I, O], _]) = {
+//    val iterator : Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
+//    iterator.foreach {
+//      f(_)
+//    }
+//  }
+
+
+  def iterator : java.util.Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
+
+  def iterator(issueHandlingCode: IssueHandlingCode) : java.util.Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](issueHandlingCode, initialState.step(), { _.next.step() })
 
   def run() = {
-    val (lastResult, _allOutput, _allIssues) = Enumerators.runFlatten[O,Plan2.Result[I,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
-    val iResult_EOI = lastResult.next.iterateeState.endOfInput()
+    val initialR = initialState.step()
+    val iterator : Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](factory.issueHandlingCode, initialR, { _.next.step() })
+    val (_lastResult, _allOutput, _allIssues) = {
+      iterator.foldLeft[(Plan2.State.Result[I,O], IndexedSeq[O],IndexedSeq[Issue])]((initialR, IndexedSeq[O](), IndexedSeq[Issue]())) {
+        (accTuple, result) =>
+          val (_, outputAcc, issuesAcc) = accTuple
+          (result, result.output ++ outputAcc, result.issues ++ issuesAcc)
+      }
+    }
+    val eoiResult = _lastResult.next.endOfInput()
     new api.Plan2.RunResult[I,O] {
 
-      def progress = lastResult.next.progress
+      def lastResult = _lastResult
 
-      def statusCode = StatusCode.and(lastResult.next.enumeratorState.statusCode,iResult_EOI.next.statusCode)
+      def endOfInput = eoiResult
 
-      def overflow = iResult_EOI.overflow
+      def statusCode = eoiResult.next.statusCode
 
-      def enumerator = factory.createEnumerator(lastResult.next.enumeratorState)
+      def progress = eoiResult.next.progress
 
-      def iteratee = factory.createIteratee(lastResult.next.iterateeState)
+      def enumerator = factory.createEnumerator(_lastResult.next.enumeratorState)
 
-      def allOutput = iResult_EOI.output ++ _allOutput
+      def iteratee = factory.createIteratee(_lastResult.next.iterateeState)
 
-      def allIssues = iResult_EOI.issues ++ _allIssues
+      def allOutput = eoiResult.output ++ _allOutput
+
+      def allIssues = eoiResult.issues ++ _allIssues
     }
   }
 }

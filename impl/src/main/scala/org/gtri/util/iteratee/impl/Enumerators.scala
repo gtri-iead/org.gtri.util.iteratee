@@ -69,67 +69,118 @@ object Enumerators {
     def apply[A](progress : Progress) = new FatalError[A](progress)
   }
 
-  def runFlatten[O,R <: Enumerator.State.Result[O]](issueHandlingCode : IssueHandlingCode, r: R, step: R => R) : (R, IndexedSeq[O], IndexedSeq[Issue]) = {
-    val results = run[O,R](issueHandlingCode, r, step)
-
-    val (allOutputs, allIssues) = results.foldLeft((IndexedSeq[O](), IndexedSeq[Issue]())) {
-      (accTuple,result : R) => {
-        val (accOutputs, accIssues) = accTuple
-        (result.output ++ accOutputs, result.issues ++ accIssues)
-      }
-    }
-    (results.head, allOutputs, allIssues)
-  }
-
-  // TODO: use stream here instead of List
-  def run[O,R <: Enumerator.State.Result[O]](issueHandlingCode : IssueHandlingCode, r: R, step: R => R) : List[R] = {
+  def iterator[O,R <: Enumerator.State.Result[O]](issueHandlingCode : IssueHandlingCode, r : R, step: R => R) = {
     issueHandlingCode match {
-      case IssueHandlingCode.NORMAL => doNormalRun[O,R](r, step, Nil)
-      case IssueHandlingCode.LAX => doLaxRun[O,R](r, step, Nil)
-      case IssueHandlingCode.STRICT => doStrictRun[O,R](r, step, Nil)
+      case IssueHandlingCode.NORMAL => new NormalRunIterator[O,R](r, step)
+      case IssueHandlingCode.LAX => new LaxRunIterator[O,R](r, step)
+      case IssueHandlingCode.STRICT => new StrictRunIterator[O,R](r, step)
     }
+
   }
-  @tailrec
-  final def doNormalRun[O,R <: Enumerator.State.Result[O]](r : R, step: R => R, results : List[R]) : List[R] = {
-    val nextResults = r :: results
-    r.next.statusCode match {
-      case StatusCode.RECOVERABLE_ERROR=> nextResults
-      case StatusCode.CONTINUE => {
-        doNormalRun[O,R](step(r), step, nextResults)
+
+  class NormalRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
+    def hasNext =
+      r.next.statusCode match {
+        case StatusCode.RECOVERABLE_ERROR=> false
+        case StatusCode.CONTINUE => true
+        case StatusCode.SUCCESS => false
+        case StatusCode.FATAL_ERROR => false
       }
-      case StatusCode.SUCCESS => nextResults
-      case StatusCode.FATAL_ERROR => nextResults
+    def next() = {
+      r = step(r)
+      r
     }
   }
 
-  @tailrec
-  final def doLaxRun[O,R <: Enumerator.State.Result[O]](r : R, step: R => R, results : List[R]) : List[R] = {
-    val nextResults = r :: results
-    r.next.statusCode match {
-      case StatusCode.RECOVERABLE_ERROR | StatusCode.CONTINUE => {
-        doLaxRun[O,R](step(r), step, nextResults)
+  class LaxRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
+    def hasNext =
+      r.next.statusCode match {
+        case StatusCode.RECOVERABLE_ERROR | StatusCode.CONTINUE => true
+        case StatusCode.SUCCESS => false
+        case StatusCode.FATAL_ERROR => false
       }
-      case StatusCode.SUCCESS => nextResults
-      case StatusCode.FATAL_ERROR => nextResults
+    def next() = {
+      r = step(r)
+      r
     }
   }
 
-  @tailrec
-  final def doStrictRun[O,R <: Enumerator.State.Result[O]](r : R, step: R => R, results : List[R]) : List[R] = {
-    val nextResults = r :: results
-    r.next.statusCode match {
-      case StatusCode.RECOVERABLE_ERROR=> nextResults
-      case StatusCode.CONTINUE => {
-        if(r.issues.filter({ _.impactCode == ImpactCode.WARNING }).nonEmpty) {
-          nextResults
-        } else {
-          doStrictRun[O,R](step(r), step, nextResults)
-        }
+  class StrictRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
+    def hasNext =
+      r.next.statusCode match {
+        case StatusCode.RECOVERABLE_ERROR => false
+        case StatusCode.CONTINUE => r.issues.filter({ _.impactCode == ImpactCode.WARNING }).isEmpty
+        case StatusCode.SUCCESS => false
+        case StatusCode.FATAL_ERROR => false
       }
-      case StatusCode.SUCCESS => nextResults
-      case StatusCode.FATAL_ERROR => nextResults
+    def next() = {
+      r = step(r)
+      r
     }
   }
+
+//  def runFlatten[O,R <: Enumerator.State.Result[O]](issueHandlingCode : IssueHandlingCode, r: R, step: R => R) : (R, IndexedSeq[O], IndexedSeq[Issue]) = {
+//    runFoldLeft[O,R,(R,IndexedSeq[O],IndexedSeq[Issue])](
+//      issueHandlingCode,
+//      r,
+//      step,
+//      (r, IndexedSeq[O](), IndexedSeq[Issue]()),
+//      {
+//        (accTuple, result) =>
+//          val (resultAcc, allOutputsAcc, allIssuesAcc) = accTuple
+//          (result, result.output ++ allOutputsAcc, result.issues ++ allIssuesAcc)
+//      }
+//    )
+//  }
+//
+//  def runFoldLeft[O,R <: Enumerator.State.Result[O],U](issueHandlingCode : IssueHandlingCode, r: R, step: R => R, u: U, fold: (U,R) => U) : U = {
+//    issueHandlingCode match {
+//      case IssueHandlingCode.NORMAL => doNormalRun[O,R,U](r, step, u, fold)
+//      case IssueHandlingCode.LAX => doLaxRun[O,R,U](r, step, u, fold)
+//      case IssueHandlingCode.STRICT => doStrictRun[O,R,U](r, step, u, fold)
+//    }
+//  }
+//  @tailrec
+//  final def doNormalRun[O,R <: Enumerator.State.Result[O],U](r : R, step: R => R, u: U, fold: (U,R) => U) : U = {
+//    val nextU = fold(u,r)
+//    r.next.statusCode match {
+//      case StatusCode.RECOVERABLE_ERROR=> nextU
+//      case StatusCode.CONTINUE => {
+//        doNormalRun[O,R,U](step(r), step, nextU, fold)
+//      }
+//      case StatusCode.SUCCESS => nextU
+//      case StatusCode.FATAL_ERROR => nextU
+//    }
+//  }
+//
+//  @tailrec
+//  final def doLaxRun[O,R <: Enumerator.State.Result[O],U](r : R, step: R => R, u: U, fold: (U,R) => U) : U = {
+//    val nextU = fold(u,r)
+//    r.next.statusCode match {
+//      case StatusCode.RECOVERABLE_ERROR | StatusCode.CONTINUE => {
+//        doLaxRun[O,R,U](step(r), step, nextU, fold)
+//      }
+//      case StatusCode.SUCCESS => nextU
+//      case StatusCode.FATAL_ERROR => nextU
+//    }
+//  }
+//
+//  @tailrec
+//  final def doStrictRun[O,R <: Enumerator.State.Result[O],U](r : R, step: R => R, u: U, fold: (U,R) => U) : U = {
+//    val nextU = fold(u,r)
+//    r.next.statusCode match {
+//      case StatusCode.RECOVERABLE_ERROR=> nextU
+//      case StatusCode.CONTINUE => {
+//        if(r.issues.filter({ _.impactCode == ImpactCode.WARNING }).nonEmpty) {
+//          nextU
+//        } else {
+//          doStrictRun[O,R,U](step(r), step, nextU, fold)
+//        }
+//      }
+//      case StatusCode.SUCCESS => nextU
+//      case StatusCode.FATAL_ERROR => nextU
+//    }
+//  }
 
 }
 

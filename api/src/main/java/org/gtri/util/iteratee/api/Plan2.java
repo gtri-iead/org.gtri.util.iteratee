@@ -22,26 +22,40 @@
 
 package org.gtri.util.iteratee.api;
 
+import java.util.Iterator;
+
 /**
  *
  * @author lance.gatlin@gmail.com
  */
-public interface Plan2<I, O> extends Enumerator<O> {
+public interface Plan2<I, O> extends Enumerator<O>, Iterable<Plan2.State.Result<I,O>> {
 
+  
   Enumerator<I> enumerator();
 
   Iteratee<I, O> iteratee();
 
-  Plan2.RunResult<I, O> run();
+  Iterator<Plan2.State.Result<I,O>> iterator();
+  Iterator<Plan2.State.Result<I,O>> iterator(IssueHandlingCode issueHandlingCode);
+//  <U> U runFoldLeft(U u, Function2<U, Plan2.State.Result<I,O>,U> f);
+//  void runForEach(Function1<Plan2.State.Result<I,O>,?> f);
+  Plan2.RunResult<I,O> run();
   
   public static interface RunResult<I,O> {
-    Progress progress();
+    Plan2.State.Result<I,O> lastResult();
+    
+    Plan2.State.Result<I,O> endOfInput();
+            
     StatusCode statusCode();
-    ImmutableBuffer<O> allOutput();
-    ImmutableBuffer<I> overflow();
-    ImmutableBuffer<Issue> allIssues();
+
+    Progress progress();
+    
     Enumerator<I> enumerator();
+
     Iteratee<I, O> iteratee();
+    
+    ImmutableBuffer<O> allOutput();
+    ImmutableBuffer<Issue> allIssues();
   }
   
   @Override
@@ -51,6 +65,8 @@ public interface Plan2<I, O> extends Enumerator<O> {
     @Override
     Plan2.State.Result<I,O> step();
     
+    Plan2.State.Result<I,O> endOfInput();
+    
     Enumerator.State<I> enumeratorState();
 
     Iteratee.State<I, O> iterateeState();
@@ -58,6 +74,8 @@ public interface Plan2<I, O> extends Enumerator<O> {
     public static interface Result<I, O> extends Enumerator.State.Result<O> {
       @Override
       Plan2.State<I,O> next();
+      
+      ImmutableBuffer<I> overflow();
     }
   }
   

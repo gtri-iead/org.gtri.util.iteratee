@@ -74,7 +74,7 @@ object ImmutableBuffers {
           def remove = throw new UnsupportedOperationException
         }
 
-        def toString = seq.toString
+        override def toString = seq.toString
       }
     }
   }

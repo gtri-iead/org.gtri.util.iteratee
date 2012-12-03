@@ -22,11 +22,13 @@
 
 package org.gtri.util.iteratee.api;
 
+import java.util.Iterator;
+
 /**
  *
  * @author lance.gatlin@gmail.com
  */
-public interface Plan3<I1,I2, O> extends Enumerator<O> {
+public interface Plan3<I1,I2, O> extends Enumerator<O>, Iterable<Plan3.State.Result<I1,I2,O>> {
 
   Enumerator<I1> enumerator();
 
@@ -34,17 +36,29 @@ public interface Plan3<I1,I2, O> extends Enumerator<O> {
   
   Iteratee<I2, O> iteratee();
 
-  RunResult<I1,I2, O> run();
+  Iterator<Plan3.State.Result<I1,I2,O>> iterator();
+  Iterator<Plan3.State.Result<I1,I2,O>> iterator(IssueHandlingCode issueHandlingCode);
+//  <U> U runFoldLeft(U u, Function2<U, Plan3.State.Result<I1,I2,O>,U> f);
+//  void runForEach(Function1<Plan3.State.Result<I1,I2,O>,?> f);
+  RunResult<I1,I2,O> run();
   
   public static interface RunResult<I1,I2,O> {
-    Progress progress();
+    Plan3.State.Result<I1,I2,O> lastResult();
+    
+    Plan3.State.Result<I1,I2,O> endOfInput();
+            
     StatusCode statusCode();
-    ImmutableBuffer<O> allOutput();
-    ImmutableBuffer<I2> overflow();
-    ImmutableBuffer<Issue> allIssues();
+
+    Progress progress();
+    
     Enumerator<I1> enumerator();
-    Iteratee<I1,I2> translator();
+
+    Iteratee<I1, I2> translator();
+
     Iteratee<I2, O> iteratee();
+    
+    ImmutableBuffer<O> allOutput();
+    ImmutableBuffer<Issue> allIssues();
   }
   
   @Override
@@ -54,15 +68,19 @@ public interface Plan3<I1,I2, O> extends Enumerator<O> {
     @Override
     Plan3.State.Result<I1,I2,O> step();
     
+    Plan3.State.Result<I1,I2,O> endOfInput();
+            
     Enumerator.State<I1> enumeratorState();
 
     Iteratee.State<I1, I2> translatorState();
 
     Iteratee.State<I2, O> iterateeState();
     
-    public static interface Result<I1,I2, O> extends Enumerator.State.Result<O> {
+    public static interface Result<I1,I2,O> extends Enumerator.State.Result<O> {
       @Override
       Plan3.State<I1,I2,O> next();
+      
+      ImmutableBuffer<I2> overflow();      
     }
   }
   
