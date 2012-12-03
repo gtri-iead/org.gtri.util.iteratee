@@ -37,7 +37,7 @@ class SeqEnumerator[A](traversable : Seq[A], chunkSize : Int = STD_CHUNK_SIZE) e
   import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
   
   class Cont[A](current : Seq[A]) extends Enumerators.Cont[A] {
-    val progress = new Progress()
+    val progress = Progress.empty
 
     def step = {
       val (nextChunk, remaining) = current.splitAt(chunkSize)

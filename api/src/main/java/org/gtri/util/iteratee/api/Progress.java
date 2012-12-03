@@ -68,4 +68,6 @@ public final class Progress {
     }
     return current;
   }
+  
+  public static final Progress empty = new Progress();
 }
