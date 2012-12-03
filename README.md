@@ -7,46 +7,64 @@ A Java interface-front-ended library implemented in Scala for streaming objects 
 The following example enumerates an array of integers to an iteratee that simply prints them.
 ```Java
 IterateeFactory factory = new IterateeFactory();
-Planner planner = factory.createPlanner();
 Array<Integer> ints = { 1,2,3 }
 Producer<Integer> intProducer = new TestProducer<Integer>(ints);
 Translator<Integer,String> intToString = new TestIntToStringTranslator();
 Consumer<String> strConsumer = new TestPrintConsumer<String>(output);
-planner.connect(integerProducer, intToString, stringConsumer).run();
-assertTrue(result.status().isSuccess());
+factory.createPlan(integerProducer, intToString, stringConsumer).run();
+assertTrue(result.statusCode().isSuccess());
 ```
 <h3>Iteratee Implementation Example (Scala)</h3>
+An iteratee implementation that prints all input chunks it receives.
 ```Scala
-class TestPrintConsumer[A] extends Consumer[A, Unit] {
-  case class Cont[A]() extends IterS.Cont[A] {
-    def apply(items: Traversable[A]) = {
+import org.gtri.util.iteratee.api._
+import org.gtri.util.iteratee.impl.Iteratees._
+import org.gtri.util.iteratee.impl.Iteratees
+import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
+
+class TestPrintConsumer[A] extends Iteratee[A, Unit] {
+  case class Cont[A]() extends Iteratees.Cont[A, Unit] {
+    def apply(items: ImmutableBuffer[A]) = {
+      println("received=" + items)
       for (item <- items) {
         println(item)
       }
       Result(this)
     }
 
-    def endOfInput() = Result(IterS.Success())
+    def endOfInput() = Result(Success())
   }
 
-  def iteratee = Cont()
+  def initialState = Cont()
 }
 ```
 <h3>Enumeratee Implementation Example (Scala)</h3>
+An enumerator implementation for any java.util.Iterator that groups output into chunks
 ```Scala
-class TestProducer[A](iterable : java.lang.Iterable[A], chunkSize : java.lang.Integer) extends Producer[A] {
+import scala.collection.immutable.Traversable
+import org.gtri.util.iteratee.api
+import api._
+import scala.collection.JavaConversions._
+import org.gtri.util.iteratee.impl.SeqEnumerator
 
-  def enumeratee() = StreamEnumeratee(iterable.iterator.toStream,chunkSize)
+class TestEnumerator[A](iterable : java.lang.Iterable[A], chunkSize : java.lang.Integer) extends Enumerator[A] {
+
+  def initialState = new SeqEnumerator(iterable.iterator.toStream,chunkSize).initialState
 }
 ```
-<h3>Translatee Implementation Example (Scala)</h3>
+<h3>Translating Iteratee Implementation Example (Scala)</h3>
+An iteratee implementation that translates an integer to a string.
 ```Scala
-class TestIntToStringTranslator extends Translator[java.lang.Integer, String] {
-  class Cont extends Translatee[java.lang.Integer,String]  {
+import org.gtri.util.iteratee.api._
+import org.gtri.util.iteratee.impl.Iteratees._
+import org.gtri.util.iteratee.impl.Iteratees
+import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
-    def status = StatusCode.CONTINUE
+class TestIntToStringTranslator extends Iteratee[java.lang.Integer, String] {
+  class Cont extends Iteratees.Cont[java.lang.Integer,String]  {
 
-    def apply(items: Traversable[java.lang.Integer]) = {
+    def apply(items: ImmutableBuffer[java.lang.Integer]) = {
+      println("translating=" + items)
       val nextOutput = items.foldLeft(List[String]()) {
         (list,item) => {
           item.toString :: list
@@ -54,7 +72,10 @@ class TestIntToStringTranslator extends Translator[java.lang.Integer, String] {
       }
       Result(this, nextOutput)
     }
+
+    def endOfInput() = Result(Success())
   }
-  def translatee = new Cont()
+
+  def initialState = new Cont()
 }
 ```
