@@ -87,22 +87,6 @@ class Plan2[I,O](val factory : IterateeFactory, val enumerator : Enumerator[I], 
     }
   }
 
-//  def runFoldLeft[U](u: U, f: Function2[U, Plan2.State.Result[I, O], U]) = {
-//    val iterator : Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
-//    iterator.foldLeft(u) {
-//      (acc, result) =>
-//        f(acc, result)
-//    }
-//  }
-//
-//  def runForEach(f: Function1[Plan2.State.Result[I, O], _]) = {
-//    val iterator : Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
-//    iterator.foreach {
-//      f(_)
-//    }
-//  }
-
-
   def iterator : java.util.Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
 
   def iterator(issueHandlingCode: IssueHandlingCode) : java.util.Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](issueHandlingCode, initialState.step(), { _.next.step() })
