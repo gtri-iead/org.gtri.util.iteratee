@@ -29,7 +29,7 @@ import java.util.Iterator;
  * 
  * @author lance.gatlin@gmail.com
  */
-public interface Plan2<I, O> extends Enumerator<O> {
+public interface Plan2<I, O> extends Enumerator<O>, Iterable<Plan2.State.Result<I,O>> {
   
   /**
    * Get the factory that was used to create this plan
@@ -56,7 +56,7 @@ public interface Plan2<I, O> extends Enumerator<O> {
    * @return an iterator that allows stepping through the results of the plan 
    * using the factory's default IssueHandlingCode
    */
-  Iterator<Plan2.State.Result<I,O>> iterator();
+  @Override Iterator<Plan2.State.Result<I,O>> iterator();
   
   /**
    * Get an iterator that allows stepping through the results of the plan using

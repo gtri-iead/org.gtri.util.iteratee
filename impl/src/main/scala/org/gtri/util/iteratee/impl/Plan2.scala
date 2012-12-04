@@ -36,54 +36,28 @@ import scala.collection.JavaConversions._
 class Plan2[I,O](val factory : IterateeFactory, val enumerator : Enumerator[I], val iteratee : Iteratee[I,O]) extends api.Plan2[I,O] {
   import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
-  def initialState = new Cont(enumerator.initialState, iteratee.initialState)
+  def initialState = new State(enumerator.initialState, iteratee.initialState)
 
   case class Result[I,O](next : api.Plan2.State[I,O], output : ImmutableBuffer[O], overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) extends api.Plan2.State.Result[I,O]
 
-  abstract class BaseState[I,O](enumeratorState : Enumerator.State[I], iterateeState : Iteratee.State[I,O]) extends api.Plan2.State[I,O] {
-    val statusCode = StatusCode.and(enumeratorState.statusCode, iterateeState.statusCode)
+  case class State[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O]) extends api.Plan2.State[I,O] {
+    def statusCode = StatusCode.and(enumeratorState.statusCode, iterateeState.statusCode)
 
     def progress = enumeratorState.progress
 
     def endOfInput() = {
       val iResult_EOI = iterateeState.endOfInput()
-      Result(Done(enumeratorState, iResult_EOI.next), iResult_EOI.output, iResult_EOI.overflow, iResult_EOI.issues)
+      Result(State(enumeratorState, iResult_EOI.next), iResult_EOI.output, iResult_EOI.overflow, iResult_EOI.issues)
     }
-  }
-
-  // Enumerator is done and EOI fed to iteratee OR iteratee is DONE
-  case class Done[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O]) extends BaseState[I,O](enumeratorState, iterateeState) {
-
-    def step() = Result(this, ImmutableBuffers.empty, ImmutableBuffers.empty, ImmutableBuffers.empty)
-  }
-
-  // Enumerator is done, step causes EOI to be fed to iteratee
-  case class EOI[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O]) extends BaseState[I,O](enumeratorState, iterateeState) {
-    def statusCodes = iterateeState.statusCode
 
     def step() = {
-      endOfInput()
-    }
-  }
-
-  case class Cont[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O]) extends BaseState[I,O](enumeratorState, iterateeState) {
-
-    def step() = {
-      val eResult = enumeratorState.step()
-      val iResult = iterateeState.apply(eResult.output)
-      val nextState = {
-        iResult.next.statusCode match {
-          case StatusCode.CONTINUE | StatusCode.RECOVERABLE_ERROR =>
-            eResult.next.statusCode match {
-              case StatusCode.CONTINUE | StatusCode.RECOVERABLE_ERROR => Cont(eResult.next, iResult.next)
-              case StatusCode.FATAL_ERROR => Done(eResult.next, iResult.next)
-              case StatusCode.SUCCESS => EOI(eResult.next, iResult.next)
-            }
-          case StatusCode.FATAL_ERROR => Done(eResult.next, iResult.next)
-          case StatusCode.SUCCESS => Done(eResult.next, iResult.next)
-        }
+      if (statusCode.isDone) {
+        Result(this, ImmutableBuffers.empty, ImmutableBuffers.empty, ImmutableBuffers.empty)
+      } else {
+        val eResult = enumeratorState.step()
+        val iResult = iterateeState.apply(eResult.output)
+        Result(State(eResult.next, iResult.next), iResult.output, iResult.overflow, eResult.issues ++ iResult.issues)
       }
-      Result(nextState, iResult.output, iResult.overflow, eResult.issues ++ iResult.issues)
     }
   }
 

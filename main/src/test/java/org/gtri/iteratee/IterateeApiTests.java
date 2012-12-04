@@ -23,6 +23,7 @@
 package org.gtri.iteratee;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.gtri.util.iteratee.api.*;
 import org.gtri.util.iteratee.impl.test.TestIntToStringTranslator;
@@ -178,14 +179,21 @@ public class IterateeApiTests {
     System.out.println("Connecting TestIntegerProducer to TestIntIteratee...");
     Plan2<Integer,Integer> plan = factory.createPlan(integerProducer, testIntIteratee);
     System.out.println("Running plan...");
-    Plan2.RunResult<Integer,Integer> result = plan.run();
-        
+//    Plan2.RunResult<Integer,Integer> result = plan.run();
+    Iterator<Plan2.State.Result<Integer,Integer>> i = plan.iterator();
+    Plan2.State.Result<Integer,Integer> result = null;
+    while(i.hasNext()) {
+      result = i.next();
+      System.out.println("progress=" + result.next().progress());
+    }
+    result = result.next().endOfInput();
+    
     System.out.print("Successful? ");
-    assertTrue(result.statusCode().isSuccess());
+    assertTrue(result.next().statusCode().isSuccess());
     System.out.println("Ok.");
     
     System.out.println("Testing output... ");
-    Integer actual = result.allOutput().apply(0);
+    Integer actual = result.output().apply(0);
     System.out.println("results=" + actual);
     assertEquals(6, actual.intValue());
     System.out.println("Ok.");
