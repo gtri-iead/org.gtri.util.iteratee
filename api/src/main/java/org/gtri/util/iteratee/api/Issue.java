@@ -23,8 +23,7 @@
 package org.gtri.util.iteratee.api;
 
 /**
- * An interface for an error, warning or informative message that occurred 
- * during processing.
+ * An interface for an issue that occurred during a computation.
  * 
  * @author lance.gatlin@gmail.com
  */
@@ -59,10 +58,8 @@ public interface Issue {
     DEBUG
   }
   /**
-   * Get an object that can be converted to a string that displays the location
-   * of the source of the issue within the original producer.
-   * @return an object that can be converted to a string that displays the 
-   * location of the source of the issue within the original producer.
+   * Get the diagnostic locator message
+   * @return the diagnostic locator message
    */
   ImmutableDiagnosticLocator locator();
   
@@ -74,10 +71,10 @@ public interface Issue {
   
   /**
    * Get the stack trace for the source code location where the issue was 
-   * raised.
+   * raised
    * 
    * @return the stack trace for the source code location where the issue was 
-   * raised.
+   * raised
    */
   StackTraceElement[] stackTrace();
   

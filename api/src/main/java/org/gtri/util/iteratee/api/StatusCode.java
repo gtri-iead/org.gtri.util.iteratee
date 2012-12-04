@@ -23,15 +23,35 @@
 package org.gtri.util.iteratee.api;
 
 /**
- *
+ * A code that represents the status of some finite state machine (FSM), such as 
+ * an Enumerator or an Iteratee.
+ * 
  * @author lance.gatlin@gmail.com
  */
 public enum StatusCode {
+  /**
+   * The FSM is not done and the previous computation (if any) did not result in 
+   * a recoverable error.
+   */
   CONTINUE,
+  /**
+   * The FSM is done and all processing was successful.
+   */
   SUCCESS,
+  /**
+   * The FSM is not done and the previous computation (if any) resulted in a 
+   * recoverable error.
+   */
   RECOVERABLE_ERROR,
+  /**
+   * The FSM is done and processing has failed.
+   */
   FATAL_ERROR;
 
+  /**
+   * Test if done
+   * @return TRUE if done FALSE otherwise
+   */
   public boolean isDone() { 
     switch(this) {
       case RECOVERABLE_ERROR:
@@ -42,6 +62,11 @@ public enum StatusCode {
     }
     return true;
   }
+
+  /**
+   * Test if success
+   * @return TRUE if success FALSE otherwise
+   */
   public boolean isSuccess() {
     switch(this) {
       case RECOVERABLE_ERROR:
@@ -52,6 +77,11 @@ public enum StatusCode {
     }
     return true;
   }
+  
+  /**
+   * Test if error
+   * @return TRUE if error FALSE otherwise
+   */
   public boolean isError() {
     switch(this) {
       case CONTINUE :
@@ -63,6 +93,11 @@ public enum StatusCode {
     return true;    
   }
   
+  /**
+   * "AND" multiple StatusCodes 
+   * @param statusCodes
+   * @return a new StatusCode representing the "AND" of the supplied StatusCodes
+   */
   public static StatusCode and(Iterable<StatusCode> statusCodes) {
     StatusCode current = StatusCode.CONTINUE;
     for(StatusCode status : statusCodes) {
@@ -71,6 +106,11 @@ public enum StatusCode {
     return current;
   }
   
+  /**
+   * "AND" three or more StatusCodes 
+   * @param statusCodes
+   * @return a new StatusCode representing the "AND" of the supplied StatusCodes
+   */
   public static StatusCode and(StatusCode ... statusCodes) {
     StatusCode current = StatusCode.CONTINUE;
     for(StatusCode status : statusCodes) {
@@ -79,6 +119,12 @@ public enum StatusCode {
     return current;
   }
   
+  // TODO: explain this better
+  /**
+   * "AND" two StatusCodes 
+   * @param statusCodes
+   * @return a new StatusCode representing the "AND" of the supplied StatusCodes
+   */
   public static StatusCode and(StatusCode lhs, StatusCode rhs) {
     switch(lhs) {
       case CONTINUE :
@@ -110,6 +156,11 @@ public enum StatusCode {
     return FATAL_ERROR;
   }
 
+  /**
+   * "OR" multiple StatusCodes 
+   * @param statusCodes
+   * @return a new StatusCode representing the "OR" of the supplied StatusCodes
+   */
   public static StatusCode or(Iterable<StatusCode> statusCodes) {
     StatusCode current = StatusCode.CONTINUE;
     for(StatusCode status : statusCodes) {
@@ -118,6 +169,11 @@ public enum StatusCode {
     return current;
   }
   
+  /**
+   * "OR" three or more StatusCodes 
+   * @param statusCodes
+   * @return a new StatusCode representing the "AND" of the supplied StatusCodes
+   */
   public static StatusCode or(StatusCode ... statusCodes) {
     StatusCode current = StatusCode.CONTINUE;
     for(StatusCode status : statusCodes) {
@@ -126,6 +182,11 @@ public enum StatusCode {
     return current;
   }
   
+  /**
+   * "OR" two StatusCodes 
+   * @param statusCodes
+   * @return a new StatusCode representing the "OR" of the supplied StatusCodes
+   */
   public static StatusCode or(StatusCode lhs, StatusCode rhs) {
     switch(lhs) {
       case CONTINUE :

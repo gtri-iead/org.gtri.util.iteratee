@@ -25,15 +25,28 @@ package org.gtri.util.iteratee.api;
 import java.util.Iterator;
 
 /**
- *
+ * An interface for an immutable buffer of items.
+ * 
  * @author lance.gatlin@gmail.com
  */
 public interface ImmutableBuffer<A> extends Iterable<A> {
+  /**
+   * Get the length of the buffer.
+   * @return the length of the buffer.
+   */
   int length();
   
+  /**
+   * Get the item at the specified index
+   * @param idx zero-based index. must be less than length
+   * @return the item at the specified index
+   * @throws NoSuchElementException if index is greater than or equal to length
+   */
   A apply(int idx);
   
-  // This is here because of an issue with Scala
-  @Override
-  Iterator<A> iterator();
+  /**
+   * Get an iterator for the items in the buffer
+   * @return an iterator for the items in the buffer
+   */
+  @Override Iterator<A> iterator();
 }

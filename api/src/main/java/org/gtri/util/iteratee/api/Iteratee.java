@@ -23,11 +23,8 @@
 package org.gtri.util.iteratee.api;
 
 /**
- * An interface for a Mealy machine. A Mealy machine is a finite state machine 
- * whose output is determined by both its current state and its input. The 
- * machine interface is used to obtain the initial state of the machine. Input
- * may then be applied to the state to obtain further states. See Machine.State
- * below.
+ * An interface for an Iteratee. An Iteratee is a Mealy machine, a finite state 
+ * machine whose output is determined by both its current state and its input. 
  * 
  * @author lance.gatlin@gmail.com
  * @param <I> the input type
@@ -35,31 +32,31 @@ package org.gtri.util.iteratee.api;
  */
 public interface Iteratee<I,O> {
   /**
-   * Get the initial state of the Machine
-   * @return the initial state of the Machine
+   * Get the initial state of the Iteratee
+   * @return the initial state of the Iteratee
    */
   Iteratee.State<I,O> initialState();
   
   /**
-   * An interface for an immutable state of a Mealy machine. Applying a buffer 
-   * of input to the Machine returns an immutable result object that contains 
-   * the next immutable Machine state, the output, any overflow (unused input) 
-   * and any issues raised during processing. A Machine signals completion (or 
-   * the presence of errors) by way of the status method. Further calls to the 
-   * apply method after a Machine's status method has indicated completion are a 
-   * noop and will result in all applied input being returned as overflow in the 
-   * result. Once all input has been applied to a Machine, the endOfInput method 
-   * must be called to signal to the Machine to move to a completion state 
-   * (either SUCCESS or FATAL_ERROR).
+   * An interface for an immutable state of an Iteratee. Applying a buffer 
+   * of input to the Iteratee returns an immutable result object that contains 
+   * the next immutable Iteratee state, the output, any overflow (unused input) 
+   * and any issues raised during processing. An Iteratee signals completion (or 
+   * the presence of errors) by way of its status method. Further calls to the 
+   * apply method after an Iteratee's status method has indicated completion are 
+   * a noop and will result in all applied input being returned as overflow in 
+   * the result. Once all input has been applied to an Iteratee, the endOfInput 
+   * method must be called to signal to the Iteratee to move to the SUCCESS or 
+   * FATAL_ERROR status.
    * 
-   * Note1: Machine.State implementations should not throw exceptions. Instead,
+   * Note1: Iteratee.State implementations should not throw exceptions. Instead,
    * exceptions should be returned as issues in the result and the 
-   * status of the next Machine set to FATAL_ERROR (should processing stop) or 
-   * RECOVERABLE_ERROR (if processing may continue).
+   * status of the next Iteratee set to FATAL_ERROR should processing be stopped
+   * or RECOVERABLE_ERROR if processing may continue.
    * 
-   * Note2: Application of input to a Machine may result in more overflow than 
-   * input applied in the method call. Earlier Machine.States may internally 
-   * cache input that is then returned by a later Machine state.
+   * Note2: Application of input to an Iteratee may result in more overflow than 
+   * input applied in the method call. Earlier Iteratee.States may internally 
+   * cache input that is then returned by a later Iteratee state.
    * 
    * @author lance.gatlin@gmail.com
    * @param <I> the input type
@@ -67,8 +64,8 @@ public interface Iteratee<I,O> {
    */
   public static interface State<I,O> {
     /**
-     * Get the status of the Machine
-     * @return status of the Machine
+     * Get the status of the Iteratee
+     * @return status of the Iteratee
      */
     StatusCode statusCode();
 
@@ -79,21 +76,21 @@ public interface Iteratee<I,O> {
      */  
     Iteratee.State.Result<I,O> apply(ImmutableBuffer<I> input);
     /**
-     * Signal to the Machine the end of input
+     * Signal to the Iteratee the end of input
      * @return an immutable result object
      */
     Iteratee.State.Result<I,O> endOfInput();
     
     /**
-     * The immutable result of applying input to an Machine
+     * The immutable result of applying input to an Iteratee
      * 
      * @param <I> the input type
      * @param <O> the output type
      */  
     public static interface Result<I,O> {
       /**
-       * Get the next immutable state of the Machine
-       * @return the next immutable state of the Machine
+       * Get the next immutable state of the Iteratee
+       * @return the next immutable state of the Iteratee
        */
       Iteratee.State<I,O> next();
       /**

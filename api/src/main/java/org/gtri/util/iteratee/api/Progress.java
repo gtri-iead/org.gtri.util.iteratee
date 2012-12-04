@@ -23,29 +23,61 @@
 package org.gtri.util.iteratee.api;
 
 /**
- *
+ * A class that represents the progress of an Enumerator.
+ * 
  * @author lance.gatlin@gmail.com
  */
 public final class Progress {
   private final int recoverableErrorItemCount, successItemCount, totalItemCount;
 
+  /**
+   * Construct an empty Progress
+   */
   public Progress() {
     this.recoverableErrorItemCount = 0;
     this.successItemCount = 0;
     this.totalItemCount = 0;
   }
   
+  /**
+   * Contract a Progress
+   * @param recoverableErrorItemCount
+   * @param successItemCount
+   * @param totalItemCount 
+   */
   public Progress(int recoverableErrorItemCount, int successItemCount, int totalItemCount) {
     this.recoverableErrorItemCount = recoverableErrorItemCount;
     this.successItemCount = successItemCount;
     this.totalItemCount = totalItemCount;
   }
   
+  /**
+   * Get the count of processed items that resulted in a recoverable error
+   * @return the count of processed items that resulted in a recoverable error
+   */
   public int recoverableErrorItemCount() { return recoverableErrorItemCount; }
+  /**
+   * Get the count of processed items that were successfully processed
+   * @return the count of processed items that were successfully processed
+   */
   public int successItemCount() { return successItemCount; }
+  /**
+   * Get the total count of items to be processed
+   * @return the total count of items to be processed
+   */
   public int totalItemCount() { return totalItemCount; }
+  /**
+   * Get the percentage complete
+   * @return the percentage complete
+   */
   public double percentComplete() { return (recoverableErrorItemCount + successItemCount) / ((double)totalItemCount); }
   
+  /**
+   * Sum two Progress objects
+   * @param lhs
+   * @param rhs
+   * @return a new Progress object that is the sum of the supplied Progress objects
+   */
   public static Progress sum(Progress lhs, Progress rhs) {
     return new Progress(
             lhs.recoverableErrorItemCount() + rhs.recoverableErrorItemCount(),
@@ -54,6 +86,11 @@ public final class Progress {
             );
   }
   
+  /**
+   * Sum three or more Progress objects
+   * @param progresses
+   * @return a new Progress object that is the sum of the supplied Progress objects
+   */
   public static Progress sum(Progress ... progresses) {
     Progress current = new Progress();
     for(Progress status : progresses) {
@@ -62,6 +99,11 @@ public final class Progress {
     return current;
   }
   
+  /**
+   * Sum multiple Progress objects
+   * @param progresses
+   * @return a new Progress object that is the sum of the supplied Progress objects
+   */
   public static Progress sum(Iterable<Progress> progresses) {
     Progress current = new Progress();
     for(Progress progress : progresses) {
@@ -70,5 +112,8 @@ public final class Progress {
     return current;
   }
   
+  /**
+   * An empty progress
+   */
   public static final Progress empty = new Progress();
 }

@@ -23,16 +23,20 @@
 package org.gtri.util.iteratee.api;
 
 /**
- * An interface that can be converted to string and prepended to messages to
- * provide the user or administrator with the information necessary to locate
- * the source of any issues within the input supplied, such as the XML file
- * name and line number or the database name, table and record, etc.
+ * An interface for an immutable diagnostic locator string. An 
+ * ImmutableDiagnosticLocator can be converted to a string and prepended to 
+ * messages to provide the user or administrator with the information necessary 
+ * to locate the source of any issues within the input supplied, such as the XML 
+ * file name and line number or the database name, table and record, etc.
  *
  * @author lance.gatlin@gmail.com
  */
 public interface ImmutableDiagnosticLocator {
 
-  @Override
-  public String toString();
+  /**
+   * Get a diagnostic locator string that can be prepended to messages.
+   * @return a diagnostic locator string that can be prepended to messages.
+   */
+  @Override public String toString();
   
 }

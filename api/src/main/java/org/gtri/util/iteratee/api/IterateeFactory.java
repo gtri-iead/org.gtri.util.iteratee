@@ -23,7 +23,7 @@
 package org.gtri.util.iteratee.api;
 
 /**
- * An interface for a factory that can create implementations of various 
+ * An interface for a factory for creating implementations of various 
  * interfaces in the iteratee library.
  * 
  * @author lance.gatlin@gmail.com
@@ -36,51 +36,40 @@ public interface IterateeFactory {
   IssueHandlingCode issueHandlingCode();
   
   /**
-   * Create a producer from a producer state.
+   * Create an Enumerator from a Enumerator.State.
    * 
    * @param <A> the output type
-   * @param state state of some producer
-   * @return a producer whose initialState method will return the provided
+   * @param state state of some Enumerator
+   * @return an Enumerator whose initialState method will return the provided
    * state
    */
   <A> Enumerator<A> createEnumerator(Enumerator.State<A> state);
   
   /**
-   * Create an iteratee from an iteratee state.
-   * @param <A> the input type
-   * @param <S> the loop state type
-   * @param state state of some iteratee
-   * @return an iteratee whose initialState method will return the provided
+   * Create an Iteratee from an Iteratee.State.
+   * @param <I> the input type
+   * @param <O> the output type
+   * @param state state of some Iteratee
+   * @return an Iteratee whose initialState method will return the provided
    * state
    */
   <I,O> Iteratee<I,O> createIteratee(Iteratee.State<I,O> state);
   
-//  /**
-//   * Create a simple stateless translating iteratee from a function
-//   * 
-//   * @param <A> the input type
-//   * @param <B> the output type
-//   * @param f a function that converts an item of the input type to an item of 
-//   * the output type
-//   * @return an iteratee that converts items of the input type to items of the
-//   * output type
-//   */
-//  <A,B> Iteratee<A,B> createTranslator(Function1<A,B> f);
-  
   /**
-   * Create a plan to stream items from a producer to an iteratee.
+   * Create a plan to stream items from an Enumerator to an Iteratee.
    * 
    * @param <I> the enumerator's output type
    * @param <O> the iteratee's output type
    * @param enumerator
    * @param iteratee
-   * @return a plan that can be run to obtain results
+   * @return a plan that can be run to stream items from the Enumerator to the 
+   * Iteratee and obtain results
    */
   <I,O> Plan2<I,O> createPlan(Enumerator<I> enumerator, Iteratee<I,O> iteratee);
   
   /**
-   * Create a plan to stream items from a producer to an iteratee by translating
-   * the items using the given iteratee.
+   * Create a plan to stream items from an Enumerator to an Iteratee of a 
+   * different type by translating the items using the given Iteratee.
    * 
    * @param <I1> the enumerator's output type
    * @param <I2> the translator's output type
@@ -88,36 +77,37 @@ public interface IterateeFactory {
    * @param enumerator 
    * @param translator
    * @param iteratee
-   * @return a plan that can be run to obtain results
+   * @return a plan that can be run to stream items from the Enumerator through 
+   * the translating Iteratee to the terminal Iteratee and obtain results
    */
   <I1,I2,O> Plan3<I1,I2,O> createPlan(Enumerator<I1> enumerator, Iteratee<I1,I2> translator, Iteratee<I2,O> iteratee);
   
   /**
-   * Compose two iteratees.
+   * Compose two Iteratees.
    * 
-   * @param <A> the input type of the first iteratee
-   * @param <B> the output type of the first iteratee and input type of the 
+   * @param <A> the input type of the first Iteratee
+   * @param <B> the output type of the first Iteratee and input type of the 
    * second
-   * @param <C> the output type of the second iteratee 
-   * @param first first iteratee
-   * @param second second iteratee
-   * @return a iteratee composed of the two iteratees
+   * @param <C> the output type of the second Iteratee 
+   * @param first first Iteratee
+   * @param second second Iteratee
+   * @return a Iteratee composed of the two Iteratees
    */
   <A,B,C> Iteratee<A,C> compose(Iteratee<A,B> first, Iteratee<B,C> second);
   
   /**
-   * Compose three iteratees.
+   * Compose three Iteratees.
    * 
-   * @param <A> the input type of the first iteratee
-   * @param <B> the output type of the first iteratee and input type of the 
+   * @param <A> the input type of the first Iteratee
+   * @param <B> the output type of the first Iteratee and input type of the 
    * second
-   * @param <C> the output type of the second iteratee and input type of the 
+   * @param <C> the output type of the second Iteratee and input type of the 
    * third
-   * @param <D> the output type of the third iteratee 
-   * @param first first iteratee
-   * @param second second iteratee
-   * @param third third iteratee
-   * @return a iteratee composed of the three iteratees
+   * @param <D> the output type of the third Iteratee 
+   * @param first first Iteratee
+   * @param second second Iteratee
+   * @param third third Iteratee
+   * @return a Iteratee composed of the three Iteratees
    */
   <A,B,C,D> Iteratee<A,D> compose(
     Iteratee<A,B> first, 
@@ -126,21 +116,21 @@ public interface IterateeFactory {
   );
   
   /**
-   * Compose four iteratees.
+   * Compose four Iteratees.
    * 
-   * @param <A> the input type of the first iteratee
-   * @param <B> the output type of the first iteratee and input type of the 
+   * @param <A> the input type of the first Iteratee
+   * @param <B> the output type of the first Iteratee and input type of the 
    * second
-   * @param <C> the output type of the second iteratee and input type of the 
+   * @param <C> the output type of the second Iteratee and input type of the 
    * third
-   * @param <D> the output type of the third iteratee and input type of the 
+   * @param <D> the output type of the third Iteratee and input type of the 
    * fourth
-   * @param <E> the output type of the fourth iteratee 
-   * @param first first iteratee
-   * @param second second iteratee
-   * @param third third iteratee
-   * @param fourth fourth iteratee
-   * @return a iteratee composed of the four iteratees
+   * @param <E> the output type of the fourth Iteratee 
+   * @param first first Iteratee
+   * @param second second Iteratee
+   * @param third third Iteratee
+   * @param fourth fourth Iteratee
+   * @return a Iteratee composed of the four Iteratees
    */
   <A,B,C,D,E> Iteratee<A,E> compose(
     Iteratee<A,B> first, 
@@ -149,24 +139,24 @@ public interface IterateeFactory {
     Iteratee<D,E> fourth
   );
   /**
-   * Compose five iteratees.
+   * Compose five Iteratees.
    * 
-   * @param <A> the input type of the first iteratee
-   * @param <B> the output type of the first iteratee and input type of the 
+   * @param <A> the input type of the first Iteratee
+   * @param <B> the output type of the first Iteratee and input type of the 
    * second
-   * @param <C> the output type of the second iteratee and input type of the 
+   * @param <C> the output type of the second Iteratee and input type of the 
    * third
-   * @param <D> the output type of the third iteratee and input type of the 
+   * @param <D> the output type of the third Iteratee and input type of the 
    * fourth
-   * @param <D> the output type of the fourth iteratee and input type of the 
+   * @param <D> the output type of the fourth Iteratee and input type of the 
    * fifth
-   * @param <E> the output type of the fifth iteratee 
-   * @param first first iteratee
-   * @param second second iteratee
-   * @param third third iteratee
-   * @param fourth fourth iteratee
-   * @param fifth fifth iteratee
-   * @return a iteratee composed of the five iteratees
+   * @param <E> the output type of the fifth Iteratee 
+   * @param first first Iteratee
+   * @param second second Iteratee
+   * @param third third Iteratee
+   * @param fourth fourth Iteratee
+   * @param fifth fifth Iteratee
+   * @return a Iteratee composed of the five Iteratees
    */
   <A,B,C,D,E,F> Iteratee<A,F> compose(
     Iteratee<A,B> first, 
