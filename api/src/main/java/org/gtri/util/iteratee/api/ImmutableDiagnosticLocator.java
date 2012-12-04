@@ -39,4 +39,8 @@ public interface ImmutableDiagnosticLocator {
    */
   @Override public String toString();
   
+  public static final ImmutableDiagnosticLocator nowhere = new ImmutableDiagnosticLocator() {
+    @Override public String toString() { return ""; }
+  };
+  
 }
