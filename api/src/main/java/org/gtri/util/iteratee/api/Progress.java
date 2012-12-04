@@ -72,6 +72,8 @@ public final class Progress {
    */
   public double percentComplete() { return (recoverableErrorItemCount + successItemCount) / ((double)totalItemCount); }
   
+  @Override public String toString() { return String.format("%%%d", (int)(percentComplete() * 100)); }
+  
   /**
    * Sum two Progress objects
    * @param lhs
