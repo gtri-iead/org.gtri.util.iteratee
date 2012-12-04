@@ -24,6 +24,7 @@ package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api
 import org.gtri.util.iteratee.api.ImmutableDiagnosticLocator
+import org.gtri.util.iteratee.api.ImmutableDiagnosticLocator.nowhere
 import org.gtri.util.iteratee.api.Issue.ImpactCode
 
 /**
@@ -34,9 +35,6 @@ import org.gtri.util.iteratee.api.Issue.ImpactCode
  * To change this template use File | Settings | File Templates.
  */
 object Issues {
-  private val nowhere = new ImmutableDiagnosticLocator {
-    override def toString = ""
-  }
   case class FatalError(throwable : java.lang.Throwable, locator : ImmutableDiagnosticLocator = nowhere) extends api.Issue {
 
     def message = throwable.getMessage

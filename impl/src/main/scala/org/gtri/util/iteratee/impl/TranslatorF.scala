@@ -35,7 +35,7 @@ import ImmutableBuffers.Conversions._
  */
 class TranslatorF[A,B](f: A => B) extends Iteratee[A,B]{
 
-  class Cont extends Iteratees.Cont[A,B] {
+  class Cont extends Iteratees.ContState[A,B] {
     def apply(input: ImmutableBuffer[A]) = {
       val nextOutput = input.foldLeft(List[B]()) {
         (list,item) => {
@@ -44,8 +44,8 @@ class TranslatorF[A,B](f: A => B) extends Iteratee[A,B]{
       }
       Result(this, nextOutput, ImmutableBuffers.empty)
     }
-    def endOfInput = Result(Success())
+    def endOfInput = Result(SuccessState())
   }
 
-  def initialState() = new Cont
+  def initialState() = new ContState
 }

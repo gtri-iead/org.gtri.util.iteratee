@@ -35,15 +35,15 @@ import api._
 object Iteratees {
   case class Result[I,O](next : Iteratee.State[I,O], output : ImmutableBuffer[O] = ImmutableBuffers.empty[O], overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I], issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]) extends Iteratee.State.Result[I,O]
 
-  abstract class Cont[I,O] extends Iteratee.State[I,O] {
+  abstract class ContState[I,O] extends Iteratee.State[I,O] {
     def statusCode = StatusCode.CONTINUE
   }
 
-  abstract class RecoverableError[I,O] extends Iteratee.State[I,O] {
+  abstract class RecoverableErrorState[I,O] extends Iteratee.State[I,O] {
     def statusCode = StatusCode.RECOVERABLE_ERROR
   }
 
-  class Success[I,O] extends Iteratee.State[I,O] {
+  class SuccessState[I,O] extends Iteratee.State[I,O] {
     def statusCode = StatusCode.SUCCESS
 
     def apply(items: ImmutableBuffer[I]) = Result(this, ImmutableBuffers.empty, items)
@@ -51,19 +51,19 @@ object Iteratees {
     def endOfInput() = Result(this, ImmutableBuffers.empty, ImmutableBuffers.empty)
   }
 
-  object Success {
-    def apply[I,O]() = new Success[I,O]
+  object SuccessState {
+    def apply[I,O]() = new SuccessState[I,O]
   }
 
-  class FatalError[I,O] extends Iteratee.State[I,O] {
+  class FatalErrorState[I,O] extends Iteratee.State[I,O] {
     def statusCode = StatusCode.FATAL_ERROR
 
     def apply(items: ImmutableBuffer[I]) = Result(this, ImmutableBuffers.empty, items)
 
     def endOfInput() = Result(this, ImmutableBuffers.empty, ImmutableBuffers.empty)
   }
-  object FatalError {
-    def apply[I,O]() = new FatalError[I,O]()
+  object FatalErrorState {
+    def apply[I,O]() = new FatalErrorState[I,O]()
   }
 
 

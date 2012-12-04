@@ -59,8 +59,8 @@ object IterateeSerialTuple2 {
       val next : Iteratee.State[A,C] =
         nextStatusCode match {
           case StatusCode.CONTINUE | StatusCode.RECOVERABLE_ERROR => State(resultT1.next, resultT2.next, nextStatusCode)
-          case StatusCode.FATAL_ERROR => FatalError()
-          case StatusCode.SUCCESS => Success()
+          case StatusCode.FATAL_ERROR => FatalErrorState()
+          case StatusCode.SUCCESS => SuccessState()
         }
       Result(next, output, overflow, issues)
     }
@@ -76,8 +76,8 @@ object IterateeSerialTuple2 {
       val next : Iteratee.State[A,C] =
         nextStatusCode match {
           case StatusCode.CONTINUE | StatusCode.RECOVERABLE_ERROR => State(resultT1_EOI.next, resultT2_EOI.next, nextStatusCode)
-          case StatusCode.FATAL_ERROR => FatalError()
-          case StatusCode.SUCCESS => Success()
+          case StatusCode.FATAL_ERROR => FatalErrorState()
+          case StatusCode.SUCCESS => SuccessState()
         }
       Result(next, output, overflow, issues)
     }
@@ -115,8 +115,8 @@ object IterateeSerialTuple3 {
       val next : Iteratee.State[A,D] =
         nextStatusCode match {
           case StatusCode.CONTINUE | StatusCode.RECOVERABLE_ERROR => State(resultT1.next, resultT2.next, resultT3.next, nextStatusCode)
-          case StatusCode.FATAL_ERROR => FatalError()
-          case StatusCode.SUCCESS => Success()
+          case StatusCode.FATAL_ERROR => FatalErrorState()
+          case StatusCode.SUCCESS => SuccessState()
         }
       Result(next, output, overflow, issues)
     }
@@ -134,8 +134,8 @@ object IterateeSerialTuple3 {
       val next : Iteratee.State[A,D] =
         nextStatusCode match {
           case StatusCode.CONTINUE | StatusCode.RECOVERABLE_ERROR => State(resultT1_EOI.next, resultT2_EOI.next, resultT3_EOI.next, nextStatusCode)
-          case StatusCode.FATAL_ERROR => FatalError()
-          case StatusCode.SUCCESS => Success()
+          case StatusCode.FATAL_ERROR => FatalErrorState()
+          case StatusCode.SUCCESS => SuccessState()
         }
       Result(next, output, overflow, issues)
     }

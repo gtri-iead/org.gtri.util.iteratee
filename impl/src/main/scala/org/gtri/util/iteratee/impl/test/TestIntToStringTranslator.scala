@@ -35,7 +35,7 @@ import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 * To change this template use File | Settings | File Templates.
 */
 class TestIntToStringTranslator extends Iteratee[java.lang.Integer, String] {
-  class Cont extends Iteratees.Cont[java.lang.Integer,String]  {
+  class Cont extends Iteratees.ContState[java.lang.Integer,String]  {
 
     def apply(items: ImmutableBuffer[java.lang.Integer]) = {
       println("translating=" + items)
@@ -47,8 +47,8 @@ class TestIntToStringTranslator extends Iteratee[java.lang.Integer, String] {
       Result(this, nextOutput)
     }
 
-    def endOfInput() = Result(Success())
+    def endOfInput() = Result(SuccessState())
   }
 
-  def initialState = new Cont()
+  def initialState = new ContState()
 }

@@ -36,11 +36,11 @@ import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
  */
 class TestIntegerBuilder extends Iteratee[Int, Int] {
 
-  case class Cont(acc: Int) extends Iteratees.Cont[Int, Int] {
+  case class Cont(acc: Int) extends Iteratees.ContState[Int, Int] {
 
     def apply(items: ImmutableBuffer[Int]) = Result(Cont(items.fold(acc) { _ + _ }))
 
-    def endOfInput() = Result(Success(),List(acc))
+    def endOfInput() = Result(SuccessState(),List(acc))
   }
 
   def initialState = Cont(0)

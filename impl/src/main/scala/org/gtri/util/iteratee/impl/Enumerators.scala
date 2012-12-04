@@ -43,30 +43,30 @@ object Enumerators {
 
   case class Result[A](next : Enumerator.State[A], output : ImmutableBuffer[A], issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty) extends Enumerator.State.Result[A]
 
-  abstract class Cont[A] extends Enumerator.State[A] {
+  abstract class ContState[A] extends Enumerator.State[A] {
     def statusCode = StatusCode.CONTINUE
   }
 
-  abstract class RecoverableError[A] extends Enumerator.State[A] {
+  abstract class RecoverableErrorState[A] extends Enumerator.State[A] {
     def statusCode = StatusCode.RECOVERABLE_ERROR
   }
 
-  class Success[A](val progress : Progress) extends Enumerator.State[A] {
+  class SuccessState[A](val progress : Progress) extends Enumerator.State[A] {
     def statusCode = StatusCode.SUCCESS
 
     def step() = Result(this, ImmutableBuffers.empty)
   }
-  object Success {
-    def apply[A](progress : Progress) = new Success[A](progress)
+  object SuccessState {
+    def apply[A](progress : Progress) = new SuccessState[A](progress)
 
   }
-  class FatalError[A](val progress : Progress) extends Enumerator.State[A] {
+  class FatalErrorState[A](val progress : Progress) extends Enumerator.State[A] {
     def statusCode = StatusCode.FATAL_ERROR
 
     def step() = Result(this, ImmutableBuffers.empty)
   }
-  object FatalError {
-    def apply[A](progress : Progress) = new FatalError[A](progress)
+  object FatalErrorState {
+    def apply[A](progress : Progress) = new FatalErrorState[A](progress)
   }
 
   def iterator[O,R <: Enumerator.State.Result[O]](issueHandlingCode : IssueHandlingCode, r : R, step: R => R) = {

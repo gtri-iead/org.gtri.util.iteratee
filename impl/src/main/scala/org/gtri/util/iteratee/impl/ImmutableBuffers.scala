@@ -48,33 +48,41 @@ object ImmutableBuffers {
   }
   object Conversions {
     implicit def immutableBufferToIndexedSeq[A](buffer : api.ImmutableBuffer[A]) : IndexedSeq[A] = {
-      new IndexedSeq[A] {
-        def length = buffer.length
+      if(buffer.length == 0) {
+        IndexedSeq.empty
+      } else {
+        new IndexedSeq[A] {
+          def length = buffer.length
 
-        def apply(idx: Int) = buffer.apply(idx)
+          def apply(idx: Int) = buffer.apply(idx)
+        }
       }
     }
     implicit def seqToImmutableBuffer[A](seq : Seq[A]) : api.ImmutableBuffer[A] = {
-      new api.ImmutableBuffer[A] {
-        def length = seq.length
+      if(seq.isEmpty) {
+        ImmutableBuffers.empty
+      } else {
+        new api.ImmutableBuffer[A] {
+          def length = seq.length
 
-        def apply(idx: Int) = seq(idx)
+          def apply(idx: Int) = seq(idx)
 
-        def iterator = new java.util.Iterator[A] {
-          var idx : Int = 0
+          def iterator = new java.util.Iterator[A] {
+            var idx : Int = 0
 
-          def hasNext = idx < seq.length
+            def hasNext = idx < seq.length
 
-          def next() = {
-            val retv = seq(idx)
-            idx += 1
-            retv
+            def next() = {
+              val retv = seq(idx)
+              idx += 1
+              retv
+            }
+
+            def remove = throw new UnsupportedOperationException
           }
 
-          def remove = throw new UnsupportedOperationException
+          override def toString = seq.toString
         }
-
-        override def toString = seq.toString
       }
     }
   }

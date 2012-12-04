@@ -35,7 +35,7 @@ import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 * To change this template use File | Settings | File Templates.
 */
 class TestStringBuilder extends Iteratee[String, String] {
-  case class Cont(acc : String) extends Iteratees.Cont[String, String] {
+  case class Cont(acc : String) extends Iteratees.ContState[String, String] {
 
     def apply(items: ImmutableBuffer[String]) = {
       println("received=" + items)
@@ -44,7 +44,7 @@ class TestStringBuilder extends Iteratee[String, String] {
 
     def endOfInput() = {
       println("eoi=" + Some(acc))
-      Result(Success(), List(acc))
+      Result(SuccessState(), List(acc))
     }
   }
   def initialState = Cont("")
