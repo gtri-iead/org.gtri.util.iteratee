@@ -47,5 +47,5 @@ class TranslatorF[A,B](f: A => B) extends Iteratee[A,B]{
     def endOfInput = Result(SuccessState())
   }
 
-  def initialState() = new ContState
+  def initialState() = new Cont
 }

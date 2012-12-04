@@ -50,5 +50,5 @@ class TestIntToStringTranslator extends Iteratee[java.lang.Integer, String] {
     def endOfInput() = Result(SuccessState())
   }
 
-  def initialState = new ContState()
+  def initialState = new Cont()
 }
