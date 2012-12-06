@@ -25,6 +25,7 @@ package org.gtri.util.iteratee.impl
 import org.gtri.util.iteratee.api
 import api._
 import scala.collection.JavaConversions._
+import org.gtri.util.iteratee.impl.Enumerators.EnumeratorIterator
 
 /**
  * Created with IntelliJ IDEA.
@@ -41,7 +42,7 @@ class Plan2[I,O](val factory : IterateeFactory, val enumerator : Enumerator[I], 
   case class Result[I,O](next : api.Plan2.State[I,O], output : ImmutableBuffer[O], overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) extends api.Plan2.State.Result[I,O]
 
   case class State[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O]) extends api.Plan2.State[I,O] {
-    def statusCode = StatusCode.and(enumeratorState.statusCode, iterateeState.statusCode)
+    def statusCode = StatusCode.or(enumeratorState.statusCode, iterateeState.statusCode)
 
     def progress = enumeratorState.progress
 
@@ -61,15 +62,13 @@ class Plan2[I,O](val factory : IterateeFactory, val enumerator : Enumerator[I], 
     }
   }
 
-  def iterator : java.util.Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](factory.issueHandlingCode, initialState.step(), { _.next.step() })
-
-  def iterator(issueHandlingCode: IssueHandlingCode) : java.util.Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](issueHandlingCode, initialState.step(), { _.next.step() })
+  def iterator : java.util.Iterator[Plan2.State.Result[I,O]] = new EnumeratorIterator[O,Plan2.State.Result[I,O]](initialState.step(), { _.next.step() })
 
   def run() = {
     val initialR = initialState.step()
-    val iterator : Iterator[Plan2.State.Result[I,O]] = Enumerators.iterator[O,Plan2.State.Result[I,O]](factory.issueHandlingCode, initialR, { _.next.step() })
+    val i : Iterator[Plan2.State.Result[I,O]] = new EnumeratorIterator[O,Plan2.State.Result[I,O]](initialR, { _.next.step() })
     val (_lastResult, _allOutput, _allIssues) = {
-      iterator.foldLeft[(Plan2.State.Result[I,O], IndexedSeq[O],IndexedSeq[Issue])]((initialR, IndexedSeq[O](), IndexedSeq[Issue]())) {
+      i.foldLeft[(Plan2.State.Result[I,O], IndexedSeq[O],IndexedSeq[Issue])]((initialR, IndexedSeq[O](), IndexedSeq[Issue]())) {
         (accTuple, result) =>
           val (_, outputAcc, issuesAcc) = accTuple
           (result, result.output ++ outputAcc, result.issues ++ issuesAcc)

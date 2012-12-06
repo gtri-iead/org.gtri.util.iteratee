@@ -59,16 +59,6 @@ public interface Plan2<I, O> extends Enumerator<O>, Iterable<Plan2.State.Result<
   @Override Iterator<Plan2.State.Result<I,O>> iterator();
   
   /**
-   * Get an iterator that allows stepping through the results of the plan using
-   * the supplied IssueHandlingCode. Note: does *not* call endOfInput for the 
-   * Iteratee.
-   * @param issueHandlingCode
-   * @return an iterator that allows stepping through the results of the plan 
-   * using the supplied IssueHandlingCode
-   */
-  Iterator<Plan2.State.Result<I,O>> iterator(IssueHandlingCode issueHandlingCode);
-  
-  /**
    * Run the plan to completion, including calling endOfInput on the Iteratee
    * after exhausting the Enumerator's output
    * @return the result of running the plan to completion

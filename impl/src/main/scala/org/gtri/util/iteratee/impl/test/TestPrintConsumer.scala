@@ -24,7 +24,7 @@ package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
-import org.gtri.util.iteratee.impl.Iteratees
+import org.gtri.util.iteratee.impl.Iteratees.buffered._
 import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
 /**
@@ -35,7 +35,7 @@ import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 * To change this template use File | Settings | File Templates.
 */
 class TestPrintConsumer[A] extends Iteratee[A, Unit] {
-  case class Cont[A]() extends Iteratees.ContState[A, Unit] {
+  case class Cont[A]() extends BaseCont[A, Unit] {
     def apply(items: ImmutableBuffer[A]) = {
       println("received=" + items)
       for (item <- items) {
@@ -44,7 +44,7 @@ class TestPrintConsumer[A] extends Iteratee[A, Unit] {
       Result(this)
     }
 
-    def endOfInput() = Result(SuccessState())
+    def endOfInput() = Success()
   }
 
   def initialState = Cont()

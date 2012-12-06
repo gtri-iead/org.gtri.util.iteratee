@@ -24,7 +24,7 @@ package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
-import org.gtri.util.iteratee.impl.Iteratees
+import org.gtri.util.iteratee.impl.Iteratees.unbuffered._
 import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
 /**
@@ -35,19 +35,14 @@ import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 * To change this template use File | Settings | File Templates.
 */
 class TestIntToStringTranslator extends Iteratee[java.lang.Integer, String] {
-  class Cont extends Iteratees.ContState[java.lang.Integer,String]  {
+  class Cont extends BaseCont[java.lang.Integer,String]  {
 
-    def apply(items: ImmutableBuffer[java.lang.Integer]) = {
-      println("translating=" + items)
-      val nextOutput = items.foldLeft(List[String]()) {
-        (list,item) => {
-          item.toString :: list
-        }
-      }
-      Result(this, nextOutput)
+    def apply(item: java.lang.Integer) = {
+      println("translating=" + item)
+      Result(this, Chunk(item.toString))
     }
 
-    def endOfInput() = Result(SuccessState())
+    def endOfInput() = Success()
   }
 
   def initialState = new Cont()

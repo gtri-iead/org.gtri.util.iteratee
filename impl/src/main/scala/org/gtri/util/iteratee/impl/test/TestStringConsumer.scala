@@ -24,7 +24,7 @@ package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
-import org.gtri.util.iteratee.impl.Iteratees
+import org.gtri.util.iteratee.impl.Iteratees.buffered._
 import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
 /**
@@ -35,7 +35,7 @@ import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 * To change this template use File | Settings | File Templates.
 */
 class TestStringConsumer(list : java.util.List[String]) extends Iteratee[String, Unit] {
-  case class Step() extends Iteratees.ContState[String, Unit] {
+  case class Step() extends BaseCont[String, Unit] {
     def apply(items: ImmutableBuffer[String]) = {
       println("received=" + items)
       for (item <- items) {
@@ -44,7 +44,10 @@ class TestStringConsumer(list : java.util.List[String]) extends Iteratee[String,
       Result(this)
     }
 
-    def endOfInput() = Result(SuccessState())
+    def endOfInput() = {
+      println("eoi")
+      Success()
+    }
   }
   def initialState = Step()
 }

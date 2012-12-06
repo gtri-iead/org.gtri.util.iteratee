@@ -24,7 +24,7 @@ package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
-import org.gtri.util.iteratee.impl.Iteratees
+import org.gtri.util.iteratee.impl.Iteratees.unbuffered._
 import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 
 /**
@@ -35,16 +35,16 @@ import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 * To change this template use File | Settings | File Templates.
 */
 class TestStringBuilder extends Iteratee[String, String] {
-  case class Cont(acc : String) extends Iteratees.ContState[String, String] {
+  case class Cont(acc : String) extends BaseCont[String, String] {
 
-    def apply(items: ImmutableBuffer[String]) = {
-      println("received=" + items)
-      Result(Cont(items.fold(acc) { _ + _ }))
+    def apply(item: String) = {
+      println("received=" + item)
+      Result(Cont(acc + item))
     }
 
     def endOfInput() = {
       println("eoi=" + Some(acc))
-      Result(SuccessState(), List(acc))
+      Success(acc)
     }
   }
   def initialState = Cont("")

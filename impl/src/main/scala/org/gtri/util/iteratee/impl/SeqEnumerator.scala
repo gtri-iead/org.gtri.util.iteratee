@@ -36,28 +36,26 @@ import org.gtri.util.iteratee.impl.Enumerators._
 class SeqEnumerator[A](traversable : Seq[A], chunkSize : Int = STD_CHUNK_SIZE) extends Enumerator[A] {
   import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
   
-  class Cont[A](current : Seq[A]) extends Enumerators.ContState[A] {
+  class Cont[A](current : Seq[A]) extends Enumerators.Cont[A] {
     val progress = Progress.empty
 
     def step = {
       val (nextChunk, remaining) = current.splitAt(chunkSize)
-      println("chunk=" + nextChunk)
       if(remaining.isEmpty) {
-        Result(SuccessState(progress), nextChunk)
+        Result(Success(progress), nextChunk)
       } else {
         Result(new Cont(remaining), nextChunk)
       }
     }
   }
 
-  class ContWithDefSize[A](current : Seq[A]) extends Enumerators.ContState[A] {
+  class ContWithDefSize[A](current : Seq[A]) extends Enumerators.Cont[A] {
     val progress = new Progress(0,traversable.size - current.size, traversable.size)
 
     def step = {
       val (nextChunk, remaining) = current.splitAt(chunkSize)
-      println("chunk=" + nextChunk)
       if(remaining.isEmpty) {
-        Result(SuccessState(progress), nextChunk)
+        Result(Success(progress), nextChunk)
       } else {
         Result(new ContWithDefSize(remaining), nextChunk)
       }

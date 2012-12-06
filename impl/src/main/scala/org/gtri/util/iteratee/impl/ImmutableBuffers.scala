@@ -33,7 +33,7 @@ import scala.collection.JavaConversions._
  * To change this template use File | Settings | File Templates.
  */
 object ImmutableBuffers {
-  def empty[A] = new api.ImmutableBuffer[A] {
+  private class EmptyImmutableBuffer[A] extends api.ImmutableBuffer[A] {
     def length = 0
 
     def apply(i: Int) = throw new NoSuchElementException
@@ -46,6 +46,9 @@ object ImmutableBuffers {
       def remove = throw new UnsupportedOperationException
     }
   }
+
+  def empty[A] : api.ImmutableBuffer[A] = new EmptyImmutableBuffer[A]
+
   object Conversions {
     implicit def immutableBufferToIndexedSeq[A](buffer : api.ImmutableBuffer[A]) : IndexedSeq[A] = {
       if(buffer.length == 0) {

@@ -30,67 +30,49 @@ package org.gtri.util.iteratee.api;
  */
 public enum StatusCode {
   /**
-   * The FSM is not done and the previous computation (if any) did not result in 
-   * a recoverable error.
+   * The FSM is not done
    */
   CONTINUE,
   /**
-   * The FSM is done and all processing was successful.
+   * The FSM is done and processing of all input was successful.
    */
   SUCCESS,
   /**
-   * The FSM is not done and the previous computation (if any) resulted in a 
-   * recoverable error.
+   * The FSM is done and processing failed because of invalid or incomplete input.
    */
-  RECOVERABLE_ERROR,
+  FAILURE,
   /**
-   * The FSM is done and processing has failed.
+   * The FSM is done and processing failed because of an internal exception.
    */
-  FATAL_ERROR;
+  EXCEPTION;
 
   /**
    * Test if done
    * @return TRUE if done FALSE otherwise
    */
   public boolean isDone() { 
-    switch(this) {
-      case RECOVERABLE_ERROR:
-      case CONTINUE :
-        return false;
-      case SUCCESS :
-      case FATAL_ERROR :
-    }
-    return true;
+    return this != CONTINUE;
   }
 
   /**
-   * Test if success
-   * @return TRUE if success FALSE otherwise
+   * Tests if SUCCESS.
+   * @return TRUE if SUCCESS FALSE otherwise. 
    */
   public boolean isSuccess() {
-    switch(this) {
-      case RECOVERABLE_ERROR:
-      case CONTINUE :
-      case FATAL_ERROR :
-        return false;
-      case SUCCESS :
-    }
-    return true;
+    return this == SUCCESS;
   }
   
   /**
-   * Test if error
+   * Test if FAILURE or EXCEPTION
    * @return TRUE if error FALSE otherwise
    */
   public boolean isError() {
     switch(this) {
-      case CONTINUE :
-      case SUCCESS :
-        return false;
-      case RECOVERABLE_ERROR:
-      case FATAL_ERROR :
+      case FAILURE :
+      case EXCEPTION :
+        return true;
     }
-    return true;    
+    return false;
   }
   
   /**
@@ -99,7 +81,7 @@ public enum StatusCode {
    * @return a new StatusCode representing the "AND" of the supplied StatusCodes
    */
   public static StatusCode and(Iterable<StatusCode> statusCodes) {
-    StatusCode current = StatusCode.CONTINUE;
+    StatusCode current = StatusCode.SUCCESS;
     for(StatusCode status : statusCodes) {
       current = and(current, status);
     }
@@ -112,7 +94,7 @@ public enum StatusCode {
    * @return a new StatusCode representing the "AND" of the supplied StatusCodes
    */
   public static StatusCode and(StatusCode ... statusCodes) {
-    StatusCode current = StatusCode.CONTINUE;
+    StatusCode current = StatusCode.SUCCESS;
     for(StatusCode status : statusCodes) {
       current = and(current, status);
     }
@@ -121,39 +103,45 @@ public enum StatusCode {
   
   // TODO: explain this better
   /**
-   * "AND" two StatusCodes 
-   * @param statusCodes
+   * "AND" two StatusCodes where FSM lhs AND FSM rhs are both necessary to 
+   * complete some operation.
+   * CONTINUE && CONTINUE => CONTINUE
+   * CONTINUE && SUCCESS => CONTINUE
+   * CONTINUE && EXCEPTION => EXCEPTION
+   * CONTINUE && FAILURE => FAILURE
+   * SUCCESS && CONTINUE => CONTINUE
+   * SUCCESS && SUCCESS => SUCCESS
+   * SUCCESS && EXCEPTION => EXCEPTION
+   * SUCCESS && FAILURE => FAILURE
+   * FAILURE && CONTINUE => FAILURE
+   * FAILURE && SUCCESS => FAILURE
+   * FAILURE && EXCEPTION => EXCEPTION
+   * FAILURE && FAILURE => FAILURE
+   * EXCEPTION && CONTINUE => EXCEPTION
+   * EXCEPTION && CONTINUE => EXCEPTION
+   * EXCEPTION && SUCCESS => EXCEPTION
+   * EXCEPTION && EXCEPTION => EXCEPTION
+   * @param lhs
+   * @param rhs
    * @return a new StatusCode representing the "AND" of the supplied StatusCodes
    */
   public static StatusCode and(StatusCode lhs, StatusCode rhs) {
     switch(lhs) {
-      case CONTINUE :
-        return rhs;
+      case EXCEPTION :
+        return EXCEPTION;
+      case FAILURE :
+        return FAILURE;
       case SUCCESS :
-        switch(rhs) {
-          case CONTINUE :
-            return SUCCESS;
-          case SUCCESS :
-            return SUCCESS;
-          case RECOVERABLE_ERROR:
-            return SUCCESS;
-          case FATAL_ERROR :         
-            return FATAL_ERROR;
-        }
-      case RECOVERABLE_ERROR:
-        switch(rhs) {
-          case CONTINUE :
-            return RECOVERABLE_ERROR;
-          case SUCCESS :
-            return SUCCESS;
-          case RECOVERABLE_ERROR:
-            return RECOVERABLE_ERROR;
-          case FATAL_ERROR :         
-            return FATAL_ERROR;
-        }
-      case FATAL_ERROR :
+        return rhs;
+      case CONTINUE :
     }
-    return FATAL_ERROR;
+    switch(rhs) {
+      case EXCEPTION :
+        return EXCEPTION;
+      case FAILURE :
+        return FAILURE;
+    }
+    return CONTINUE;
   }
 
   /**
@@ -183,47 +171,22 @@ public enum StatusCode {
   }
   
   /**
-   * "OR" two StatusCodes 
-   * @param statusCodes
+   * "OR" two StatusCodes where FSM rhs OR FSM lhs could be used to complete 
+   * some operation
+   * @param rhs
+   * @param lhs
    * @return a new StatusCode representing the "OR" of the supplied StatusCodes
    */
   public static StatusCode or(StatusCode lhs, StatusCode rhs) {
     switch(lhs) {
-      case CONTINUE :
-        switch(rhs) {
-          case CONTINUE :
-            return CONTINUE;
-          case SUCCESS :
-            return CONTINUE;
-          case RECOVERABLE_ERROR:
-            return RECOVERABLE_ERROR;
-          case FATAL_ERROR :
-            return FATAL_ERROR;
-        }
+      case EXCEPTION :
+        return EXCEPTION;
+      case FAILURE :
+        return rhs;
       case SUCCESS :
-        switch(rhs) {
-          case CONTINUE :
-            return CONTINUE;
-          case SUCCESS :
-            return SUCCESS;
-          case RECOVERABLE_ERROR:
-            return RECOVERABLE_ERROR;
-          case FATAL_ERROR :
-            return FATAL_ERROR;
-        }
-      case RECOVERABLE_ERROR:
-        switch(rhs) {
-          case CONTINUE :
-            return RECOVERABLE_ERROR;
-          case SUCCESS :
-            return RECOVERABLE_ERROR;
-          case RECOVERABLE_ERROR:
-            return RECOVERABLE_ERROR;
-          case FATAL_ERROR :
-            return FATAL_ERROR;
-        }
-      case FATAL_ERROR :
+        return SUCCESS;
+      case CONTINUE :
     }
-    return FATAL_ERROR;
+    return rhs;
   }
 }  

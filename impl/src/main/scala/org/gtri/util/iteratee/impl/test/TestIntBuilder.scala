@@ -24,8 +24,7 @@ package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
-import org.gtri.util.iteratee.impl.Iteratees
-import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
+import org.gtri.util.iteratee.impl.Iteratees.unbuffered._
 
 /**
  * Created with IntelliJ IDEA.
@@ -36,11 +35,11 @@ import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
  */
 class TestIntegerBuilder extends Iteratee[Int, Int] {
 
-  case class Cont(acc: Int) extends Iteratees.ContState[Int, Int] {
+  case class Cont(acc: Int) extends BaseCont[Int, Int] {
 
-    def apply(items: ImmutableBuffer[Int]) = Result(Cont(items.fold(acc) { _ + _ }))
+    def apply(item: Int) = Result(next = Cont(item + acc))
 
-    def endOfInput() = Result(SuccessState(),List(acc))
+    def endOfInput() = Success(acc)
   }
 
   def initialState = Cont(0)

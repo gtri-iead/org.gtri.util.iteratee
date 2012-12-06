@@ -24,6 +24,7 @@ package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
+import org.gtri.util.iteratee.impl.Iteratees.unbuffered._
 import ImmutableBuffers.Conversions._
 
 /**
@@ -35,16 +36,11 @@ import ImmutableBuffers.Conversions._
  */
 class TranslatorF[A,B](f: A => B) extends Iteratee[A,B]{
 
-  class Cont extends Iteratees.ContState[A,B] {
-    def apply(input: ImmutableBuffer[A]) = {
-      val nextOutput = input.foldLeft(List[B]()) {
-        (list,item) => {
-           f(item) :: list
-        }
-      }
-      Result(this, nextOutput, ImmutableBuffers.empty)
+  class Cont extends BaseCont[A,B] {
+    def apply(item: A) = {
+      Result(this, Chunk(f(item)))
     }
-    def endOfInput = Result(SuccessState())
+    def endOfInput = Success[A,B]()
   }
 
   def initialState() = new Cont

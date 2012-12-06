@@ -37,9 +37,7 @@ public interface Plan3<I1,I2, O> extends Enumerator<O>, Iterable<Plan3.State.Res
   Iteratee<I2, O> iteratee();
 
   @Override Iterator<Plan3.State.Result<I1,I2,O>> iterator();
-  Iterator<Plan3.State.Result<I1,I2,O>> iterator(IssueHandlingCode issueHandlingCode);
-//  <U> U runFoldLeft(U u, Function2<U, Plan3.State.Result<I1,I2,O>,U> f);
-//  void runForEach(Function1<Plan3.State.Result<I1,I2,O>,?> f);
+  
   RunResult<I1,I2,O> run();
   
   public static interface RunResult<I1,I2,O> {

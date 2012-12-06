@@ -43,81 +43,87 @@ object Enumerators {
 
   case class Result[A](next : Enumerator.State[A], output : ImmutableBuffer[A], issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty) extends Enumerator.State.Result[A]
 
-  abstract class ContState[A] extends Enumerator.State[A] {
+  abstract class Cont[A] extends Enumerator.State[A] {
     def statusCode = StatusCode.CONTINUE
   }
 
-  abstract class RecoverableErrorState[A] extends Enumerator.State[A] {
-    def statusCode = StatusCode.RECOVERABLE_ERROR
+  abstract class BaseDone[A] extends Enumerator.State[A] {
+    def step() = Result(this, ImmutableBuffers.empty)
   }
 
-  class SuccessState[A](val progress : Progress) extends Enumerator.State[A] {
+  case class Done[A](val statusCode : StatusCode, val progress : Progress) extends BaseDone[A]
+
+  case class Success[A](val progress : Progress) extends BaseDone[A] {
     def statusCode = StatusCode.SUCCESS
-
-    def step() = Result(this, ImmutableBuffers.empty)
   }
-  object SuccessState {
-    def apply[A](progress : Progress) = new SuccessState[A](progress)
-
+  case class Failure[A](val progress : Progress) extends BaseDone[A] {
+    def statusCode = StatusCode.FAILURE
   }
-  class FatalErrorState[A](val progress : Progress) extends Enumerator.State[A] {
-    def statusCode = StatusCode.FATAL_ERROR
-
-    def step() = Result(this, ImmutableBuffers.empty)
-  }
-  object FatalErrorState {
-    def apply[A](progress : Progress) = new FatalErrorState[A](progress)
+  case class Exception[A](val progress : Progress) extends BaseDone[A] {
+    def statusCode = StatusCode.EXCEPTION
   }
 
-  def iterator[O,R <: Enumerator.State.Result[O]](issueHandlingCode : IssueHandlingCode, r : R, step: R => R) = {
-    issueHandlingCode match {
-      case IssueHandlingCode.NORMAL => new NormalRunIterator[O,R](r, step)
-      case IssueHandlingCode.LAX => new LaxRunIterator[O,R](r, step)
-      case IssueHandlingCode.STRICT => new StrictRunIterator[O,R](r, step)
-    }
 
-  }
+  class EnumeratorIterator[O,R <: Enumerator.State.Result[O]](r : R, step: R => R) extends scala.Iterator[R] {
+    var current = r
 
-  class NormalRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
-    def hasNext =
-      r.next.statusCode match {
-        case StatusCode.RECOVERABLE_ERROR=> false
-        case StatusCode.CONTINUE => true
-        case StatusCode.SUCCESS => false
-        case StatusCode.FATAL_ERROR => false
-      }
+    def hasNext = current.next.statusCode.isDone == false
+
     def next() = {
-      r = step(r)
-      r
+      current = step(current)
+      current
     }
   }
 
-  class LaxRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
-    def hasNext =
-      r.next.statusCode match {
-        case StatusCode.RECOVERABLE_ERROR | StatusCode.CONTINUE => true
-        case StatusCode.SUCCESS => false
-        case StatusCode.FATAL_ERROR => false
-      }
-    def next() = {
-      r = step(r)
-      r
-    }
-  }
-
-  class StrictRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
-    def hasNext =
-      r.next.statusCode match {
-        case StatusCode.RECOVERABLE_ERROR => false
-        case StatusCode.CONTINUE => r.issues.filter({ _.impactCode == ImpactCode.WARNING }).isEmpty
-        case StatusCode.SUCCESS => false
-        case StatusCode.FATAL_ERROR => false
-      }
-    def next() = {
-      r = step(r)
-      r
-    }
-  }
+//  def iterator[O,R <: Enumerator.State.Result[O]](issueHandlingCode : IssueHandlingCode, r : R, step: R => R) = {
+//    issueHandlingCode match {
+//      case IssueHandlingCode.NORMAL => new NormalRunIterator[O,R](r, step)
+//      case IssueHandlingCode.LAX => new LaxRunIterator[O,R](r, step)
+//      case IssueHandlingCode.STRICT => new StrictRunIterator[O,R](r, step)
+//    }
+//
+//  }
+//
+//  class NormalRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
+//    def hasNext =
+//      r.next.statusCode match {
+//        case StatusCode.RECOVERABLE_ERROR=> false
+//        case StatusCode.CONTINUE => true
+//        case StatusCode.SUCCESS => false
+//        case StatusCode.FATAL_ERROR => false
+//      }
+//    def next() = {
+//      r = step(r)
+//      r
+//    }
+//  }
+//
+//  class LaxRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
+//    def hasNext =
+//      r.next.statusCode match {
+//        case StatusCode.RECOVERABLE_ERROR | StatusCode.CONTINUE => true
+//        case StatusCode.SUCCESS => false
+//        case StatusCode.FATAL_ERROR => false
+//      }
+//    def next() = {
+//      r = step(r)
+//      r
+//    }
+//  }
+//
+//  class StrictRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
+//    def hasNext =
+//      r.next.statusCode match {
+//        case StatusCode.RECOVERABLE_ERROR => false
+//        case StatusCode.CONTINUE => r.issues.filter({ _.impactCode == ImpactCode.WARNING }).isEmpty
+//        case StatusCode.SUCCESS => false
+//        case StatusCode.FATAL_ERROR => false
+//      }
+//    def next() = {
+//      r = step(r)
+//      r
+//    }
+//  }
 
 //  def runFlatten[O,R <: Enumerator.State.Result[O]](issueHandlingCode : IssueHandlingCode, r: R, step: R => R) : (R, IndexedSeq[O], IndexedSeq[Issue]) = {
 //    runFoldLeft[O,R,(R,IndexedSeq[O],IndexedSeq[Issue])](
