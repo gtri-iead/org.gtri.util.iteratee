@@ -23,8 +23,8 @@
 package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api.{ImmutableBuffer, Iteratee, StatusCode}
-import org.gtri.util.iteratee.impl.Iteratees.buffered._
-import ImmutableBuffers.Conversions._
+import org.gtri.util.iteratee.impl.Iteratees._
+import ImmutableBufferConversions._
 
 /**
  * Created with IntelliJ IDEA.
@@ -48,7 +48,7 @@ object IterateeSerialTuple2 {
     i2 : Iteratee.State[B,C],
     val statusCode : StatusCode
   ) extends Iteratee.State[A,C] {
-
+    def apply(input : A) = apply(Chunk(input))
     def apply(input: ImmutableBuffer[A]) = {
       if(statusCode.isDone) {
         Result[A,C](this)
@@ -101,6 +101,7 @@ object IterateeSerialTuple3 {
     val statusCode : StatusCode
   ) extends Iteratee.State[A,D] {
 
+    def apply(input : A) = apply(Chunk(input))
     def apply(input: ImmutableBuffer[A]) = {
       if(statusCode.isDone) {
         Result(this)

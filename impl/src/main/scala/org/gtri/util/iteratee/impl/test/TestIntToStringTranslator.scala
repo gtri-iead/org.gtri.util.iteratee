@@ -24,8 +24,7 @@ package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
-import org.gtri.util.iteratee.impl.Iteratees.unbuffered._
-import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
+import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 
 /**
 * Created with IntelliJ IDEA.
@@ -35,7 +34,7 @@ import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 * To change this template use File | Settings | File Templates.
 */
 class TestIntToStringTranslator extends Iteratee[java.lang.Integer, String] {
-  class Cont extends BaseCont[java.lang.Integer,String]  {
+  class Cont extends SingleItemCont[java.lang.Integer,String]  {
 
     def apply(item: java.lang.Integer) = {
       println("translating=" + item)

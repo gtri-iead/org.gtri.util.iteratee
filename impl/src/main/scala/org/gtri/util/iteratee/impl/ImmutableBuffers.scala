@@ -23,6 +23,7 @@
 package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api
+import api.{ImmutableBuffers, ImmutableBuffer}
 import scala.collection.JavaConversions._
 
 /**
@@ -32,61 +33,74 @@ import scala.collection.JavaConversions._
  * Time: 6:02 PM
  * To change this template use File | Settings | File Templates.
  */
-object ImmutableBuffers {
-  private class EmptyImmutableBuffer[A] extends api.ImmutableBuffer[A] {
-    def length = 0
+object ImmutableBufferConversions {
+  implicit def immutableBufferToIndexedSeq[A](buffer : api.ImmutableBuffer[A]) : IndexedSeq[A] = {
+    if(buffer.length == 0) {
+      IndexedSeq.empty
+    } else {
+      new IndexedSeq[A] {
+        def length = buffer.length
 
-    def apply(i: Int) = throw new NoSuchElementException
-
-    def iterator = new java.util.Iterator[A] {
-      def hasNext = false
-
-      def next() = throw new NoSuchElementException
-
-      def remove = throw new UnsupportedOperationException
+        def apply(idx: Int) = buffer.apply(idx)
+      }
     }
   }
 
-  def empty[A] : api.ImmutableBuffer[A] = new EmptyImmutableBuffer[A]
+  implicit def seqToImmutableBuffer[A](seq : Seq[A]) : api.ImmutableBuffer[A] = {
+    if(seq.isEmpty) {
+      ImmutableBuffers.empty()
+    } else {
+      new api.ImmutableBuffer[A] {
+        def length = seq.length
 
-  object Conversions {
-    implicit def immutableBufferToIndexedSeq[A](buffer : api.ImmutableBuffer[A]) : IndexedSeq[A] = {
-      if(buffer.length == 0) {
-        IndexedSeq.empty
-      } else {
-        new IndexedSeq[A] {
-          def length = buffer.length
+        def apply(idx: Int) = seq(idx)
 
-          def apply(idx: Int) = buffer.apply(idx)
-        }
-      }
-    }
-    implicit def seqToImmutableBuffer[A](seq : Seq[A]) : api.ImmutableBuffer[A] = {
-      if(seq.isEmpty) {
-        ImmutableBuffers.empty
-      } else {
-        new api.ImmutableBuffer[A] {
-          def length = seq.length
+        def iterator = new java.util.Iterator[A] {
+          var idx : Int = 0
 
-          def apply(idx: Int) = seq(idx)
+          def hasNext = idx < seq.length
 
-          def iterator = new java.util.Iterator[A] {
-            var idx : Int = 0
-
-            def hasNext = idx < seq.length
-
-            def next() = {
-              val retv = seq(idx)
-              idx += 1
-              retv
-            }
-
-            def remove = throw new UnsupportedOperationException
+          def next() = {
+            val retv = seq(idx)
+            idx += 1
+            retv
           }
 
-          override def toString = seq.toString
+          def remove = throw new UnsupportedOperationException
         }
+
+        override def toString = seq.toString
+
+        def append(rhs: ImmutableBuffer[A]) = seq ++ rhs
+
+        def slice(start: Int, end: Int) = seq.slice(start,end)
       }
     }
   }
 }
+//  object empty extends api.ImmutableBuffer[Nothing] {
+//    def length = 0
+//
+//    def apply(i: Int) = throw new NoSuchElementException
+//
+//    def iterator = new java.util.Iterator[Nothing] {
+//      def hasNext = false
+//
+//      def next() = throw new NoSuchElementException
+//
+//      def remove = throw new UnsupportedOperationException
+//    }
+//
+//    def append(rhs: ImmutableBuffer[Nothing]) = rhs
+//
+//    def slice(start: Int, end: Int) = {
+//      if(start == 0 && end == 0) {
+//        this
+//      } else {
+//        throw new NoSuchElementException
+//      }
+//    }
+//
+//    override def toString = "EmptyImmutableBuffer()"
+//  }
+

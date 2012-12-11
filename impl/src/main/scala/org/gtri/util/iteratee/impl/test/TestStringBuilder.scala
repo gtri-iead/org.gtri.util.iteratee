@@ -24,8 +24,7 @@ package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
-import org.gtri.util.iteratee.impl.Iteratees.unbuffered._
-import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
+import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 
 /**
 * Created with IntelliJ IDEA.
@@ -35,7 +34,7 @@ import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
 * To change this template use File | Settings | File Templates.
 */
 class TestStringBuilder extends Iteratee[String, String] {
-  case class Cont(acc : String) extends BaseCont[String, String] {
+  case class Cont(acc : String) extends SingleItemCont[String, String] {
 
     def apply(item: String) = {
       println("received=" + item)

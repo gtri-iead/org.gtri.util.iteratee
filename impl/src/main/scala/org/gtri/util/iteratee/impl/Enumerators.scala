@@ -23,8 +23,10 @@
 package org.gtri.util.iteratee.impl
 
 import scala.collection.immutable.Seq
+import org.gtri.util.iteratee.api
 import org.gtri.util.iteratee.api._
-import ImmutableBuffers.Conversions._
+
+import ImmutableBufferConversions._
 import annotation.tailrec
 import org.gtri.util.iteratee.api.Issue.ImpactCode
 
@@ -41,25 +43,26 @@ object Enumerators {
 
   def apply[A](seq : Seq[A]) = new SeqEnumerator(seq)
 
-  case class Result[A](next : Enumerator.State[A], output : ImmutableBuffer[A], issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty) extends Enumerator.State.Result[A]
+  case class Result[A](next : Enumerator.State[A], output : ImmutableBuffer[A], issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty()) extends Enumerator.State.Result[A]
 
   abstract class Cont[A] extends Enumerator.State[A] {
     def statusCode = StatusCode.CONTINUE
   }
 
   abstract class BaseDone[A] extends Enumerator.State[A] {
-    def step() = Result(this, ImmutableBuffers.empty)
+    def step() = Result(this, ImmutableBuffers.empty())
   }
 
-  case class Done[A](val statusCode : StatusCode, val progress : Progress) extends BaseDone[A]
-
-  case class Success[A](val progress : Progress) extends BaseDone[A] {
+  case class Success[A](progress : Progress, output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[A] with api.Enumerator.State.Result[A] {
+    def next = Success(progress)
     def statusCode = StatusCode.SUCCESS
   }
-  case class Failure[A](val progress : Progress) extends BaseDone[A] {
+  case class Failure[A](progress : Progress, output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[A] {
+    def next = Failure(progress)
     def statusCode = StatusCode.FAILURE
   }
-  case class Exception[A](val progress : Progress) extends BaseDone[A] {
+  case class Exception[A](progress : Progress, output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[A] {
+    def next = Exception(progress)
     def statusCode = StatusCode.EXCEPTION
   }
 

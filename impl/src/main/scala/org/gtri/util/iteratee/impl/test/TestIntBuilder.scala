@@ -24,7 +24,6 @@ package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
-import org.gtri.util.iteratee.impl.Iteratees.unbuffered._
 
 /**
  * Created with IntelliJ IDEA.
@@ -35,9 +34,16 @@ import org.gtri.util.iteratee.impl.Iteratees.unbuffered._
  */
 class TestIntegerBuilder extends Iteratee[Int, Int] {
 
-  case class Cont(acc: Int) extends BaseCont[Int, Int] {
+  case class Cont(acc: Int) extends SingleItemCont[Int, Int] {
 
-    def apply(item: Int) = Result(next = Cont(item + acc))
+    def apply(item: Int) = {
+      if(acc == 11) {
+        Failure()
+      } else {
+        Result(next = Cont(item + acc))
+      }
+
+    }
 
     def endOfInput() = Success(acc)
   }

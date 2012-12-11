@@ -24,8 +24,7 @@ package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.Iteratees._
-import org.gtri.util.iteratee.impl.Iteratees.unbuffered._
-import ImmutableBuffers.Conversions._
+import ImmutableBufferConversions._
 
 /**
  * Created with IntelliJ IDEA.
@@ -36,11 +35,11 @@ import ImmutableBuffers.Conversions._
  */
 class TranslatorF[A,B](f: A => B) extends Iteratee[A,B]{
 
-  class Cont extends BaseCont[A,B] {
+  class Cont extends SingleItemCont[A,B] {
     def apply(item: A) = {
       Result(this, Chunk(f(item)))
     }
-    def endOfInput = Success[A,B]()
+    def endOfInput = Success()
   }
 
   def initialState() = new Cont

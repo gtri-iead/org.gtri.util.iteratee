@@ -36,7 +36,7 @@ import org.gtri.util.iteratee.impl.Enumerators.EnumeratorIterator
  * To change this template use File | Settings | File Templates.
  */
 class Plan3[I1,I2,O](val factory: IterateeFactory, val enumerator : Enumerator[I1], val translator : Iteratee[I1,I2], val iteratee : Iteratee[I2,O]) extends api.Plan3[I1,I2,O] {
-  import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
+  import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 
   def initialState = State(enumerator.initialState, translator.initialState, iteratee.initialState)
 
@@ -56,7 +56,7 @@ class Plan3[I1,I2,O](val factory: IterateeFactory, val enumerator : Enumerator[I
 
     def step() = {
       if(statusCode.isDone) {
-        Result(this, ImmutableBuffers.empty, ImmutableBuffers.empty, ImmutableBuffers.empty)
+        Result(this, ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty())
       } else {
         val eResult = enumeratorState.step()
         val tResult = translatorState.apply(eResult.output)

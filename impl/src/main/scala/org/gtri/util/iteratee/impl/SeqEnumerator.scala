@@ -34,7 +34,7 @@ import org.gtri.util.iteratee.impl.Enumerators._
  * To change this template use File | Settings | File Templates.
  */
 class SeqEnumerator[A](traversable : Seq[A], chunkSize : Int = STD_CHUNK_SIZE) extends Enumerator[A] {
-  import org.gtri.util.iteratee.impl.ImmutableBuffers.Conversions._
+  import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
   
   class Cont[A](current : Seq[A]) extends Enumerators.Cont[A] {
     val progress = Progress.empty
@@ -42,7 +42,7 @@ class SeqEnumerator[A](traversable : Seq[A], chunkSize : Int = STD_CHUNK_SIZE) e
     def step = {
       val (nextChunk, remaining) = current.splitAt(chunkSize)
       if(remaining.isEmpty) {
-        Result(Success(progress), nextChunk)
+        Success(progress, nextChunk)
       } else {
         Result(new Cont(remaining), nextChunk)
       }
@@ -55,7 +55,7 @@ class SeqEnumerator[A](traversable : Seq[A], chunkSize : Int = STD_CHUNK_SIZE) e
     def step = {
       val (nextChunk, remaining) = current.splitAt(chunkSize)
       if(remaining.isEmpty) {
-        Result(Success(progress), nextChunk)
+        Success(progress, nextChunk)
       } else {
         Result(new ContWithDefSize(remaining), nextChunk)
       }
