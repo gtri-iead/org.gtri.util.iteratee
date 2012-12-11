@@ -30,15 +30,15 @@ package org.gtri.util.iteratee.api;
  */
 public enum IssueHandlingCode {
   /**
-   * Stop on invalid input (recoverable errors) or exceptions
+   * Stop on any invalid input (including recoverable errors) or exceptions
    */
   NORMAL, 
   /**
-   * Ignore invalid input or replace invalid input with known good input (recoverable errors) - stop only on exceptions
+   * Ignore invalid input or replace invalid input with known good input (fix recoverable errors) - stop only on exceptions
    */
   LAX,
   /**
-   * Stop on invalid input (recoverable errors), "suspected" invalid input (warnings) or exceptions
+   * Stop on any invalid input (including recoverable errors), "suspected" invalid input (warnings) or exceptions
    */
   STRICT; 
 }

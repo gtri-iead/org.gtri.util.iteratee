@@ -70,11 +70,19 @@ public interface Iteratee<I,O> {
     StatusCode statusCode();
 
     /**
-     * Apply input to the Machine
+     * Apply input to the Iteratee
      * @param input 
      * @return an immutable result object
      */  
     Iteratee.State.Result<I,O> apply(ImmutableBuffer<I> input);
+    
+    /**
+     * Apply input to the Iteratee
+     * @param input 
+     * @return an immutable result object
+     */  
+    Iteratee.State.Result<I,O> apply(I input);
+    
     /**
      * Signal to the Iteratee the end of input
      * @return an immutable result object

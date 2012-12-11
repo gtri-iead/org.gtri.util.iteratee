@@ -40,7 +40,7 @@ public final class Progress {
   }
   
   /**
-   * Contract a Progress
+   * Construct a Progress
    * @param recoverableErrorItemCount
    * @param successItemCount
    * @param totalItemCount 

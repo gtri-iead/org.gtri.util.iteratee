@@ -23,6 +23,7 @@
 package org.gtri.util.iteratee.api;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * An interface for an immutable buffer of items.
@@ -49,4 +50,18 @@ public interface ImmutableBuffer<A> extends Iterable<A> {
    * @return an iterator for the items in the buffer
    */
   @Override Iterator<A> iterator();
+  
+  /**
+   * Concatenate this buffer with another buffer. 
+   * @return a new buffer containing the contents of both buffers
+   */
+  ImmutableBuffer<A> append(ImmutableBuffer<A> rhs);
+  
+  /**
+   * Select an interval of items. 
+   * @param start the lowest index to include from this sequence
+   * @param end the highest index to EXCLUDE from this sequence
+   * @return a new buffer containing the selected items
+   */
+  ImmutableBuffer<A> slice(int start, int end);
 }

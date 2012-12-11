@@ -101,26 +101,9 @@ public enum StatusCode {
     return current;
   }
   
-  // TODO: explain this better
   /**
    * "AND" two StatusCodes where FSM lhs AND FSM rhs are both necessary to 
    * complete some operation.
-   * CONTINUE && CONTINUE => CONTINUE
-   * CONTINUE && SUCCESS => CONTINUE
-   * CONTINUE && EXCEPTION => EXCEPTION
-   * CONTINUE && FAILURE => FAILURE
-   * SUCCESS && CONTINUE => CONTINUE
-   * SUCCESS && SUCCESS => SUCCESS
-   * SUCCESS && EXCEPTION => EXCEPTION
-   * SUCCESS && FAILURE => FAILURE
-   * FAILURE && CONTINUE => FAILURE
-   * FAILURE && SUCCESS => FAILURE
-   * FAILURE && EXCEPTION => EXCEPTION
-   * FAILURE && FAILURE => FAILURE
-   * EXCEPTION && CONTINUE => EXCEPTION
-   * EXCEPTION && CONTINUE => EXCEPTION
-   * EXCEPTION && SUCCESS => EXCEPTION
-   * EXCEPTION && EXCEPTION => EXCEPTION
    * @param lhs
    * @param rhs
    * @return a new StatusCode representing the "AND" of the supplied StatusCodes
