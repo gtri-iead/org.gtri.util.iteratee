@@ -21,12 +21,7 @@
 */
 package org.gtri.util.iteratee.impl
 
-import org.gtri.util.iteratee.api.{IssueHandlingCode, ImmutableDiagnosticLocator, Issue}
-import org.gtri.util.iteratee.api.ImmutableDiagnosticLocator._
-import scala._
-import scala.Some
-import org.gtri.util.iteratee.api.Issue.ImpactCode
-import org.gtri.util.iteratee.impl.Issues.FatalError
+import org.gtri.util.iteratee.api._
 
 /**
  * Created with IntelliJ IDEA.
@@ -35,122 +30,116 @@ import org.gtri.util.iteratee.impl.Issues.FatalError
  * Time: 4:34 PM
  * To change this template use File | Settings | File Templates.
  */
-class OptIssueWriter[+A](_item : Option[A],val issues : List[Issue] = Nil)(implicit issueHandlingCode : IssueHandlingCode) {
-  // Discard item if issues list contains a "failure" as defined by the issue handling code
-  val item : Option[A] = {
-    val isFail = {
-      issueHandlingCode match {
-        case IssueHandlingCode.NORMAL => {
-          (issue : Issue) =>
-            issue.impactCode match {
-              case ImpactCode.FATAL_ERROR => true
-              case ImpactCode.RECOVERABLE_ERROR => true
-              case _ => false
-            }
-        }
-        case IssueHandlingCode.LAX => {
-          (issue : Issue) =>
-            issue.impactCode match {
-              case ImpactCode.FATAL_ERROR => true
-              case ImpactCode.RECOVERABLE_ERROR => false
-              case _ => false
-            }
-        }
-        case IssueHandlingCode.STRICT =>{
-          (issue : Issue) =>
-            issue.impactCode match {
-              case ImpactCode.FATAL_ERROR => true
-              case ImpactCode.RECOVERABLE_ERROR => true
-              case ImpactCode.WARNING => true
-              case _ => false
-            }
-        }
-      }
-    }
+class OptIssueWriter[+A](val valueOrFail : Option[A], val issues : List[Issue] = Nil) {
 
-    if(_item.isEmpty || issues.find(isFail).isDefined) {
-      None
-    } else {
-      _item
-    }
-  }
-  def <<(anIssue : Issue) = new OptIssueWriter(item, List(anIssue))
-  def <<(moreIssues : List[Issue]) = new OptIssueWriter(item, moreIssues)
-//  def ++(writer : OptIssueWriter[A]) = new OptIssueWriter(writer.item orElse item, writer.issues ::: issues)
+  def isValue = valueOrFail.isDefined
+  def isFail = valueOrFail.isEmpty
 
-  def flatMap[B](f: A => OptIssueWriter[B]) : OptIssueWriter[B] = {
-    if(item.isDefined) {
-      try {
-        val o = f(item.get)
-        new OptIssueWriter(o.item, o.issues ::: issues)
-      } catch {
-        case e:Exception =>
-          OptIssueWriter(None, FatalError(e) :: issues)
-      }
-    } else {
-      new OptIssueWriter(None, issues)
-    }
+  def ++(anIssue : Issue) = new OptIssueWriter(valueOrFail, anIssue :: issues)
+  def ++(moreIssues : List[Issue]) = new OptIssueWriter(valueOrFail, moreIssues ::: issues)
+
+  def flatMap[B](f: Option[A] => OptIssueWriter[B]) : OptIssueWriter[B] = {
+    val innerWriter = f(valueOrFail)
+    new OptIssueWriter[B](innerWriter.valueOrFail, innerWriter.issues ::: issues)
   }
 
-  def map[B](f: A => B) : OptIssueWriter[B] = {
-    if(item.isDefined) {
-      try {
-        new OptIssueWriter(Some(f(item.get)), issues)
-      } catch {
-        case e: Exception =>
-          new OptIssueWriter(None, FatalError(e) :: issues)
-      }
-    } else {
-      new OptIssueWriter[B](None)
-    }
+  def map[B](f: Option[A] => Option[B]) : OptIssueWriter[B] = {
+    new OptIssueWriter[B](f(valueOrFail), issues)
   }
 
-  def withFilter(p: A => Boolean) : OptIssueWriter[A] = {
-    if(item.isDefined) {
-      if(p(item.get)) {
-        this
-      } else {
-        new OptIssueWriter(None, issues)
-      }
-    } else {
-      this
-    }
-  }
-
-  def foreach(f: A => Unit) {
-    if(item.isDefined) {
-      f(item.get)
-    }
-  }
+  //  def flatMap[B](f: A => OptIssueWriter[B]) : OptIssueWriter[B] = {
+//    valueOrFail match {
+//      case Some(value) =>
+//        val innerWriter = f(value)
+//        new OptIssueWriter[B](innerWriter.valueOrFail, innerWriter.issues ::: issues)
+//      case None =>
+//        new OptIssueWriter[B](None, issues)
+//    }
+//  }
+//
+//  def map[B](f: A => B) : OptIssueWriter[B] = {
+//    valueOrFail match {
+//      case Some(value) =>
+//        new OptIssueWriter[B](Some(f(value)), issues)
+//      case None =>
+//        new OptIssueWriter[B](None, issues)
+//    }
+//  }
+//
+//  def withFilter(p: A => Boolean) : OptIssueWriter[A] = {
+//    valueOrFail match {
+//      case Some(value) =>
+//        if(p(value)) {
+//          this
+//        } else {
+//          new OptIssueWriter(None, issues)
+//        }
+//      case None => this
+//    }
+//  }
+//
+//  def foreach(f: A => Unit) {
+//    valueOrFail match {
+//      case Some(value) => f(value)
+//      case None => // noop
+//    }
+//  }
 
 }
 object OptIssueWriter {
-  def tell(anIssue : Issue, moreIssues : Issue*)(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter[Unit](Some(()), List(moreIssues:_*) ::: List(anIssue))
-  def tell(moreIssues : Traversable[Issue])(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter[Unit](Some(()), moreIssues.toList)
+  def tell(anIssue : Issue, moreIssues : Issue*) =
+    new OptIssueWriter[Unit](Some(()), List(moreIssues:_*) ::: List(anIssue))
+  def tell(moreIssues : Traversable[Issue]) =
+    new OptIssueWriter[Unit](Some(()), moreIssues.toList)
 
-  def fatalError(e : Exception, locator : ImmutableDiagnosticLocator = ImmutableDiagnosticLocator.nowhere)(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(None, List(Issues.FatalError(e, locator)))
-  def recoverableError(e : Exception, locator : ImmutableDiagnosticLocator = ImmutableDiagnosticLocator.nowhere)(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(None, List(Issues.RecoverableError(e, locator)))
-  def warning(message : String, locator : ImmutableDiagnosticLocator = nowhere, stackTrace : Array[java.lang.StackTraceElement] = Array())(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(None, List(Issues.Warning(message, locator, stackTrace)))
-  def debug(message : String, locator : ImmutableDiagnosticLocator = nowhere, stackTrace : Array[java.lang.StackTraceElement] = Array())(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(None, List(Issues.Debug(message, locator, stackTrace)))
-  def info(message : String, locator : ImmutableDiagnosticLocator = nowhere, stackTrace : Array[java.lang.StackTraceElement] = Array())(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(None, List(Issues.Info(message, locator, stackTrace)))
+//  def doRecover[A](default: => A, cause : Issue, handler: Exception => Issue)(implicit issueHandlingStrategy : IssueHandlingStrategy) : OptIssueWriter[A] = {
+//    // Can we recover from this issue?
+//    if(issueHandlingStrategy.canContinue(cause)) {
+//      // Yes, recover
+//      val recoverWriter = tryFail(default,handler)
+//      new OptIssueWriter(recoverWriter.valueOrFail, recoverWriter.issues ::: List(cause))
+//    } else {
+//      // No, return a fail
+//      new OptIssueWriter(None, List(cause))
+//    }
+//  }
+//
+//  def tryRecover[A](lazyA: => A, handler: Exception => Issue, recover: => A)(implicit issueHandlingStrategy : IssueHandlingStrategy) : OptIssueWriter[A] = {
+//    try {
+//      // lazyA will only throw when evaluated
+//      new OptIssueWriter(Some(lazyA))
+//    } catch {
+//      // lazyA threw an exception
+//      case e:Exception =>
+//        // Convert the exception to an issue
+//        val issue = handler(e)
+//        doRecover(recover, issue, handler)
+//    }
+//  }
+//
+//  def tryFail[A](lazyA: => A, handler: Exception => Issue) : OptIssueWriter[A] = {
+//    try {
+//      // lazyA will only throw when evaluated
+//      new OptIssueWriter(Some(lazyA))
+//    } catch {
+//      // lazyA threw an exception
+//      case e:Exception =>
+//        // Convert the exception to an issue
+//        val issue = handler(e)
+//        // Return a fail
+//        new OptIssueWriter(None, List(issue))
+//    }
+//  }
 
-  def issue(anIssue : Issue, moreIssues : Issue*)(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(None, List(moreIssues:_*) ::: List(anIssue))
-  def issue(moreIssues : Traversable[Issue])(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(None, moreIssues.toList)
-
-  def apply[A](item : A)(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(Some(item))
-
-  def tryApply[A](lazyA: => A)(implicit issueHandlingCode : IssueHandlingCode) : OptIssueWriter[A] = {
-    try {
-      // lazyA will only throw when evaluated
-      new OptIssueWriter(Some(lazyA))
-    } catch {
-      case e:Exception => fatalError(e)
-    }
-  }
-
-  def apply[A](writer : OptIssueWriter[A], moreIssues : List[Issue])(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(writer.item, moreIssues ::: writer.issues)
-  def apply[A](item : Option[A], issues : List[Issue], moreIssues : List[Issue])(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(item, moreIssues ::: issues)
-  def apply[A](item : Option[A], issues : List[Issue])(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(item, issues)
-  def apply[A](item : Option[A], issue : Issue)(implicit issueHandlingCode : IssueHandlingCode) = new OptIssueWriter(item, List(issue))
+  def apply[A](item : A) =
+    new OptIssueWriter(Some(item), Nil)
+  def apply[A](item : A, issues : List[Issue]) =
+    new OptIssueWriter(Some(item), issues)
+  def apply[A](issues : List[Issue]) =
+    new OptIssueWriter[A](None, issues)
+  def apply[A](issues : Issue) =
+    new OptIssueWriter[A](None, List(issues))
+  def apply[A]() =
+    new OptIssueWriter[A](None, Nil)
 }
 

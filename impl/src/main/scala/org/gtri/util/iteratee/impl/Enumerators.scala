@@ -57,13 +57,13 @@ object Enumerators {
     def next = Success(progress)
     def statusCode = StatusCode.SUCCESS
   }
-  case class Failure[A](progress : Progress, output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[A] {
-    def next = Failure(progress)
-    def statusCode = StatusCode.FAILURE
+  case class InputFailure[A](progress : Progress, output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[A] {
+    def next = InputFailure(progress)
+    def statusCode = StatusCode.INPUT_FAILURE
   }
-  case class Exception[A](progress : Progress, output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[A] {
-    def next = Exception(progress)
-    def statusCode = StatusCode.EXCEPTION
+  case class InternalFailure[A](progress : Progress, output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[A] {
+    def next = InternalFailure(progress)
+    def statusCode = StatusCode.INTERNAL_FAILURE
   }
 
 

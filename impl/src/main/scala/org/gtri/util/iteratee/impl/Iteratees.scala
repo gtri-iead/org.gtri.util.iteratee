@@ -38,7 +38,18 @@ object Iteratees {
   type Chunk[A] = IndexedSeq[A]
   val Chunk = IndexedSeq
 
-  case class Result[I,O](next : Iteratee.State[I,O], output : ImmutableBuffer[O] = ImmutableBuffers.empty[O](), overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends Iteratee.State.Result[I,O]
+  case class Result[I,O](next : Iteratee.State[I,O], output : ImmutableBuffer[O] = ImmutableBuffers.empty[O](), overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends Iteratee.State.Result[I,O] {
+//    def fold(nextResult : Result[I,O])(implicit issueHandlingCode : IssueHandlingCode) : Result[I,O] = {
+//      if(nextResult.issues.find({ issueHandlingCode.canContinue(_) == false} ).isDefined) {
+//        None
+//      } else {
+//        _item
+//      }
+//      val outputAcc = output.append(nextResult.output)
+//      val overflowAcc = overflow.append(nextResult.overflow)
+//      val issuesAcc = issues.append(nextResult.issues)
+//    }
+  }
 
   abstract class MultiItemCont[I,O] extends Iteratee.State[I,O] {
     def statusCode = StatusCode.CONTINUE
@@ -64,14 +75,14 @@ object Iteratees {
         val nextOverflow = nextResult.overflow.append(overflow)
         val nextIssues = nextResult.issues.append(issues)
         val nextPos = pos + 1
-        nextResult.next.statusCode match {
-          case StatusCode.EXCEPTION | StatusCode.FAILURE | StatusCode.SUCCESS=>
-            val remaining = buffer.slice(pos, buffer.length)
-            Result(nextResult.next, nextOutput, nextOverflow.append(remaining), nextIssues)
-          case StatusCode.CONTINUE =>
-            doApply(buffer,nextPos,nextResult.next, nextOutput, nextOverflow, nextIssues)
+        if(nextResult.next.statusCode.isDone) {
+          // We are done - return anything remaining in the buffer as overflow
+          val remaining = buffer.slice(pos, buffer.length)
+          Result(nextResult.next, nextOutput, nextOverflow.append(remaining), nextIssues)
+        } else {
+          // Cont - recurse
+          doApply(buffer,nextPos,nextResult.next, nextOutput, nextOverflow, nextIssues)
         }
-
       }
     }
   }
@@ -93,13 +104,13 @@ object Iteratees {
       def apply[I,O](output : O, overflow : ImmutableBuffer[I]) = new Success[I,O](Chunk(output), overflow)
       def apply[I,O](output : O, overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) = new Success[I,O](Chunk(output), overflow, issues)
     }
-    case class Failure[I,O](output : ImmutableBuffer[O] = ImmutableBuffers.empty[O](), overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[I,O] with Iteratee.State.Result[I,O] {
+    case class InputFailure[I,O](output : ImmutableBuffer[O] = ImmutableBuffers.empty[O](), overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[I,O] with Iteratee.State.Result[I,O] {
       def next = this
-      def statusCode = StatusCode.FAILURE
+      def statusCode = StatusCode.INPUT_FAILURE
     }
-    case class Exception[I,O](output : ImmutableBuffer[O] = ImmutableBuffers.empty(), overflow : ImmutableBuffer[I] = ImmutableBuffers.empty(), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[I,O] with Iteratee.State.Result[I,O] {
+    case class InternalFailure[I,O](output : ImmutableBuffer[O] = ImmutableBuffers.empty(), overflow : ImmutableBuffer[I] = ImmutableBuffers.empty(), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[I,O] with Iteratee.State.Result[I,O] {
       def next = this
-      def statusCode = StatusCode.EXCEPTION
+      def statusCode = StatusCode.INTERNAL_FAILURE
     }
 }
 //object Iteratees {
