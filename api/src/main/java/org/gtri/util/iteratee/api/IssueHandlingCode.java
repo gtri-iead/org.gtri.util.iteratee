@@ -23,22 +23,72 @@
 package org.gtri.util.iteratee.api;
 
 /**
- * A code that identifies the strategy to be used when handling issues as they 
- * occur.
+ * A code that determines whether processing should continue after an issue 
+ * occurs.
  * 
  * @author lance.gatlin@gmail.com
  */
 public enum IssueHandlingCode {
   /**
-   * Stop on any invalid input (including recoverable errors) or exceptions
+   * Stop on any invalid input (including recoverable issues) or fatal issues
    */
-  NORMAL, 
+  NORMAL {
+
+    ;
+
+    @Override
+    public boolean canContinue(Issue issue) {
+      switch(issue.impactCode()) {
+        case RECOVERABLE :
+        case FATAL :
+          return false;
+        case NONE :
+        case WARNING :
+      }
+      return true;
+    }
+    
+  }, 
   /**
-   * Ignore invalid input or replace invalid input with known good input (fix recoverable errors) - stop only on exceptions
+   * Ignore invalid input or replace invalid input with known good input (fix recoverable issues) - stop only on fatal issues
    */
-  LAX,
+  RECOVER {
+
+    ;
+
+    @Override
+    public boolean canContinue(Issue issue) {
+      switch(issue.impactCode()) {
+        case FATAL :
+          return false;
+        case NONE :
+        case RECOVERABLE :
+        case WARNING :
+      }
+      return true;
+    }
+    
+  },
   /**
-   * Stop on any invalid input (including recoverable errors), "suspected" invalid input (warnings) or exceptions
+   * Stop on any invalid input (including recoverable issues), "suspected" invalid input (warnings) or fatal issues
    */
-  STRICT; 
+  STRICT {
+
+    ;
+
+    @Override
+    public boolean canContinue(Issue issue) {
+      switch(issue.impactCode()) {
+        case RECOVERABLE :
+        case WARNING :
+        case FATAL :
+          return false;
+        case NONE :
+      }
+      return true;
+    }
+    
+  };
+  
+  abstract public boolean canContinue(Issue issue);
 }

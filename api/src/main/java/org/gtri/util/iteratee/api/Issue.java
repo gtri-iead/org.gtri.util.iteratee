@@ -33,36 +33,26 @@ public interface Issue {
    */
   enum ImpactCode {
     /**
-     * An error that is not recoverable and results in the immediate termination
-     * of all processing
+     * An issue occurred that must result in the immediate termination of all 
+     * processing
      */
-    FATAL_ERROR, 
+    FATAL,
     /**
-     * An error which is recoverable by ignoring or substituting invalid input
-     * with correct values but will result in the output differing from 
+     * An issue occurred that can be fixed by ignoring or substituting 
+     * incorrect values with correct values though the output will differ from
      * expectations
      */
-    RECOVERABLE_ERROR, 
+    RECOVERABLE,
     /**
-     * A warning that an input may cause an output that differs from 
+     * An issue occurred which may result in output that differs from 
      * expectations
      */
     WARNING,
     /**
-     * An informative message for the user
+     * An issue occurred which has no impact on processing (e.g. a log message)
      */
-    INFO, 
-    /**
-     * An informative message for the administrator or developer
-     */
-    DEBUG
+    NONE,
   }
-  /**
-   * Get the diagnostic locator message
-   * @return the diagnostic locator message
-   */
-  ImmutableDiagnosticLocator locator();
-  
   /**
    * Get the message
    * @return the message
@@ -70,17 +60,9 @@ public interface Issue {
   String message();
   
   /**
-   * Get the stack trace for the source code location where the issue was 
-   * raised
-   * 
-   * @return the stack trace for the source code location where the issue was 
-   * raised
-   */
-  StackTraceElement[] stackTrace();
-  
-  /**
-   * Get the impact code of the issue
+   * Get the impact of the issue
    * @return the impact code of the issue
    */
   ImpactCode impactCode();
+  
 }

@@ -33,6 +33,7 @@ public interface IterateeFactory {
    * Get the issue handling strategy for this factory.
    * @return the issue handling strategy for this factory
    */
+//  IssueHandlingStrategy issueHandlingStrategy();
   IssueHandlingCode issueHandlingCode();
   
   /**

@@ -28,6 +28,9 @@ package org.gtri.util.iteratee.api;
  * messages to provide the user or administrator with the information necessary 
  * to locate the source of any issues within the input supplied, such as the XML 
  * file name and line number or the database name, table and record, etc.
+ * 
+ * The ImmutableDiagnosticLocator may also be up-cast to a more specific 
+ * implementation (e.g. TextFileLocator)
  *
  * @author lance.gatlin@gmail.com
  */
