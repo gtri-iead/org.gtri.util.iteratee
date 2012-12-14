@@ -36,14 +36,14 @@ object Box {
       Box(a)
     }
   }
-  def empty[A] = new EmptyBox1[A]
-  def empty[A](issue : Issue) = new EmptyBox1[A](List(issue))
-  def empty[A](issues : List[Issue]) = new EmptyBox1[A](issues)
-  def apply[A](a : A) = new FullBox1[A](a)
-  def apply[A](a : A, issues : List[Issue]) = new FullBox1[A](a, issues)
+  def empty[A] = new EmptyBox[A]
+  def empty[A](issue : Issue) = new EmptyBox[A](List(issue))
+  def empty[A](issues : List[Issue]) = new EmptyBox[A](issues)
+  def apply[A](a : A) = new FullBox[A](a)
+  def apply[A](a : A, issues : List[Issue]) = new FullBox[A](a, issues)
 }
 
-trait Box[+A] extends LogWriter[Issue, Box[A]] {
+sealed trait Box[+A] extends LogWriter[Issue, Box[A]] {
 
   def isEmpty : Boolean
   def nonEmpty = isEmpty == false
@@ -96,21 +96,21 @@ trait Box[+A] extends LogWriter[Issue, Box[A]] {
 
   def flatMap[B](f: A => Box[B]) : Box[B] = {
     if(isEmpty) {
-      new EmptyBox1[B](log)
+      new EmptyBox[B](log)
     } else {
       f(get).prepend(log)
     }
   }
   def map[B](f: A => B) : Box[B] = {
     if(isEmpty) {
-      new EmptyBox1[B](log)
+      new EmptyBox[B](log)
     } else {
-      new FullBox1(f(get), log)
+      new FullBox(f(get), log)
     }
   }
 }
 
-class EmptyBox1[+A](val log : List[Issue] = Nil) extends Box[A] {
+final case class EmptyBox[+A](log : List[Issue] = Nil) extends Box[A] {
 
   def isEmpty = true
 
@@ -120,21 +120,21 @@ class EmptyBox1[+A](val log : List[Issue] = Nil) extends Box[A] {
 
   def empty = this
 
-  def copy(newLog: List[Issue]) = new EmptyBox1[A](newLog)
+  def copy(newLog: List[Issue]) = new EmptyBox[A](newLog)
 }
 
-class FullBox1[+A] (item : A, val log : List[Issue] = Nil) extends Box[A] {
+final case class FullBox[+A] (item : A, log : List[Issue] = Nil) extends Box[A] {
   def isEmpty = false
 
   def get = item
   def toOption = Some(item)
 
-  def empty = new EmptyBox1(log)
+  def empty = new EmptyBox(log)
 
-  def copy(newLog: List[Issue]) = new FullBox1[A](item, newLog)
+  def copy(newLog: List[Issue]) = new FullBox[A](item, newLog)
 }
 
-trait Box2[+A,+B] extends LogWriter[Issue, Box2[A,B]] {
+sealed trait Box2[+A,+B] extends LogWriter[Issue, Box2[A,B]] {
   def isEmpty : Boolean
 
   def _1 : A
@@ -151,14 +151,14 @@ trait Box2[+A,+B] extends LogWriter[Issue, Box2[A,B]] {
 
   def apply[C](f: (A,B) => Box[C]) : Box[C] = {
     if(isEmpty) {
-      new EmptyBox1[C](log)
+      new EmptyBox[C](log)
     } else {
       f(_1,_2).prepend(this.log)
     }
   }
 }
 
-class EmptyBox2[+A,+B](val log : List[Issue] = Nil) extends Box2[A,B]{
+final case class EmptyBox2[+A,+B](log : List[Issue] = Nil) extends Box2[A,B]{
 
   def _1 = throw new NoSuchElementException
 
@@ -169,13 +169,13 @@ class EmptyBox2[+A,+B](val log : List[Issue] = Nil) extends Box2[A,B]{
   def copy(newLog: List[Issue]) = new EmptyBox2[A,B](newLog)
 }
 
-class FullBox2[+A,+B] (val _1 : A, val _2 : B, val log : List[Issue] = Nil) extends Box2[A,B] {
+final case class FullBox2[+A,+B] (_1 : A, _2 : B, log : List[Issue] = Nil) extends Box2[A,B] {
   def isEmpty = false
 
   def copy(newLog: List[Issue]) = new FullBox2[A,B](_1, _2, newLog)
 }
 
-trait Box3[+A,+B,+C] extends LogWriter[Issue, Box3[A,B,C]] {
+sealed trait Box3[+A,+B,+C] extends LogWriter[Issue, Box3[A,B,C]] {
   def isEmpty : Boolean
 
   def _1 : A
@@ -193,7 +193,7 @@ trait Box3[+A,+B,+C] extends LogWriter[Issue, Box3[A,B,C]] {
 
   def apply[D](f: (A,B,C) => Box[D]) : Box[D] = {
     if(isEmpty) {
-      new EmptyBox1[D](log)
+      new EmptyBox[D](log)
     } else {
       f(_1,_2,_3).prepend(this.log)
     }
@@ -201,7 +201,7 @@ trait Box3[+A,+B,+C] extends LogWriter[Issue, Box3[A,B,C]] {
 
 }
 
-class EmptyBox3[+A,+B,+C](val log : List[Issue] = Nil) extends Box3[A,B,C] {
+final case class EmptyBox3[+A,+B,+C](log : List[Issue] = Nil) extends Box3[A,B,C] {
   def _1 = throw new NoSuchElementException
 
   def _2 = throw new NoSuchElementException
@@ -213,13 +213,13 @@ class EmptyBox3[+A,+B,+C](val log : List[Issue] = Nil) extends Box3[A,B,C] {
   def copy(newLog: List[Issue]) = new EmptyBox3(newLog)
 }
 
-class FullBox3[+A,+B,+C] (val _1 : A, val _2 : B, val _3 : C, val log : List[Issue] = Nil) extends Box3[A,B,C] {
+final case class FullBox3[+A,+B,+C] (_1 : A, _2 : B, _3 : C, log : List[Issue] = Nil) extends Box3[A,B,C] {
   def isEmpty = false
 
   def copy(newLog: List[Issue]) = new FullBox3(_1,_2,_3, newLog)
 }
 
-trait Box4[+A,+B,+C,+D] extends LogWriter[Issue, Box4[A,B,C,D]] {
+sealed trait Box4[+A,+B,+C,+D] extends LogWriter[Issue, Box4[A,B,C,D]] {
   def isEmpty : Boolean
 
   def _1 : A
@@ -238,7 +238,7 @@ trait Box4[+A,+B,+C,+D] extends LogWriter[Issue, Box4[A,B,C,D]] {
 
   def apply[E](f: (A,B,C,D) => Box[E]) : Box[E] = {
     if(isEmpty) {
-      new EmptyBox1[E](log)
+      new EmptyBox[E](log)
     } else {
       f(_1,_2,_3,_4).prepend(this.log)
     }
@@ -246,7 +246,7 @@ trait Box4[+A,+B,+C,+D] extends LogWriter[Issue, Box4[A,B,C,D]] {
 
 }
 
-class EmptyBox4[+A,+B,+C,+D](val log : List[Issue] = Nil) extends Box4[A,B,C,D] {
+final case class EmptyBox4[+A,+B,+C,+D](log : List[Issue] = Nil) extends Box4[A,B,C,D] {
   def _1 = throw new NoSuchElementException
 
   def _2 = throw new NoSuchElementException
@@ -260,13 +260,13 @@ class EmptyBox4[+A,+B,+C,+D](val log : List[Issue] = Nil) extends Box4[A,B,C,D] 
   def copy(newLog: List[Issue]) = new EmptyBox4(newLog)
 }
 
-class FullBox4[+A,+B,+C,+D] (val _1 : A, val _2 : B, val _3 : C, val _4 : D, val log : List[Issue] = Nil) extends Box4[A,B,C,D] {
+final case class FullBox4[+A,+B,+C,+D] (_1 : A, _2 : B, _3 : C, _4 : D, log : List[Issue] = Nil) extends Box4[A,B,C,D] {
   def isEmpty = false
 
   def copy(newLog: List[Issue]) = new FullBox4(_1,_2,_3,_4,newLog)
 }
 
-trait Box5[+A,+B,+C,+D,+E] extends LogWriter[Issue, Box5[A,B,C,D,E]] {
+sealed trait Box5[+A,+B,+C,+D,+E] extends LogWriter[Issue, Box5[A,B,C,D,E]] {
   def isEmpty : Boolean
 
   def _1 : A
@@ -286,7 +286,7 @@ trait Box5[+A,+B,+C,+D,+E] extends LogWriter[Issue, Box5[A,B,C,D,E]] {
 
   def apply[F](f: (A,B,C,D,E) => Box[F]) : Box[F] = {
     if(isEmpty) {
-      new EmptyBox1[F](log)
+      new EmptyBox[F](log)
     } else {
       f(_1,_2,_3,_4,_5).prepend(this.log)
     }
@@ -294,7 +294,7 @@ trait Box5[+A,+B,+C,+D,+E] extends LogWriter[Issue, Box5[A,B,C,D,E]] {
 
 }
 
-class EmptyBox5[+A,+B,+C,+D,+E](val log : List[Issue] = Nil) extends Box5[A,B,C,D,E] {
+final case class EmptyBox5[+A,+B,+C,+D,+E](log : List[Issue] = Nil) extends Box5[A,B,C,D,E] {
   def _1 = throw new NoSuchElementException
 
   def _2 = throw new NoSuchElementException
@@ -310,13 +310,13 @@ class EmptyBox5[+A,+B,+C,+D,+E](val log : List[Issue] = Nil) extends Box5[A,B,C,
   def copy(newLog: List[Issue]) = new EmptyBox5(newLog)
 }
 
-class FullBox5[+A,+B,+C,+D,+E] (val _1 : A, val _2 : B, val _3 : C, val _4 : D, val _5 : E, val log : List[Issue] = Nil) extends Box5[A,B,C,D,E] {
+final case class FullBox5[+A,+B,+C,+D,+E] (_1 : A, _2 : B, _3 : C, _4 : D, _5 : E, log : List[Issue] = Nil) extends Box5[A,B,C,D,E] {
   def isEmpty = false
 
   def copy(newLog: List[Issue]) = new FullBox5(_1,_2,_3,_4,_5,newLog)
 }
 
-trait Box6[+A,+B,+C,+D,+E,+F] extends LogWriter[Issue, Box6[A,B,C,D,E,F]] {
+sealed trait Box6[+A,+B,+C,+D,+E,+F] extends LogWriter[Issue, Box6[A,B,C,D,E,F]] {
   def isEmpty : Boolean
 
   def _1 : A
@@ -337,7 +337,7 @@ trait Box6[+A,+B,+C,+D,+E,+F] extends LogWriter[Issue, Box6[A,B,C,D,E,F]] {
 
   def apply[G](f: (A,B,C,D,E,F) => Box[G]) : Box[G] = {
     if(isEmpty) {
-      new EmptyBox1[G](log)
+      new EmptyBox[G](log)
     } else {
       f(_1,_2,_3,_4,_5,_6).prepend(this.log)
     }
@@ -345,7 +345,7 @@ trait Box6[+A,+B,+C,+D,+E,+F] extends LogWriter[Issue, Box6[A,B,C,D,E,F]] {
 
 }
 
-class EmptyBox6[+A,+B,+C,+D,+E,+F](val log : List[Issue] = Nil) extends Box6[A,B,C,D,E,F] {
+final case class EmptyBox6[+A,+B,+C,+D,+E,+F](log : List[Issue] = Nil) extends Box6[A,B,C,D,E,F] {
   def _1 = throw new NoSuchElementException
 
   def _2 = throw new NoSuchElementException
@@ -363,13 +363,13 @@ class EmptyBox6[+A,+B,+C,+D,+E,+F](val log : List[Issue] = Nil) extends Box6[A,B
   def copy(newLog: List[Issue]) = new EmptyBox6(newLog)
 }
 
-class FullBox6[+A,+B,+C,+D,+E,+F] (val _1 : A, val _2 : B, val _3 : C, val _4 : D, val _5 : E, val _6 : F, val log : List[Issue] = Nil) extends Box6[A,B,C,D,E,F] {
+final case class FullBox6[+A,+B,+C,+D,+E,+F] (_1 : A, _2 : B, _3 : C, _4 : D, _5 : E, _6 : F, log : List[Issue] = Nil) extends Box6[A,B,C,D,E,F] {
   def isEmpty = false
 
   def copy(newLog: List[Issue]) = new FullBox6(_1,_2,_3,_4,_5,_6,newLog)
 }
 
-trait Box7[+A,+B,+C,+D,+E,+F,+G] extends LogWriter[Issue, Box7[A,B,C,D,E,F,G]] {
+sealed trait Box7[+A,+B,+C,+D,+E,+F,+G] extends LogWriter[Issue, Box7[A,B,C,D,E,F,G]] {
   def isEmpty : Boolean
 
   def _1 : A
@@ -391,7 +391,7 @@ trait Box7[+A,+B,+C,+D,+E,+F,+G] extends LogWriter[Issue, Box7[A,B,C,D,E,F,G]] {
 
   def apply[H](f: (A,B,C,D,E,F,G) => Box[H]) : Box[H] = {
     if(isEmpty) {
-      new EmptyBox1[H](log)
+      new EmptyBox[H](log)
     } else {
       f(_1,_2,_3,_4,_5,_6,_7).prepend(this.log)
     }
@@ -399,7 +399,7 @@ trait Box7[+A,+B,+C,+D,+E,+F,+G] extends LogWriter[Issue, Box7[A,B,C,D,E,F,G]] {
 
 }
 
-class EmptyBox7[+A,+B,+C,+D,+E,+F,+G](val log : List[Issue] = Nil) extends Box7[A,B,C,D,E,F,G] {
+final case class EmptyBox7[+A,+B,+C,+D,+E,+F,+G](log : List[Issue] = Nil) extends Box7[A,B,C,D,E,F,G] {
   def _1 = throw new NoSuchElementException
 
   def _2 = throw new NoSuchElementException
@@ -419,13 +419,13 @@ class EmptyBox7[+A,+B,+C,+D,+E,+F,+G](val log : List[Issue] = Nil) extends Box7[
   def copy(newLog: List[Issue]) = new EmptyBox7(newLog)
 }
 
-class FullBox7[+A,+B,+C,+D,+E,+F,+G] (val _1 : A, val _2 : B, val _3 : C, val _4 : D, val _5 : E, val _6 : F, val _7 : G, val log : List[Issue] = Nil) extends Box7[A,B,C,D,E,F,G] {
+final case class FullBox7[+A,+B,+C,+D,+E,+F,+G] (_1 : A, _2 : B, _3 : C, _4 : D, _5 : E, _6 : F, _7 : G, log : List[Issue] = Nil) extends Box7[A,B,C,D,E,F,G] {
   def isEmpty = false
 
   def copy(newLog: List[Issue]) = new FullBox7(_1,_2,_3,_4,_5,_6,_7,newLog)
 }
 
-trait Box8[+A,+B,+C,+D,+E,+F,+G,+H] extends LogWriter[Issue, Box8[A,B,C,D,E,F,G,H]] {
+sealed trait Box8[+A,+B,+C,+D,+E,+F,+G,+H] extends LogWriter[Issue, Box8[A,B,C,D,E,F,G,H]] {
   def isEmpty : Boolean
 
   def _1 : A
@@ -448,7 +448,7 @@ trait Box8[+A,+B,+C,+D,+E,+F,+G,+H] extends LogWriter[Issue, Box8[A,B,C,D,E,F,G,
 
   def apply[I](f: (A,B,C,D,E,F,G,H) => Box[I]) : Box[I] = {
     if(isEmpty) {
-      new EmptyBox1[I](log)
+      new EmptyBox[I](log)
     } else {
       f(_1,_2,_3,_4,_5,_6,_7,_8).prepend(this.log)
     }
@@ -456,7 +456,7 @@ trait Box8[+A,+B,+C,+D,+E,+F,+G,+H] extends LogWriter[Issue, Box8[A,B,C,D,E,F,G,
 
 }
 
-class EmptyBox8[+A,+B,+C,+D,+E,+F,+G,+H](val log : List[Issue] = Nil) extends Box8[A,B,C,D,E,F,G,H] {
+final case class EmptyBox8[+A,+B,+C,+D,+E,+F,+G,+H](log : List[Issue] = Nil) extends Box8[A,B,C,D,E,F,G,H] {
   def _1 = throw new NoSuchElementException
 
   def _2 = throw new NoSuchElementException
@@ -478,13 +478,13 @@ class EmptyBox8[+A,+B,+C,+D,+E,+F,+G,+H](val log : List[Issue] = Nil) extends Bo
   def copy(newLog: List[Issue]) = new EmptyBox8(newLog)
 }
 
-class FullBox8[+A,+B,+C,+D,+E,+F,+G,+H] (val _1 : A, val _2 : B, val _3 : C, val _4 : D, val _5 : E, val _6 : F, val _7 : G, val _8 : H, val log : List[Issue] = Nil) extends Box8[A,B,C,D,E,F,G,H] {
+final case class FullBox8[+A,+B,+C,+D,+E,+F,+G,+H] (_1 : A, _2 : B, _3 : C, _4 : D, _5 : E, _6 : F, _7 : G, _8 : H, log : List[Issue] = Nil) extends Box8[A,B,C,D,E,F,G,H] {
   def isEmpty = false
 
   def copy(newLog: List[Issue]) = new FullBox8(_1,_2,_3,_4,_5,_6,_7,_8,newLog)
 }
 
-trait Box9[+A,+B,+C,+D,+E,+F,+G,+H,+I] extends LogWriter[Issue, Box9[A,B,C,D,E,F,G,H,I]] {
+sealed trait Box9[+A,+B,+C,+D,+E,+F,+G,+H,+I] extends LogWriter[Issue, Box9[A,B,C,D,E,F,G,H,I]] {
   def isEmpty : Boolean
 
   def _1 : A
@@ -508,7 +508,7 @@ trait Box9[+A,+B,+C,+D,+E,+F,+G,+H,+I] extends LogWriter[Issue, Box9[A,B,C,D,E,F
 
   def apply[J](f: (A,B,C,D,E,F,G,H,I) => Box[J]) : Box[J] = {
     if(isEmpty) {
-      new EmptyBox1[J](log)
+      new EmptyBox[J](log)
     } else {
       f(_1,_2,_3,_4,_5,_6,_7,_8,_9).prepend(this.log)
     }
@@ -516,7 +516,7 @@ trait Box9[+A,+B,+C,+D,+E,+F,+G,+H,+I] extends LogWriter[Issue, Box9[A,B,C,D,E,F
 
 }
 
-class EmptyBox9[+A,+B,+C,+D,+E,+F,+G,+H,+I](val log : List[Issue] = Nil) extends Box9[A,B,C,D,E,F,G,H,I] {
+final case class EmptyBox9[+A,+B,+C,+D,+E,+F,+G,+H,+I](log : List[Issue] = Nil) extends Box9[A,B,C,D,E,F,G,H,I] {
   def _1 = throw new NoSuchElementException
 
   def _2 = throw new NoSuchElementException
@@ -540,13 +540,13 @@ class EmptyBox9[+A,+B,+C,+D,+E,+F,+G,+H,+I](val log : List[Issue] = Nil) extends
   def copy(newLog: List[Issue]) = new EmptyBox9(newLog)
 }
 
-class FullBox9[+A,+B,+C,+D,+E,+F,+G,+H,+I] (val _1 : A, val _2 : B, val _3 : C, val _4 : D, val _5 : E, val _6 : F, val _7 : G, val _8 : H, val _9 : I, val log : List[Issue] = Nil) extends Box9[A,B,C,D,E,F,G,H,I] {
+final case class FullBox9[+A,+B,+C,+D,+E,+F,+G,+H,+I] (_1 : A, _2 : B, _3 : C, _4 : D, _5 : E, _6 : F, _7 : G, _8 : H, _9 : I, log : List[Issue] = Nil) extends Box9[A,B,C,D,E,F,G,H,I] {
   def isEmpty = false
 
   def copy(newLog: List[Issue]) = new FullBox9(_1,_2,_3,_4,_5,_6,_7,_8,_9,newLog)
 }
 
-trait Box10[+A,+B,+C,+D,+E,+F,+G,+H,+I,+J] extends LogWriter[Issue, Box10[A,B,C,D,E,F,G,H,I,J]] {
+sealed trait Box10[+A,+B,+C,+D,+E,+F,+G,+H,+I,+J] extends LogWriter[Issue, Box10[A,B,C,D,E,F,G,H,I,J]] {
   def isEmpty : Boolean
 
   def _1 : A
@@ -571,7 +571,7 @@ trait Box10[+A,+B,+C,+D,+E,+F,+G,+H,+I,+J] extends LogWriter[Issue, Box10[A,B,C,
 
   def apply[K](f: (A,B,C,D,E,F,G,H,I,J) => Box[K]) : Box[K] = {
     if(isEmpty) {
-      new EmptyBox1[K](log)
+      new EmptyBox[K](log)
     } else {
       f(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10).prepend(this.log)
     }
@@ -579,7 +579,7 @@ trait Box10[+A,+B,+C,+D,+E,+F,+G,+H,+I,+J] extends LogWriter[Issue, Box10[A,B,C,
 
 }
 
-class EmptyBox10[+A,+B,+C,+D,+E,+F,+G,+H,+I,+J](val log : List[Issue] = Nil) extends Box10[A,B,C,D,E,F,G,H,I,J] {
+final case class EmptyBox10[+A,+B,+C,+D,+E,+F,+G,+H,+I,+J](log : List[Issue] = Nil) extends Box10[A,B,C,D,E,F,G,H,I,J] {
   def _1 = throw new NoSuchElementException
 
   def _2 = throw new NoSuchElementException
@@ -605,7 +605,7 @@ class EmptyBox10[+A,+B,+C,+D,+E,+F,+G,+H,+I,+J](val log : List[Issue] = Nil) ext
   def copy(newLog: List[Issue]) = new EmptyBox10(newLog)
 }
 
-class FullBox10[+A,+B,+C,+D,+E,+F,+G,+H,+I,+J] (val _1 : A, val _2 : B, val _3 : C, val _4 : D, val _5 : E, val _6 : F, val _7 : G, val _8 : H, val _9 : I, val _10 : J, val log : List[Issue] = Nil) extends Box10[A,B,C,D,E,F,G,H,I,J] {
+final case class FullBox10[+A,+B,+C,+D,+E,+F,+G,+H,+I,+J] (_1 : A, _2 : B, _3 : C, _4 : D, _5 : E, _6 : F, _7 : G, _8 : H, _9 : I, _10 : J, log : List[Issue] = Nil) extends Box10[A,B,C,D,E,F,G,H,I,J] {
   def isEmpty = false
 
   def copy(newLog: List[Issue]) = new FullBox10(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,newLog)
