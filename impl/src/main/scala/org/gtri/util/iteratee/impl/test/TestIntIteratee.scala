@@ -36,7 +36,7 @@ import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 class TestIntIteratee extends Iteratee[java.lang.Integer, java.lang.Integer] {
   class Cont(loopState : java.lang.Integer) extends MultiItemCont[java.lang.Integer, java.lang.Integer] {
     def apply(items: ImmutableBuffer[java.lang.Integer]) = {
-      println("items=" + items + " loopState=" + loopState)
+      println("log=" + items + " loopState=" + loopState)
       Result(new Cont(items.fold(loopState) { _ + _ }))
     }
 

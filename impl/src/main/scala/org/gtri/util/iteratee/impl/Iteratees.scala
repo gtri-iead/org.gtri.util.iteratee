@@ -88,7 +88,7 @@ object Iteratees {
   }
 
     abstract class BaseDone[I,O] extends Iteratee.State[I,O] {
-      // Return all input items as overflow
+      // Return all input log as overflow
       def apply(items: ImmutableBuffer[I]) = Result(next = this, overflow = items)
       def apply(item: I) = Result(next = this, overflow = Chunk(item))
 
@@ -125,8 +125,8 @@ object Iteratees {
 //    }
 //
 //    abstract class BaseDone[I,O] extends Iteratee.State[I,O] {
-//      // Return all input items as overflow
-//      def apply(items: ImmutableBuffer[I]) = Result(next = this, overflow = items)
+//      // Return all input log as overflow
+//      def apply(log: ImmutableBuffer[I]) = Result(next = this, overflow = log)
 //
 //      def endOfInput() = buffered.Result(this)
 //    }
@@ -188,8 +188,8 @@ object Iteratees {
 //    }
 //
 //    abstract class BaseDone[I,O] extends BaseState[I,O] {
-//      // Return all input items as overflow
-//      def apply(items: ImmutableBuffer[I]) = buffered.Result(next = this, overflow = items)
+//      // Return all input log as overflow
+//      def apply(log: ImmutableBuffer[I]) = buffered.Result(next = this, overflow = log)
 //      def apply(item: I) = Result(next = this, overflow = Chunk(item))
 //
 //      def endOfInput() = buffered.Result(this)
