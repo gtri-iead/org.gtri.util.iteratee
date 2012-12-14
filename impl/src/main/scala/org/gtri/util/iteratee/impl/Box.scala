@@ -41,6 +41,29 @@ object Box {
   def empty[A](issues : List[Issue]) = new EmptyBox[A](issues)
   def apply[A](a : A) = new FullBox[A](a)
   def apply[A](a : A, issues : List[Issue]) = new FullBox[A](a, issues)
+
+  def examples {
+    val b1 : Box[Int] = Box(1)
+    val b2 : Box[Int] = Box(2)
+    b2 match { // open a box to see if there is anything there
+      case FullBox(item, log) =>
+        println(item)
+        log foreach { println(_) }
+      case EmptyBox(log) =>
+        log foreach { println(_) }
+    }
+    val b3 = b1 fold b2 // replace contents of b1 with contents of b2 (since they are both full) and append their logs
+    val b4 = Box.empty[Int]
+    val b5 : Box[Int] = b1 fold b4 // doesn't replace b1 since b4 is empty, but logs are still appended
+    val b6 : Box[String] = Box("asdf")
+    val b7 : Box2[Int,String] = b1 cram b6 // cram the contents of two boxes together (box is only full if b1 and b6 are full also appends logs)
+    val b8 : Box3[Int,String,Int] = b7 cram b2 // cram more stuff into our boxes
+    val b9 : Box[String] = b8 { // apply a function to the crammed box b8
+      (a : Int,b : String,c : Int) => { // function is only called if b8 is full
+        Box("asdf") // Box up a result - logs will be appended
+      }
+    } // b9 now has "asdf" and a concat of logs from b1,b6,b2 and itself
+  }
 }
 
 sealed trait Box[+A] extends LogWriter[Issue, Box[A]] {
@@ -79,18 +102,10 @@ sealed trait Box[+A] extends LogWriter[Issue, Box[A]] {
     }
   }
 
-  //  def ||[B](rhs : Box[B]) : Box2[Option[A],Option[B]] = lift(rhs)
-  //  def lift[B](rhs : Box[B]) : Box2[Option[A],Option[B]] = {
-  //    new Box2(toOption, rhs.toOption, rhs.issues ::: issues)
-  //  }
-
-  //  def apply[B](f: Option[A] => Box[B]) : Box[B] = {
-  //    if(isEmpty) {
-  //      new Box(issues)
-  //    } else {
-  //      f(toOption).prepend(issues)
-  //    }
-  //  }
+//  def |||[B](rhs : Box[B]) : FullBox2[Option[A],Option[B]] = stack(rhs)
+//  def stack[B](rhs : Box[B]) : FullBox2[Option[A],Option[B]] = {
+//    new FullBox2(toOption, rhs.toOption, rhs.log ::: log)
+//  }
 
   def apply[B](f: A => Box[B]) : Box[B] = flatMap(f)
 
