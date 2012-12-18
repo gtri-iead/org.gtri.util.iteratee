@@ -64,5 +64,5 @@ public interface Issue {
    * @return the impact code of the issue
    */
   ImpactCode impactCode();
-  
+ 
 }

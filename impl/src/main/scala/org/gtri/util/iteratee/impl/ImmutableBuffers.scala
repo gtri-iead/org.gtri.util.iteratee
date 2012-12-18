@@ -34,6 +34,8 @@ import scala.collection.JavaConversions._
  * To change this template use File | Settings | File Templates.
  */
 object ImmutableBufferConversions {
+  import scala.language.implicitConversions
+
   implicit def immutableBufferToIndexedSeq[A](buffer : api.ImmutableBuffer[A]) : IndexedSeq[A] = {
     if(buffer.length == 0) {
       IndexedSeq.empty

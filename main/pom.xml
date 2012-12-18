@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.gtri.util</groupId>
-  <artifactId>iteratee.main_2.9.2</artifactId>
+  <artifactId>iteratee.main_2.10</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>iteratee.main_2.9.2</name>
+  <name>iteratee.main_2.10</name>
 
   <parent>
     <groupId>org.gtri</groupId>
@@ -26,7 +26,7 @@
     </dependency>
     <dependency>
       <groupId>org.gtri.util</groupId>
-      <artifactId>iteratee.impl_2.9.2</artifactId>
+      <artifactId>iteratee.impl_2.10</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>

@@ -1,4 +1,4 @@
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.0-RC5"
 
 organization := "org.gtri.util"
 
@@ -6,7 +6,7 @@ name := "iteratee.impl"
 
 version := "1.0-SNAPSHOT"
 
-scalacOptions ++= Seq("-unchecked", "-deprecation")
+scalacOptions ++= Seq("-feature","-unchecked", "-deprecation")
 
 //resolvers += "iead-all" at "https://iead.ittl.gtri.org/artifactory/all" // need this for getting IEAD artifacts
 

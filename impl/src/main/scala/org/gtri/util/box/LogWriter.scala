@@ -1,4 +1,4 @@
-package org.gtri.util.iteratee.impl
+package org.gtri.util.box
 
 /**
  * Created with IntelliJ IDEA.
