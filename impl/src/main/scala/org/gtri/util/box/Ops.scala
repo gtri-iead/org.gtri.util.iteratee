@@ -12,7 +12,7 @@ import org.gtri.util.iteratee.api.IssueHandlingCode
 object Ops {
   import scala.language.implicitConversions
 
-  implicit class BoxAnything[A,B](self: A) {
+  implicit class BoxAnything[A](self: A) {
     def box: Box[A] = Box(self)
   }
 
@@ -107,7 +107,7 @@ object Ops {
           allLogs
         )
       } else {
-        for(a <- self._1;b <- self._2) yield(a,b)
+        (self._1.get,self._2.get).box
       }
     }
   }
@@ -123,7 +123,7 @@ object Ops {
           allLogs
         )
       } else {
-        for(a <- self._1;b <- self._2;c <- self._3) yield(a,b,c)
+        (self._1.get,self._2.get,self._3.get).box
       }
     }
   }
@@ -139,7 +139,7 @@ object Ops {
           allLogs
         )
       } else {
-        for(a <- self._1;b <- self._2;c <- self._3;d <- self._4) yield(a,b,c,d)
+        (self._1.get,self._2.get,self._3.get,self._4.get).box
       }
     }
   }
@@ -155,7 +155,7 @@ object Ops {
           allLogs
         )
       } else {
-        for(a <- self._1;b <- self._2;c <- self._3;d <- self._4;e <- self._5) yield(a,b,c,d,e)
+        (self._1.get,self._2.get,self._3.get,self._4.get,self._5.get).box
       }
     }
   }
@@ -171,7 +171,7 @@ object Ops {
           allLogs
         )
       } else {
-        for(a <- self._1;b <- self._2;c <- self._3;d <- self._4;e <- self._5;f <- self._6) yield(a,b,c,d,e,f)
+        (self._1.get,self._2.get,self._3.get,self._4.get,self._5.get,self._6.get).box
       }
     }
   }
@@ -187,7 +187,7 @@ object Ops {
           allLogs
         )
       } else {
-        for(a <- self._1;b <- self._2;c <- self._3;d <- self._4;e <- self._5;f <- self._6;g <- self._7) yield(a,b,c,d,e,f,g)
+        (self._1.get,self._2.get,self._3.get,self._4.get,self._5.get,self._6.get,self._7.get).box
       }
     }
   }
@@ -203,7 +203,7 @@ object Ops {
           allLogs
         )
       } else {
-        for(a <- self._1;b <- self._2;c <- self._3;d <- self._4;e <- self._5;f <- self._6;g <- self._7;h <- self._8) yield(a,b,c,d,e,f,g,h)
+        (self._1.get,self._2.get,self._3.get,self._4.get,self._5.get,self._6.get,self._7.get,self._8.get).box
       }
     }
   }
@@ -219,7 +219,7 @@ object Ops {
           allLogs
         )
       } else {
-        for(a <- self._1;b <- self._2;c <- self._3;d <- self._4;e <- self._5;f <- self._6;g <- self._7;h <- self._8;i <- self._9) yield(a,b,c,d,e,f,g,h,i)
+        (self._1.get,self._2.get,self._3.get,self._4.get,self._5.get,self._6.get,self._7.get,self._8.get,self._9.get).box
       }
     }
   }
@@ -235,7 +235,7 @@ object Ops {
           allLogs
         )
       } else {
-        for(a <- self._1;b <- self._2;c <- self._3;d <- self._4;e <- self._5;f <- self._6;g <- self._7;h <- self._8;i <- self._9;j <- self._10) yield(a,b,c,d,e,f,g,h,i,j)
+        (self._1.get,self._2.get,self._3.get,self._4.get,self._5.get,self._6.get,self._7.get,self._8.get,self._9.get,self._10.get).box
       }
     }
   }
@@ -251,7 +251,7 @@ object Ops {
           allLogs
         )
       } else {
-        for(a <- self._1;b <- self._2;c <- self._3;d <- self._4;e <- self._5;f <- self._6;g <- self._7;h <- self._8;i <- self._9;j <- self._10;k <- self._11) yield(a,b,c,d,e,f,g,h,i,j,k)
+        (self._1.get,self._2.get,self._3.get,self._4.get,self._5.get,self._6.get,self._7.get,self._8.get,self._9.get,self._10.get,self._11.get).box
       }
     }
   }
@@ -267,10 +267,11 @@ object Ops {
           allLogs
         )
       } else {
-        for(a <- self._1;b <- self._2;c <- self._3;d <- self._4;e <- self._5;f <- self._6;g <- self._7;h <- self._8;i <- self._9;j <- self._10;k <- self._11;l <- self._12) yield(a,b,c,d,e,f,g,h,i,j,k,l)
+        (self._1.get,self._2.get,self._3.get,self._4.get,self._5.get,self._6.get,self._7.get,self._8.get,self._9.get,self._10.get,self._11.get,self._12.get).box
       }
     }
   }
+
   // Generate the CramOps definition string
     def makeCramOps(n: Int) = {
       require(n < 26, "Ran out of letters!")
@@ -278,9 +279,10 @@ object Ops {
       val varTypes = 'a' until ('a'+n).toChar
       val boxTypeStrings = (types map { (t) => s"Box[$t]" }).mkString(",")
       val recoverStrings = (1 to n).map({ n => s"self._$n.recover" }).mkString(",")
-      val forGenStrings = ((varTypes zip (1 to n)).map { case (v,n) => s"$v <- self._$n" }).mkString(";")
+      val getStrings = (1 to n).map({ n => s"self._$n.get" }).mkString(",")
+    //      val forGenStrings = ((varTypes zip (1 to n)).map { case (v,n) => s"$v <- self._$n" }).mkString(";")
       val typeStrings = types.mkString(",")
-      val varTypeStrings = varTypes.mkString(",")
+//      val varTypeStrings = varTypes.mkString(",")
       val logAccStrings = ((n to 1 by -1) map { i => s"self._$i.log"}).mkString(" ::: ")
       val ifAnyRecoverableStrings = ((1 to n) map { i => s"self._$i.isRecoverable"}).mkString(" || ")
       val ifAnyEmptyStrings = ((1 to n) map { i => s"self._$i.isEmpty"}).mkString(" || ")
@@ -295,7 +297,7 @@ object Ops {
         |          allLogs
         |        )
         |      } else {
-        |        for($forGenStrings) yield($varTypeStrings)
+        |        ($getStrings).box
         |      }
         |    }
         | }
