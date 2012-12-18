@@ -16,15 +16,15 @@ import org.gtri.util.iteratee.api.Issue.ImpactCode;
  */
 public class Issues {
 
-  public static ConfigIssue cfgFatal(String message) {
+  public static ConfigIssue configFatalError(String message) {
     return new ConfigIssue(message, ImpactCode.FATAL);
   }
 
-  public static ConfigIssue cfgRecoverable(String message) {
+  public static ConfigIssue configRecoverableError(String message) {
     return new ConfigIssue(message, ImpactCode.RECOVERABLE);
   }
 
-  public static ConfigIssue cfgWarning(String message) {
+  public static ConfigIssue configWarning(String message) {
     return new ConfigIssue(message, ImpactCode.WARNING);
   }
 
@@ -54,15 +54,15 @@ public class Issues {
     }
   }
 
-  public static InternalIssue fatal(Throwable cause) {
+  public static InternalIssue internalFatalError(Throwable cause) {
     return new InternalIssue(cause);
   }
 
-  public static InternalIssue recoverable(Throwable cause) {
+  public static InternalIssue internalRecoverableError(Throwable cause) {
     return new InternalIssue(cause, ImpactCode.RECOVERABLE);
   }
 
-  public static InternalIssue warning(Throwable cause) {
+  public static InternalIssue internalWarning(Throwable cause) {
     return new InternalIssue(cause, ImpactCode.WARNING);
   }
 
@@ -97,11 +97,11 @@ public class Issues {
     }
   }
 
-  public static InputIssue inputFatal(String message, ImmutableDiagnosticLocator locator) {
+  public static InputIssue inputFatalError(String message, ImmutableDiagnosticLocator locator) {
     return new InputIssue(message, locator, ImpactCode.FATAL);
   }
 
-  public static InputIssue inputRecoverable(String message, ImmutableDiagnosticLocator locator) {
+  public static InputIssue inputRecoverableError(String message, ImmutableDiagnosticLocator locator) {
     return new InputIssue(message, locator, ImpactCode.RECOVERABLE);
   }
 

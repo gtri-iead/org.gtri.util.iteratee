@@ -31,14 +31,17 @@ object Box {
   }
 
   def examples {
-    import Ops._
+//    import org.gtri.util.box._
+    import org.gtri.util.box.Ops._
+    import org.gtri.util.iteratee.api.Issue
+    import org.gtri.util.iteratee.api.Issues._
 
-    val issue2 = Issues.log("asdf2",java.util.logging.Level.INFO)
-    val issue4 = Issues.log("asdf4",java.util.logging.Level.INFO)
-    val issue5 = Issues.log("asdf5",java.util.logging.Level.INFO)
-    val issue6 = Issues.log("asdf6",java.util.logging.Level.INFO)
-    val issue10 = Issues.log("asdf10",java.util.logging.Level.INFO)
-    val issue11 = Issues.log("asdf11",java.util.logging.Level.INFO)
+    val issue2 = log("asdf2",java.util.logging.Level.INFO)
+    val issue4 = log("asdf4",java.util.logging.Level.INFO)
+    val issue5 = log("asdf5",java.util.logging.Level.INFO)
+    val issue6 = log("asdf6",java.util.logging.Level.INFO)
+    val issue10 = log("asdf10",java.util.logging.Level.INFO)
+    val issue11 = log("asdf11",java.util.logging.Level.INFO)
 
     val b1 : Box[Int] = 1.box // syntatic sugar
     val b2 : Box[Int] = Box(2, issue2)
