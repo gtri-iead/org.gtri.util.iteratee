@@ -1,7 +1,6 @@
 package org.gtri.util.box
 
-import org.gtri.util.iteratee.api.{IssueHandlingCode, Issue}
-import org.gtri.util.iteratee.api.Issue.ImpactCode
+import org.gtri.util.iteratee.api.{Issues, Issue}
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,8 +33,15 @@ object Box {
   def examples {
     import Ops._
 
-    val b1 : Box[Int] = 1.box
-    val b2 : Box[Int] = Box(2)
+    val issue2 = Issues.log("asdf2",java.util.logging.Level.INFO)
+    val issue4 = Issues.log("asdf4",java.util.logging.Level.INFO)
+    val issue5 = Issues.log("asdf5",java.util.logging.Level.INFO)
+    val issue6 = Issues.log("asdf6",java.util.logging.Level.INFO)
+    val issue10 = Issues.log("asdf10",java.util.logging.Level.INFO)
+    val issue11 = Issues.log("asdf11",java.util.logging.Level.INFO)
+
+    val b1 : Box[Int] = 1.box // syntatic sugar
+    val b2 : Box[Int] = Box(2, issue2)
     b2 match { // open a box to see if there is anything there
       case SuccessBox(item, log) =>
         println(item)
@@ -45,10 +51,10 @@ object Box {
       case EmptyBox(log) =>
         log foreach { println(_) }
     }
-    val b3 = b1 fold b2 // replace contents of b1 with contents of b2 (since they are both full) and append their logs
-    val b4 = Box.empty[Int]
-    val b5 : Box[Int] = b1 >> b4 // doesn't replace b1 since b4 is empty, but logs are still appended
-    val b6 : Box[String] = Box("asdf")
+    val b3 = b1 fold b2 // replace contents of b2 with contents of b1 (since they are both full) and append their logs
+    val b4 = Box.empty[Int](issue4)
+    val b5 : Box[Int] = b4 >> b1 // doesn't replace b1 since b4 is empty, but logs are still appended
+    val b6 : Box[String] = Box("asdf", issue6)
     val b7 : Box[(Int,String)] = (b1,b6).cram // cram the contents of two boxes together (box is only full if b1 and b6 are full also appends logs)
     val b8 : Box[(Int,String,Int)] = (b1,b6,b2).cram // cram more stuff into our boxes
     val b9 : Box[String] = b8 { // apply a function to the crammed box b8
@@ -56,6 +62,20 @@ object Box {
           Box("asdf") // Box up a result - logs will be appended
         }
       } // b9 now has "asdf" and a concat of logs from b1,b6,b2 and itself
+
+    val b10 : Box[String] = Box.recover({println("here");Box("qwerty",issue11)},issue10) // build a box that represents a failed operation that can be recovered
+    val b11 : Box[Int] =
+      (b1,b2,b10).cram // b/c b10 is a RecoverBox cram will return a RecoverBox that can be recovered to recover from the failed operation
+    {  // This is called using ApplyOps - syntatic sugar for flatMap
+      (a : Int,b : Int,s : String) =>
+        println(a+b);Box(a+b)
+    } // This whole operation will not be resolved immediately, instead b11 will be a RecoverBox that can be recovered to force the whole chain to recover
+    val b12 : Box[Int] = b11.recover // using cram means only recover call is necessary
+
+    val b13 : Box[Int] = for(a <- b1;b <- b2) yield a + b // SuccessBox(3,List(issue2))
+    val b14 : Box[Int] = for(a <- b1;b <- b2; c <- b4) yield a + b + c // EmptyBox(List(issue2,issue4))
+    val b15 : Box[String] = for(a <- b1;b <- b10; c <- b10) yield a.toString + b + c // RecoverBox(recoverable, List(issue2,issue4))
+    val b16 : Box[String] = b15.recover.recover // Recover must be called twice b/c b15 uses b10 twice (this is why cram should be used instead)
   }
 }
 
