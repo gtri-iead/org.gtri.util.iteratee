@@ -79,6 +79,13 @@ object Box {
   }
 }
 
+/**
+ * A trait for a Monad that may contain nothing (empty state), a single object (success state) or a promise
+ * (recoverable state) that allows recovering from a failure. Since the recovery attempt is performed with no extra
+ * input, recovery is only possible by fixing or ignoring previously supplied inputs.
+ *
+ * @tparam A
+ */
 sealed trait Box[+A] extends LogWriter[Issue, Box[A]] { self =>
 
   // Override in inherited classes
