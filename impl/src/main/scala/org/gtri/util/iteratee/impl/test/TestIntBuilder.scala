@@ -38,7 +38,7 @@ class TestIntegerBuilder extends Iteratee[Int, Int] {
 
     def apply(item: Int) = {
       if(acc == 11) {
-        InputFailure()
+        Failure()
       } else {
         Result(next = Cont(item + acc))
       }

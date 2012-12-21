@@ -24,8 +24,10 @@ package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api
 import api._
+import api.Issues._
 import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 import annotation.tailrec
+import org.gtri.util.iteratee.box._
 
 /**
 * Created with IntelliJ IDEA.
@@ -38,34 +40,91 @@ object Iteratees {
   type Chunk[A] = IndexedSeq[A]
   val Chunk = IndexedSeq
 
-  case class Result[I,O](next : Iteratee.State[I,O], output : ImmutableBuffer[O] = ImmutableBuffers.empty[O](), overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends Iteratee.State.Result[I,O] {
-//    def fold(nextResult : Result[I,O])(implicit issueHandlingCode : IssueHandlingCode) : Result[I,O] = {
-//      if(nextResult.issues.find({ issueHandlingCode.canContinue(_) == false} ).isDefined) {
-//        None
-//      } else {
-//        _item
-//      }
-//      val outputAcc = output.append(nextResult.output)
-//      val overflowAcc = overflow.append(nextResult.overflow)
-//      val issuesAcc = issues.append(nextResult.issues)
-//    }
+  case class Result[I,O](
+    next : Iteratee.State[I,O],
+    output : ImmutableBuffer[O] = ImmutableBuffers.empty[O](),
+    overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I](),
+    issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()
+  ) extends Iteratee.State.Result[I,O]
+
+  implicit class boxToResult[I,O](box : Box[O]) {
+    def toResult(ifSuccess : O => Iteratee.State[I,O])(implicit issueHandlingCode : IssueHandlingCode) : Iteratee.State.Result[I,O] = {
+      // Return a result (recover once if needed)
+      box match {
+        // If box is Success then return a result with the output and the next state of ifSuccess
+        case SuccessBox(output, log) =>
+          Result(
+            next = ifSuccess(output),
+            output = Chunk(output),
+            issues = log
+          )
+        case RecoverBox(recoverable, log) =>
+          recoverable.recover match {
+            case SuccessBox(output, log) =>
+              Result(
+                next = ifSuccess(output),
+                output = Chunk(output),
+                issues = log
+              )
+            case RecoverBox(recoverable, log) =>
+              Failure(issues = log)
+            case FailBox(log) =>
+              Failure(issues = log)
+
+          }
+        // If Box is Failure then return an InputFailure
+        case FailBox(log) =>
+          Failure(issues = log)
+      }
+    }
   }
 
+  /**
+   * Skeleton implementation class for Iteratees that process chunks of input. Derived classes implement only the
+   * apply for chunks of input.
+   *
+   * @tparam I
+   * @tparam O
+   */
   abstract class MultiItemCont[I,O] extends Iteratee.State[I,O] {
     def statusCode = StatusCode.CONTINUE
 
     def apply(item : I)  = apply(Chunk(item))
   }
 
+  /**
+   * Skeleton implementation class for Iteratees that process one item at a time. Derived class implement only the
+   * apply for single items.
+   * @tparam I
+   * @tparam O
+   */
   abstract class SingleItemCont[I,O] extends Iteratee.State[I,O] {
     def statusCode = StatusCode.CONTINUE
 
-    def apply(buffer : ImmutableBuffer[I]) = {
+    final def apply(buffer : ImmutableBuffer[I]) = {
       doApply(buffer, 0, this, ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty())
     }
 
-    @tailrec
-    final def doApply(buffer : ImmutableBuffer[I], pos : Int, next : Iteratee.State[I,O], output : ImmutableBuffer[O], overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) : Result[I,O] = {
+    /**
+     * Applies a buffer of input one item at a time, accumulating output, overflow and issues. If the iteratee is done
+     * after processing a single item, returns the accumulated output and issues and appends the remaining input as
+     * overflow
+     *
+     * @param buffer
+     * @param pos
+     * @param next
+     * @param output
+     * @param overflow
+     * @param issues
+     * @return
+     */
+    @tailrec final def doApply(
+      buffer : ImmutableBuffer[I], pos : Int,
+      next : Iteratee.State[I,O],
+      output : ImmutableBuffer[O],
+      overflow : ImmutableBuffer[I],
+      issues : ImmutableBuffer[Issue]
+    ) : Result[I,O] = {
       if(pos >= buffer.length) {
         Result(next, output, overflow, issues)
       } else {
@@ -87,164 +146,52 @@ object Iteratees {
     }
   }
 
-    abstract class BaseDone[I,O] extends Iteratee.State[I,O] {
-      // Return all input log as overflow
-      def apply(items: ImmutableBuffer[I]) = Result(next = this, overflow = items)
-      def apply(item: I) = Result(next = this, overflow = Chunk(item))
+  abstract class BaseDone[I,O] extends Iteratee.State[I,O] {
+    // Return all input log as overflow
+    def apply(items: ImmutableBuffer[I]) = Result(next = this, overflow = items)
+    def apply(item: I) = Result(next = this, overflow = Chunk(item))
 
-      def endOfInput() = Result(this)
-    }
+    def endOfInput() = Result(this)
+  }
 
-    case class Success[I,O](output : ImmutableBuffer[O] = ImmutableBuffers.empty[O](), overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[I,O] with Iteratee.State.Result[I,O] {
-      def next = this
-      def statusCode = StatusCode.SUCCESS
-    }
-    object Success {
-      def apply[I,O](output : O) = new Success[I,O](Chunk(output))
-      def apply[I,O](output : O, overflow : ImmutableBuffer[I]) = new Success[I,O](Chunk(output), overflow)
-      def apply[I,O](output : O, overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) = new Success[I,O](Chunk(output), overflow, issues)
-    }
-    case class InputFailure[I,O](output : ImmutableBuffer[O] = ImmutableBuffers.empty[O](), overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[I,O] with Iteratee.State.Result[I,O] {
-      def next = this
-      def statusCode = StatusCode.INPUT_FAILURE
-    }
-    case class InternalFailure[I,O](output : ImmutableBuffer[O] = ImmutableBuffers.empty(), overflow : ImmutableBuffer[I] = ImmutableBuffers.empty(), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[I,O] with Iteratee.State.Result[I,O] {
-      def next = this
-      def statusCode = StatusCode.INTERNAL_FAILURE
-    }
+  /**
+   * Convenience class for a Success that is both a Iteratee.State and Iteratee.Result.  FSM will stay in this
+   * state regardless of further input.
+   * @param output
+   * @param overflow
+   * @param issues
+   * @tparam I
+   * @tparam O
+   */
+  case class Success[I,O](
+    output : ImmutableBuffer[O] = ImmutableBuffers.empty[O](),
+    overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I](),
+    issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()
+  ) extends BaseDone[I,O] with Iteratee.State.Result[I,O] {
+    def next = this
+    def statusCode = StatusCode.SUCCESS
+  }
+  object Success {
+    def apply[I,O](output : O) = new Success[I,O](Chunk(output))
+    def apply[I,O](output : O, overflow : ImmutableBuffer[I]) = new Success[I,O](Chunk(output), overflow)
+    def apply[I,O](output : O, overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) = new Success[I,O](Chunk(output), overflow, issues)
+  }
+
+  /**
+   * Convenience class for an input failure that is both a Iteratee.State and Iteratee.Result. FSM will stay in this
+   * state regardless of further input.
+   * @param output
+   * @param overflow
+   * @param issues
+   * @tparam I
+   * @tparam O
+   */
+  case class Failure[I,O](
+    output : ImmutableBuffer[O] = ImmutableBuffers.empty[O],
+    overflow : ImmutableBuffer[I] = ImmutableBuffers.empty[I],
+    issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]
+  ) extends BaseDone[I,O] with Iteratee.State.Result[I,O] {
+    def next = this
+    def statusCode = StatusCode.FAILURE
+  }
 }
-//object Iteratees {
-//  type Chunk[A] = IndexedSeq[A]
-//  val Chunk = IndexedSeq
-//
-//  object buffered {
-//    case class Result[I,O](next : Iteratee.State[I,O], output : ImmutableBuffer[O] = ImmutableBuffers.empty()[O], overflow : ImmutableBuffer[I] = ImmutableBuffers.empty()[I], issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty()[Issue]) extends Iteratee.State.Result[I,O]
-//
-//    abstract class BaseCont[I,O] extends Iteratee.State[I,O] {
-//      def statusCode = StatusCode.CONTINUE
-//    }
-//
-//    abstract class BaseDone[I,O] extends Iteratee.State[I,O] {
-//      // Return all input log as overflow
-//      def apply(log: ImmutableBuffer[I]) = Result(next = this, overflow = log)
-//
-//      def endOfInput() = buffered.Result(this)
-//    }
-//
-//    case class Success[I,O](output : ImmutableBuffer[O] = ImmutableBuffers.empty()[O], overflow : ImmutableBuffer[I] = ImmutableBuffers.empty()[I], issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty()[Issue]) extends BaseDone[I,O] with api.Iteratee.State.Result[I,O] {
-//      def next = this
-//      def statusCode = StatusCode.SUCCESS
-//    }
-//    case class Failure[I,O](output : ImmutableBuffer[O] = ImmutableBuffers.empty()[O], overflow : ImmutableBuffer[I] = ImmutableBuffers.empty()[I], issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty()[Issue]) extends BaseDone[I,O] with api.Iteratee.State.Result[I,O] {
-//      def next = this
-//      def statusCode = StatusCode.FAILURE
-//    }
-//    case class Exception[I,O](output : ImmutableBuffer[O] = ImmutableBuffers.empty()[O], overflow : ImmutableBuffer[I] = ImmutableBuffers.empty()[I], issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty()[Issue]) extends BaseDone[I,O] with api.Iteratee.State.Result[I,O] {
-//      def next = this
-//      def statusCode = StatusCode.EXCEPTION
-//    }
-//  }
-//
-//  object unbuffered {
-//    trait SingleResult[I,O] {
-//      def next : BaseState[I,O]
-//      def output : Chunk[O]
-//      def overflow : Chunk[I]
-//      def issues : List[Issue]
-//    }
-//    case class Result[I,O](next : BaseState[I,O], output : Chunk[O] = Chunk.empty, overflow : Chunk[I] = Chunk.empty, issues : List[Issue] = Nil) extends SingleResult[I,O]
-//    //    object Result {
-//    //      def apply[I,O](next : BaseState[I,O], output : Chunk[O] = Chunk.empty, overflow : Chunk[I] = Chunk.empty, issues : List[Issue] = Nil) = new Result(next, output, overflow, issues)
-//    //    }
-//
-//    implicit def singleResultToApiResult[I,O](result : SingleResult[I,O]) : Iteratee.State.Result[I,O] = {
-//      new Iteratee.State.Result[I,O] {
-//        def next = result.next
-//
-//        def output = result.output
-//
-//        def overflow = result.overflow
-//
-//        def issues = result.issues
-//      }
-//    }
-//
-//    abstract class BaseState[I,O] extends Iteratee.State[I,O] {
-//      def apply(input : I) : SingleResult[I,O]
-//    }
-//
-//    abstract class BaseCont[I,O] extends BaseState[I,O] {
-//      def statusCode = StatusCode.CONTINUE
-//
-//      def apply(inputs : ImmutableBuffer[I]) = {
-//        // TODO: this should stop pushing input if Iteratee completes - rewrite as a recursive
-//        inputs.foldLeft(Result(this)) {
-//          (result, input) =>
-//            val nextResult = result.next(input)
-//            Result(nextResult.next, nextResult.output ++ result.output, nextResult.overflow ++ result.overflow, nextResult.issues ::: result.issues)
-//        }
-//      }
-//
-//    }
-//
-//    abstract class BaseDone[I,O] extends BaseState[I,O] {
-//      // Return all input log as overflow
-//      def apply(log: ImmutableBuffer[I]) = buffered.Result(next = this, overflow = log)
-//      def apply(item: I) = Result(next = this, overflow = Chunk(item))
-//
-//      def endOfInput() = buffered.Result(this)
-//    }
-//
-//    case class Success[I,O](output : Chunk[O] = Chunk.empty, overflow : Chunk[I] = Chunk.empty, issues : List[Issue] = Nil) extends BaseDone[I,O] with SingleResult[I,O] {
-//      def next = this
-//      def statusCode = StatusCode.SUCCESS
-//    }
-//    case class Failure[I,O](output : Chunk[O] = Chunk.empty, overflow : Chunk[I] = Chunk.empty, issues : List[Issue] = Nil) extends BaseDone[I,O] with SingleResult[I,O] {
-//      def next = this
-//      def statusCode = StatusCode.FAILURE
-//    }
-//    case class Exception[I,O](output : Chunk[O] = Chunk.empty, overflow : Chunk[I] = Chunk.empty, issues : List[Issue] = Nil) extends BaseDone[I,O] with SingleResult[I,O] {
-//      def next = this
-//      def statusCode = StatusCode.EXCEPTION
-//    }
-//    //    object Success {
-//    //      def apply[I,O]() = new Success[I,O](ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : O*) = new Success[I,O](Chunk(output:_*), ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : Chunk[O]) = new Success[I,O](output, ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : Chunk[O], overflow : Chunk[I]) = new Success[I,O](output, overflow, ImmutableBuffers.empty())
-//    //      def apply[I,O](output : Chunk[O], overflow : Chunk[I], issues : List[Issue]) = new Success[I,O](output, overflow, issues)
-//    //      def apply[I,O](output : ImmutableBuffer[O]) = new Success[I,O](output, ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : ImmutableBuffer[O], overflow : ImmutableBuffer[I]) = new Success[I,O](output, overflow, ImmutableBuffers.empty())
-//    //      def apply[I,O](output : ImmutableBuffer[O], overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) = new Success[I,O](output, overflow, issues)
-//    //    }
-//    //    class Failure[I,O](val output : ImmutableBuffer[O] = ImmutableBuffers.empty()[O], val overflow : ImmutableBuffer[I] = ImmutableBuffers.empty()[I], val issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty()[Issue]) extends BaseDone[I,O] {
-//    //      //    def this(_output : Chunk[O], _overflow : Chunk[I], _issues : List[Issue]) = this(_output, _overflow, _issues)
-//    //      def statusCode = StatusCode.FAILURE
-//    //    }
-//    //    object Failure {
-//    //      def apply[I,O]() = new Failure[I,O](ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : O*) = new Failure[I,O](Chunk(output:_*), ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : Chunk[O]) = new Failure[I,O](output, ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : Chunk[O], overflow : Chunk[I]) = new Failure[I,O](output, overflow, ImmutableBuffers.empty())
-//    //      def apply[I,O](output : Chunk[O], overflow : Chunk[I], issues : List[Issue]) = new Failure[I,O](output, overflow, issues)
-//    //      def apply[I,O](output : ImmutableBuffer[O]) = new Failure[I,O](output, ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : ImmutableBuffer[O], overflow : ImmutableBuffer[I]) = new Failure[I,O](output, overflow, ImmutableBuffers.empty())
-//    //      def apply[I,O](output : ImmutableBuffer[O], overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) = new Failure[I,O](output, overflow, issues)
-//    //    }
-//    //    class Exception[I,O](val output : ImmutableBuffer[O] = ImmutableBuffers.empty()[O], val overflow : ImmutableBuffer[I] = ImmutableBuffers.empty()[I], val issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty()[Issue]) extends BaseDone[I,O] {
-//    //      //    def this(output : Chunk[O], overflow : Chunk[I], issues : List[Issue]) = this(output, overflow, issues)
-//    //      def statusCode = StatusCode.EXCEPTION
-//    //    }
-//    //    object Exception {
-//    //      def apply[I,O]() = new Exception[I,O](ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : O*) = new Exception[I,O](Chunk(output:_*), ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : Chunk[O]) = new Exception[I,O](output, ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : Chunk[O], overflow : Chunk[I]) = new Exception[I,O](output, overflow, ImmutableBuffers.empty())
-//    //      def apply[I,O](output : Chunk[O], overflow : Chunk[I], issues : List[Issue]) = new Exception[I,O](output, overflow, issues)
-//    //      def apply[I,O](output : ImmutableBuffer[O]) = new Exception[I,O](output, ImmutableBuffers.empty(), ImmutableBuffers.empty())
-//    //      def apply[I,O](output : ImmutableBuffer[O], overflow : ImmutableBuffer[I]) = new Exception[I,O](output, overflow, ImmutableBuffers.empty())
-//    //      def apply[I,O](output : ImmutableBuffer[O], overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) = new Exception[I,O](output, overflow, issues)
-//    //    }
-//  }
-//
-//}

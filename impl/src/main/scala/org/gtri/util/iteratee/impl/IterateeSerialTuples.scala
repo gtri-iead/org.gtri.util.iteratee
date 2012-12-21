@@ -33,6 +33,16 @@ import ImmutableBufferConversions._
  * Time: 8:17 PM
  * To change this template use File | Settings | File Templates.
  */
+/**
+ * An Iteratee that is composed of two iteratees. The input of this Iteratee is fed to the first inner Iteratee
+ * and the output the first inner Iteratee is fed to input of the second Iteratee and the output of the second Iteratee
+ * becomes the output of this Iteratee.
+ * @param i1
+ * @param i2
+ * @tparam A
+ * @tparam B
+ * @tparam C
+ */
 case class IterateeSerialTuple2[A,B,C](
   i1 : Iteratee[A,B],
   i2 : Iteratee[B,C]

@@ -38,13 +38,10 @@ public enum StatusCode {
    */
   SUCCESS,
   /**
-   * The FSM is done and processing failed because of invalid or incomplete input.
+   * The FSM is done and processing failed.
    */
-  INPUT_FAILURE,
-  /**
-   * The FSM is done and processing failed because of an internal exception.
-   */
-  INTERNAL_FAILURE;
+  FAILURE
+  ;
 
   /**
    * Test if done
@@ -68,8 +65,7 @@ public enum StatusCode {
    */
   public boolean isFailure() {
     switch(this) {
-      case INPUT_FAILURE :
-      case INTERNAL_FAILURE :
+      case FAILURE :
         return true;
     }
     return false;
@@ -110,19 +106,15 @@ public enum StatusCode {
    */
   public static StatusCode and(StatusCode lhs, StatusCode rhs) {
     switch(lhs) {
-      case INTERNAL_FAILURE :
-        return INTERNAL_FAILURE;
-      case INPUT_FAILURE :
-        return INPUT_FAILURE;
+      case FAILURE :
+        return FAILURE;
       case SUCCESS :
         return rhs;
       case CONTINUE :
     }
     switch(rhs) {
-      case INTERNAL_FAILURE :
-        return INTERNAL_FAILURE;
-      case INPUT_FAILURE :
-        return INPUT_FAILURE;
+      case FAILURE :
+        return FAILURE;
     }
     return CONTINUE;
   }
@@ -162,9 +154,7 @@ public enum StatusCode {
    */
   public static StatusCode or(StatusCode lhs, StatusCode rhs) {
     switch(lhs) {
-      case INTERNAL_FAILURE :
-        return INTERNAL_FAILURE;
-      case INPUT_FAILURE :
+      case FAILURE :
         return rhs;
       case SUCCESS :
         return SUCCESS;

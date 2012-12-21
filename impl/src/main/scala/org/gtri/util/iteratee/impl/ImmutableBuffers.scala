@@ -36,6 +36,12 @@ import scala.collection.JavaConversions._
 object ImmutableBufferConversions {
   import scala.language.implicitConversions
 
+  /**
+   * Convert an ImmutableBuffer to an IndexedSeq
+   * @param buffer
+   * @tparam A
+   * @return
+   */
   implicit def immutableBufferToIndexedSeq[A](buffer : api.ImmutableBuffer[A]) : IndexedSeq[A] = {
     if(buffer.length == 0) {
       IndexedSeq.empty
@@ -48,6 +54,12 @@ object ImmutableBufferConversions {
     }
   }
 
+  /**
+   * Convert a Seq to an ImmutableBuffer
+   * @param seq
+   * @tparam A
+   * @return
+   */
   implicit def seqToImmutableBuffer[A](seq : Seq[A]) : api.ImmutableBuffer[A] = {
     if(seq.isEmpty) {
       ImmutableBuffers.empty()
@@ -80,29 +92,3 @@ object ImmutableBufferConversions {
     }
   }
 }
-//  object empty extends api.ImmutableBuffer[Nothing] {
-//    def length = 0
-//
-//    def apply(i: Int) = throw new NoSuchElementException
-//
-//    def iterator = new java.util.Iterator[Nothing] {
-//      def hasNext = false
-//
-//      def next() = throw new NoSuchElementException
-//
-//      def remove = throw new UnsupportedOperationException
-//    }
-//
-//    def append(rhs: ImmutableBuffer[Nothing]) = rhs
-//
-//    def slice(start: Int, end: Int) = {
-//      if(start == 0 && end == 0) {
-//        this
-//      } else {
-//        throw new NoSuchElementException
-//      }
-//    }
-//
-//    override def toString = "EmptyImmutableBuffer()"
-//  }
-

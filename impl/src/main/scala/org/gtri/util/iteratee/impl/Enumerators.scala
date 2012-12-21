@@ -43,30 +43,67 @@ object Enumerators {
 
   def apply[A](seq : Seq[A]) = new SeqEnumerator(seq)
 
-  case class Result[A](next : Enumerator.State[A], output : ImmutableBuffer[A], issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty()) extends Enumerator.State.Result[A]
+  case class Result[A](
+    next : Enumerator.State[A],
+    output : ImmutableBuffer[A],
+    issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty()
+  ) extends Enumerator.State.Result[A]
 
+  /**
+   * A skeleton implementation for an Enumerator.State in the CONTINUE state.
+   * @tparam A
+   */
   abstract class Cont[A] extends Enumerator.State[A] {
     def statusCode = StatusCode.CONTINUE
   }
 
+  /**
+   * A skeleton implementation for an Enumerator.State that is done. The FSM will not change with further step calls.
+   * @tparam A
+   */
   abstract class BaseDone[A] extends Enumerator.State[A] {
     def step() = Result(this, ImmutableBuffers.empty())
   }
 
-  case class Success[A](progress : Progress, output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[A] with api.Enumerator.State.Result[A] {
+  /**
+   * A convenience class for Success of an Enumerator. The FSM will not change with further step calls.
+   * @param progress
+   * @param output
+   * @param issues
+   * @tparam A
+   */
+  case class Success[A](
+    progress : Progress,
+    output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](),
+    issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()
+  ) extends BaseDone[A] with api.Enumerator.State.Result[A] {
     def next = Success(progress)
     def statusCode = StatusCode.SUCCESS
   }
-  case class InputFailure[A](progress : Progress, output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[A] {
-    def next = InputFailure(progress)
-    def statusCode = StatusCode.INPUT_FAILURE
-  }
-  case class InternalFailure[A](progress : Progress, output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](), issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()) extends BaseDone[A] {
-    def next = InternalFailure(progress)
-    def statusCode = StatusCode.INTERNAL_FAILURE
+
+  /**
+   * A convenience class for InputFailure of an Enumerator. The FSM will not change with further step calls.
+   * @param progress
+   * @param output
+   * @param issues
+   * @tparam A
+   */
+  case class Failure[A](
+    progress : Progress,
+    output : ImmutableBuffer[A] = ImmutableBuffers.empty[A](),
+    issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()
+  ) extends BaseDone[A] {
+    def next = Failure(progress)
+    def statusCode = StatusCode.FAILURE
   }
 
-
+  /**
+   * A class to get an Iterator of Enumerator.State.Result for an Enumerator
+   * @param r
+   * @param step
+   * @tparam O
+   * @tparam R
+   */
   class EnumeratorIterator[O,R <: Enumerator.State.Result[O]](r : R, step: R => R) extends scala.Iterator[R] {
     var current = r
 
@@ -77,119 +114,6 @@ object Enumerators {
       current
     }
   }
-
-//  def iterator[O,R <: Enumerator.State.Result[O]](issueHandlingCode : IssueHandlingCode, r : R, step: R => R) = {
-//    issueHandlingCode match {
-//      case IssueHandlingCode.NORMAL => new NormalRunIterator[O,R](r, step)
-//      case IssueHandlingCode.LAX => new LaxRunIterator[O,R](r, step)
-//      case IssueHandlingCode.STRICT => new StrictRunIterator[O,R](r, step)
-//    }
-//
-//  }
-//
-//  class NormalRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
-//    def hasNext =
-//      r.next.statusCode match {
-//        case StatusCode.RECOVERABLE_ERROR=> false
-//        case StatusCode.CONTINUE => true
-//        case StatusCode.SUCCESS => false
-//        case StatusCode.FATAL_ERROR => false
-//      }
-//    def next() = {
-//      r = step(r)
-//      r
-//    }
-//  }
-//
-//  class LaxRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
-//    def hasNext =
-//      r.next.statusCode match {
-//        case StatusCode.RECOVERABLE_ERROR | StatusCode.CONTINUE => true
-//        case StatusCode.SUCCESS => false
-//        case StatusCode.FATAL_ERROR => false
-//      }
-//    def next() = {
-//      r = step(r)
-//      r
-//    }
-//  }
-//
-//  class StrictRunIterator[O,R <: Enumerator.State.Result[O]](var r : R, step: R => R) extends collection.Iterator[R] {
-//    def hasNext =
-//      r.next.statusCode match {
-//        case StatusCode.RECOVERABLE_ERROR => false
-//        case StatusCode.CONTINUE => r.issues.filter({ _.impactCode == ImpactCode.WARNING }).isEmpty
-//        case StatusCode.SUCCESS => false
-//        case StatusCode.FATAL_ERROR => false
-//      }
-//    def next() = {
-//      r = step(r)
-//      r
-//    }
-//  }
-
-//  def runFlatten[O,R <: Enumerator.State.Result[O]](issueHandlingCode : IssueHandlingCode, r: R, step: R => R) : (R, IndexedSeq[O], IndexedSeq[Issue]) = {
-//    runFoldLeft[O,R,(R,IndexedSeq[O],IndexedSeq[Issue])](
-//      issueHandlingCode,
-//      r,
-//      step,
-//      (r, IndexedSeq[O](), IndexedSeq[Issue]()),
-//      {
-//        (accTuple, result) =>
-//          val (resultAcc, allOutputsAcc, allIssuesAcc) = accTuple
-//          (result, result.output ++ allOutputsAcc, result.issues ++ allIssuesAcc)
-//      }
-//    )
-//  }
-//
-//  def runFoldLeft[O,R <: Enumerator.State.Result[O],U](issueHandlingCode : IssueHandlingCode, r: R, step: R => R, u: U, fold: (U,R) => U) : U = {
-//    issueHandlingCode match {
-//      case IssueHandlingCode.NORMAL => doNormalRun[O,R,U](r, step, u, fold)
-//      case IssueHandlingCode.LAX => doLaxRun[O,R,U](r, step, u, fold)
-//      case IssueHandlingCode.STRICT => doStrictRun[O,R,U](r, step, u, fold)
-//    }
-//  }
-//  @tailrec
-//  final def doNormalRun[O,R <: Enumerator.State.Result[O],U](r : R, step: R => R, u: U, fold: (U,R) => U) : U = {
-//    val nextU = fold(u,r)
-//    r.next.statusCode match {
-//      case StatusCode.RECOVERABLE_ERROR=> nextU
-//      case StatusCode.CONTINUE => {
-//        doNormalRun[O,R,U](step(r), step, nextU, fold)
-//      }
-//      case StatusCode.SUCCESS => nextU
-//      case StatusCode.FATAL_ERROR => nextU
-//    }
-//  }
-//
-//  @tailrec
-//  final def doLaxRun[O,R <: Enumerator.State.Result[O],U](r : R, step: R => R, u: U, fold: (U,R) => U) : U = {
-//    val nextU = fold(u,r)
-//    r.next.statusCode match {
-//      case StatusCode.RECOVERABLE_ERROR | StatusCode.CONTINUE => {
-//        doLaxRun[O,R,U](step(r), step, nextU, fold)
-//      }
-//      case StatusCode.SUCCESS => nextU
-//      case StatusCode.FATAL_ERROR => nextU
-//    }
-//  }
-//
-//  @tailrec
-//  final def doStrictRun[O,R <: Enumerator.State.Result[O],U](r : R, step: R => R, u: U, fold: (U,R) => U) : U = {
-//    val nextU = fold(u,r)
-//    r.next.statusCode match {
-//      case StatusCode.RECOVERABLE_ERROR=> nextU
-//      case StatusCode.CONTINUE => {
-//        if(r.issues.filter({ _.impactCode == ImpactCode.WARNING }).nonEmpty) {
-//          nextU
-//        } else {
-//          doStrictRun[O,R,U](step(r), step, nextU, fold)
-//        }
-//      }
-//      case StatusCode.SUCCESS => nextU
-//      case StatusCode.FATAL_ERROR => nextU
-//    }
-//  }
 
 }
 

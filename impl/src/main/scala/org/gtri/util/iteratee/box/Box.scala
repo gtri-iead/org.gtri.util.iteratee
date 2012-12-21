@@ -1,6 +1,6 @@
-package org.gtri.util.box
+package org.gtri.util.iteratee.box
 
-import org.gtri.util.iteratee.api.{Issues, Issue}
+import org.gtri.util.iteratee.api.Issue
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,9 +11,9 @@ import org.gtri.util.iteratee.api.{Issues, Issue}
  */
 object Box {
 
-  def empty[A] : Box[A] = empty[A](Nil)
-  def empty[A](issue : Issue) : Box[A] = new EmptyBox[A](List(issue))
-  def empty[A](log : List[Issue]) : Box[A] = new EmptyBox[A](log)
+  def fail[A] : Box[A] = fail[A](Nil)
+  def fail[A](issue : Issue) : Box[A] = fail(List(issue))
+  def fail[A](log : List[Issue]) : Box[A] = new FailBox[A](log)
   def apply[A](a : A) : Box[A] = apply[A](a, Nil)
   def apply[A](a : A, issue : Issue) : Box[A] = apply[A](a, List(issue))
   def apply[A](a : A, log : List[Issue]) : Box[A] = new SuccessBox[A](a, log)
@@ -26,13 +26,12 @@ object Box {
     if(opt.isDefined) {
       new SuccessBox[A](opt.get, log)
     } else {
-      new EmptyBox[A](log)
+      new FailBox[A](log)
     }
   }
 
   def examples {
-//    import org.gtri.util.box._
-    import org.gtri.util.box.Ops._
+    import org.gtri.util.iteratee.box.Ops._
     import org.gtri.util.iteratee.api.Issue
     import org.gtri.util.iteratee.api.Issues._
 
@@ -51,11 +50,11 @@ object Box {
         log foreach { println(_) }
       case RecoverBox(recover, log) =>
         log foreach { println(_) }
-      case EmptyBox(log) =>
+      case FailBox(log) =>
         log foreach { println(_) }
     }
     val b3 = b1 fold b2 // replace contents of b2 with contents of b1 (since they are both full) and append their logs
-    val b4 = Box.empty[Int](issue4)
+    val b4 = Box.fail[Int](issue4)
     val b5 : Box[Int] = b4 >> b1 // doesn't replace b1 since b4 is empty, but logs are still appended
     val b6 : Box[String] = Box("asdf", issue6)
     val b7 : Box[(Int,String)] = (b1,b6).cram // cram the contents of two boxes together (box is only full if b1 and b6 are full also appends logs)
@@ -69,10 +68,10 @@ object Box {
     val b10 : Box[String] = Box.recover({println("here");Box("qwerty",issue11)},issue10) // build a box that represents a failed operation that can be recovered
     val b11 : Box[Int] =
       (b1,b2,b10).cram // b/c b10 is a RecoverBox cram will return a RecoverBox that can be recovered to recover from the failed operation
-    {  // This is called using ApplyOps - syntatic sugar for flatMap
-      (a : Int,b : Int,s : String) =>
-        println(a+b);Box(a+b)
-    } // This whole operation will not be resolved immediately, instead b11 will be a RecoverBox that can be recovered to force the whole chain to recover
+      {  // This is called using ApplyOps - syntatic sugar for flatMap
+        (a : Int,b : Int,s : String) =>
+          println(a+b);Box(a+b)
+      } // This whole operation will not be resolved immediately, instead b11 will be a RecoverBox that can be recovered to force the whole chain to recover
     val b12 : Box[Int] = b11.recover // using cram means only recover call is necessary
 
     val b13 : Box[Int] = for(a <- b1;b <- b2) yield a + b // SuccessBox(3,List(issue2))
@@ -92,14 +91,14 @@ object Box {
 sealed trait Box[+A] extends LogWriter[Issue, Box[A]] { self =>
 
   // Override in inherited classes
-  def fold[X](ifEmpty: => X, ifRecover: Recoverable[A] => X, ifSuccess: A => X) : X
-  def isEmpty : Boolean = false
+  def fold[X](ifFail: => X, ifRecover: Recoverable[A] => X, ifSuccess: A => X) : X
+  def isFail : Boolean = false
   def isRecoverable : Boolean = false
   def isSuccess : Boolean = false
   def get : A = throw new NoSuchElementException
   def recoverable : Recoverable[A] = throw new IllegalStateException
 
-  def nonEmpty = isEmpty == false
+  def nonEmpty = isFail == false
   def isFailure = isSuccess == false
 
   /**
@@ -107,7 +106,7 @@ sealed trait Box[+A] extends LogWriter[Issue, Box[A]] { self =>
    * @return a new Box with the result of the attempt
    */
   def recover : Box[A] = fold(
-    ifEmpty = { Box.empty[A] },
+    ifFail = { Box.fail[A] },
     ifRecover = { _.recover },
     ifSuccess = { Box(_) }
   )
@@ -117,7 +116,7 @@ sealed trait Box[+A] extends LogWriter[Issue, Box[A]] { self =>
    * @return an option
   */
   def toOption : Option[A] = fold(
-    ifEmpty = { None },
+    ifFail = { None },
     ifRecover = { _ => None },
     ifSuccess = { a => Some(a) }
   )
@@ -137,21 +136,21 @@ sealed trait Box[+A] extends LogWriter[Issue, Box[A]] { self =>
    */
   def fold[AA >: A](that : Box[AA]) : Box[AA] = {
     fold(
-      ifEmpty = that.fold(
-        ifEmpty = { that.append(this.log) },
+      ifFail = that.fold(
+        ifFail = { that.append(this.log) },
         ifRecover = { _ => that.append(this.log) },
         ifSuccess = { _ => that.append(this.log) }
       ),
       ifRecover = {
         _ => that.fold(
-          ifEmpty = { this.prepend(that.log) },
+          ifFail = { this.prepend(that.log) },
           ifRecover = { _ => this.prepend(that.log) },
           ifSuccess = { _ => that.append(this.log) }
         )
       },
       ifSuccess = {
         _ => that.fold(
-          ifEmpty = { this.prepend(that.log) },
+          ifFail = { this.prepend(that.log) },
           ifRecover = { _ => this.prepend(that.log) },
           ifSuccess = { _ => this.prepend(that.log) }
         )
@@ -168,7 +167,7 @@ sealed trait Box[+A] extends LogWriter[Issue, Box[A]] { self =>
    */
   def flatMap[B](f: A => Box[B]) : Box[B] = {
     fold(
-      ifEmpty = new EmptyBox[B](log),
+      ifFail = new FailBox[B](log),
       ifRecover = { createFlatMapRecoverableBox(_,f,log) },
       ifSuccess = { f(_).prepend(log) }
     )
@@ -183,7 +182,7 @@ sealed trait Box[+A] extends LogWriter[Issue, Box[A]] { self =>
    */
   def map[B](f: A => B) : Box[B] = {
     fold(
-      ifEmpty = new EmptyBox[B](log),
+      ifFail = new FailBox[B](log),
       ifRecover = { createFlatMapRecoverableBox(_,{ (a : A) => new SuccessBox(f(a)) },log) }, // error here with { new SuccessBox(f(_)) } ???
       ifSuccess = { a => new SuccessBox(f(a),log) } // error here with { new SuccessBox(f(_),log) } ???
     )
@@ -196,7 +195,7 @@ sealed trait Box[+A] extends LogWriter[Issue, Box[A]] { self =>
         val boxA = recoverable.recover
         boxA.fold(
           // If empty return an empty box
-          ifEmpty = { new EmptyBox[B](boxA.log) },
+          ifFail = { new FailBox[B](boxA.log) },
           // If recover return this with updated logs
           ifRecover = { _ => createFlatMapRecoverableBox(recoverable, f, boxA.log) },
           // If success return the result of the map with updated logs
@@ -215,9 +214,9 @@ sealed trait Box[+A] extends LogWriter[Issue, Box[A]] { self =>
   def withFilter(p: A => Boolean): Box[A] = {
     // TODO: Make ifRecover return a RecoverBox
     fold(
-      ifEmpty = this,
-      ifRecover = { _ => Box.empty[A](log) },
-      ifSuccess = { a => if(p(a)) this else Box.empty[A](log) }
+      ifFail = this,
+      ifRecover = { _ => Box.fail[A](log) },
+      ifSuccess = { a => if(p(a)) this else Box.fail[A](log) }
     )
   }
 
@@ -228,19 +227,19 @@ sealed trait Box[+A] extends LogWriter[Issue, Box[A]] { self =>
    */
   def foreach[U](f: A => U) {
     fold(
-      ifEmpty = { () },
+      ifFail = { () },
       ifRecover = { _ => () },
       ifSuccess = { a => f(a) }
     )
   }
 }
 
-final case class EmptyBox[+A](log : List[Issue] = Nil) extends Box[A] {
-  override def isEmpty : Boolean = true
+final case class FailBox[+A](log : List[Issue] = Nil) extends Box[A] {
+  override def isFail : Boolean = true
 
-  def copy(newLog: List[Issue]) = new EmptyBox(newLog)
+  def copy(newLog: List[Issue]) = new FailBox(newLog)
 
-  def fold[X](ifEmpty: => X, ifRecover: Recoverable[A] => X, ifSuccess: A => X) : X = ifEmpty
+  def fold[X](ifFail: => X, ifRecover: Recoverable[A] => X, ifSuccess: A => X) : X = ifFail
 }
 
 final case class RecoverBox[+A](override val recoverable : Recoverable[A], log : List[Issue] = Nil) extends Box[A] {
@@ -248,7 +247,7 @@ final case class RecoverBox[+A](override val recoverable : Recoverable[A], log :
 
   def copy(newLog: List[Issue]) = new RecoverBox(recoverable, newLog)
 
-  def fold[X](ifEmpty: => X, ifRecover: Recoverable[A] => X, ifSuccess: A => X) : X = ifRecover(recoverable)
+  def fold[X](ifFail: => X, ifRecover: Recoverable[A] => X, ifSuccess: A => X) : X = ifRecover(recoverable)
 }
 
 final case class SuccessBox[+A] (override val get : A, log : List[Issue] = Nil) extends Box[A] {
@@ -256,5 +255,5 @@ final case class SuccessBox[+A] (override val get : A, log : List[Issue] = Nil) 
 
   def copy(newLog: List[Issue]) = new SuccessBox[A](get, newLog)
 
-  def fold[X](ifEmpty: => X, ifRecover: Recoverable[A] => X, ifSuccess: A => X) : X = ifSuccess(get)
+  def fold[X](ifFail: => X, ifRecover: Recoverable[A] => X, ifSuccess: A => X) : X = ifSuccess(get)
 }

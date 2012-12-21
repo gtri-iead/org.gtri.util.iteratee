@@ -35,10 +35,8 @@ import org.gtri.util.iteratee.impl.Enumerators._
  */
 class SeqEnumerator[A](traversable : Seq[A], chunkSize : Int = STD_CHUNK_SIZE) extends Enumerator[A] {
   import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
-  
-  class Cont[A](current : Seq[A]) extends Enumerators.Cont[A] {
-    val progress = Progress.empty
 
+  abstract class BaseCont[A](current : Seq[A]) extends Enumerators.Cont[A] {
     def step = {
       val (nextChunk, remaining) = current.splitAt(chunkSize)
       if(remaining.isEmpty) {
@@ -48,18 +46,22 @@ class SeqEnumerator[A](traversable : Seq[A], chunkSize : Int = STD_CHUNK_SIZE) e
       }
     }
   }
+  /**
+   * When traversable has no definite size, can't provide progress
+   * @param current
+   * @tparam A
+   */
+  class Cont[A](current : Seq[A]) extends BaseCont[A](current) {
+    val progress = Progress.empty
+  }
 
-  class ContWithDefSize[A](current : Seq[A]) extends Enumerators.Cont[A] {
+  /**
+   * When traversable has definite size, provide progress as enumeration proceeds
+   * @param current
+   * @tparam A
+   */
+  class ContWithDefSize[A](current : Seq[A]) extends BaseCont[A](current) {
     val progress = new Progress(0,traversable.size - current.size, traversable.size)
-
-    def step = {
-      val (nextChunk, remaining) = current.splitAt(chunkSize)
-      if(remaining.isEmpty) {
-        Success(progress, nextChunk)
-      } else {
-        Result(new ContWithDefSize(remaining), nextChunk)
-      }
-    }
   }
 
   def initialState() = {
