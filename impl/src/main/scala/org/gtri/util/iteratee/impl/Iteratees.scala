@@ -27,7 +27,7 @@ import api._
 import api.Issues._
 import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 import annotation.tailrec
-import org.gtri.util.iteratee.box._
+import org.gtri.util.iteratee.impl.box._
 
 /**
 * Created with IntelliJ IDEA.
@@ -47,37 +47,34 @@ object Iteratees {
     issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()
   ) extends Iteratee.State.Result[I,O]
 
-  implicit class boxToResult[I,O](box : Box[O]) {
-    def toResult(ifSuccess : O => Iteratee.State[I,O])(implicit issueHandlingCode : IssueHandlingCode) : Iteratee.State.Result[I,O] = {
-      // Return a result (recover once if needed)
-      box match {
-        // If box is Success then return a result with the output and the next state of ifSuccess
-        case SuccessBox(output, log) =>
-          Result(
-            next = ifSuccess(output),
-            output = Chunk(output),
-            issues = log
-          )
-        case RecoverBox(recoverable, log) =>
-          recoverable.recover match {
-            case SuccessBox(output, log) =>
-              Result(
-                next = ifSuccess(output),
-                output = Chunk(output),
-                issues = log
-              )
-            case RecoverBox(recoverable, log) =>
-              Failure(issues = log)
-            case FailBox(log) =>
-              Failure(issues = log)
-
-          }
-        // If Box is Failure then return an InputFailure
-        case FailBox(log) =>
-          Failure(issues = log)
-      }
-    }
-  }
+//  implicit class boxToResult[I,O](box : Box[O]) {
+//    def toResult(ifSuccess : O => Iteratee.State[I,O])(implicit issueHandlingCode : IssueHandlingCode) : Iteratee.State.Result[I,O] = {
+//      // Return a result (recover once if needed)
+//      box match {
+//        // If box is Success then return a result with the output and the next state of ifSuccess
+//        case SuccessBox(output, log) =>
+//          Result(
+//            next = ifSuccess(output),
+//            output = Chunk(output),
+//            issues = log
+//          )
+//        case RecoverBox(recoverable, log) =>
+//          recoverable.recover.toOption match {
+//            case Some(output) =>
+//              Result(
+//                next = ifSuccess(output),
+//                output = Chunk(output),
+//                issues = recoverable.recover.log ::: log
+//              )
+//            case None =>
+//              Failure(issues = recoverable.recover.log ::: log)
+//          }
+//        // If Box is Failure then return an InputFailure
+//        case FailBox(log) =>
+//          Failure(issues = log)
+//      }
+//    }
+//  }
 
   /**
    * Skeleton implementation class for Iteratees that process chunks of input. Derived classes implement only the
