@@ -37,7 +37,7 @@ import org.gtri.util.iteratee.impl.box._
 * To change this template use File | Settings | File Templates.
 */
 object Iteratees {
-  type Chunk[A] = IndexedSeq[A]
+  type Chunk[+A] = IndexedSeq[A]
   val Chunk = IndexedSeq
 
   case class Result[I,O](
@@ -47,34 +47,37 @@ object Iteratees {
     issues : ImmutableBuffer[Issue] = ImmutableBuffers.empty[Issue]()
   ) extends Iteratee.State.Result[I,O]
 
-//  implicit class boxToResult[I,O](box : Box[O]) {
-//    def toResult(ifSuccess : O => Iteratee.State[I,O])(implicit issueHandlingCode : IssueHandlingCode) : Iteratee.State.Result[I,O] = {
-//      // Return a result (recover once if needed)
-//      box match {
-//        // If box is Success then return a result with the output and the next state of ifSuccess
-//        case SuccessBox(output, log) =>
-//          Result(
-//            next = ifSuccess(output),
-//            output = Chunk(output),
-//            issues = log
-//          )
-//        case RecoverBox(recoverable, log) =>
-//          recoverable.recover.toOption match {
-//            case Some(output) =>
-//              Result(
-//                next = ifSuccess(output),
-//                output = Chunk(output),
-//                issues = recoverable.recover.log ::: log
-//              )
-//            case None =>
-//              Failure(issues = recoverable.recover.log ::: log)
-//          }
-//        // If Box is Failure then return an InputFailure
-//        case FailBox(log) =>
-//          Failure(issues = log)
-//      }
-//    }
-//  }
+  implicit class boxToResult[O](box : Box[O]) {
+    def toResult[I, OO >: O](ifGo : O => Iteratee.State[I,OO])(implicit issueHandlingCode : IssueHandlingCode) : Iteratee.State.Result[I,OO] = {
+      val log = box.written
+      // Return a result (recover once if needed)
+      box.value.fold(
+        // If box is Success then return a result with the output and the next state of ifGo
+        ifGo = { output =>
+          Result(
+            next = ifGo(output),
+            output = Chunk(output),
+            issues = log
+          )
+        },
+        ifRecover = { recoverable =>
+          val opt = recoverable.value.value
+          val bothLogs = recoverable.value.written ::: log
+          if(opt.isDefined) {
+            val output = opt.get
+            Result(
+              next = ifGo(output),
+              output = Chunk(output),
+              issues = bothLogs
+            )
+          } else {
+            Failure(issues = bothLogs)
+          }
+        },
+        ifNoGo = { Failure(issues = log) }
+      )
+    }
+  }
 
   /**
    * Skeleton implementation class for Iteratees that process chunks of input. Derived classes implement only the
