@@ -35,7 +35,6 @@ import Scalaz._
 
 object BoxM {
   type OptM[M[+_], +A] = M[Option[A]]
-  type LazyOptM[M[+_], +A] = Lazy[OptM[M,A]]
 
   def empty[M[+_],A] : BoxM[M,A] = NoGo()
   def apply[M[+_],A](a : A) : BoxM[M,A] = Go(a)
@@ -46,55 +45,59 @@ object BoxM {
       NoGo()
     }
   }
-  def recover[M[+_],A](recoverable: => Lazy[OptM[M,A]]) : BoxM[M,A] = Recover(recoverable)
+  def recover[M[+_],A](recoverable: => OptM[M,A]) : BoxM[M,A] = Recover(recoverable)
 }
 
 case class NoGo[M[+_],A]() extends BoxM[M,A] {
-  import BoxM.LazyOptM
-
   override def isNoGo : Boolean = true
 
-  def fold[X](ifNoGo: => X, ifRecover: LazyOptM[M,A] => X, ifGo: A => X) : X = ifNoGo
+  def fold[X](ifNoGo: => X, ifRecover: Recover[M,A] => X, ifGo: A => X) : X = ifNoGo
 }
 
-final case class Recover[M[+_], +A](override val recoverable : BoxM.LazyOptM[M,A]) extends BoxM[M, A] {
-  import BoxM.LazyOptM
+final class Recover[M[+_], +A](__recoverable : => BoxM.OptM[M,A]) extends BoxM[M, A] {
+  private lazy val _recoverable = __recoverable
+
+  override def recoverable = _recoverable
 
   override def isRecover : Boolean = true
 
-  def fold[X](ifNoGo: => X, ifRecover: LazyOptM[M,A] => X, ifGo: A => X) : X = ifRecover(recoverable)
+  def fold[X](ifNoGo: => X, ifRecover: Recover[M,A] => X, ifGo: A => X) : X = ifRecover(this)
 }
 
 object Recover {
   import BoxM.OptM
-  def apply[M[+_],A](recoverable: => OptM[M,A]) : Recover[M,A] = Recover(Lazy(recoverable))
+  def apply[M[+_],A](recoverable: => OptM[M,A]) : Recover[M,A] = new Recover[M,A](recoverable)
+  def unapply[M[+_],A](box : BoxM[M,A]) : Option[OptM[M,A]] = {
+    if(box.isRecover) {
+      Some(box.recoverable)
+    } else {
+      None
+    }
+  }
 }
 
 final case class Go[M[+_], +A] (override val get : A) extends BoxM[M,A] {
-  import BoxM.LazyOptM
-
   override def isGo : Boolean = true
 
-  def fold[X](ifNoGo: => X, ifRecover: LazyOptM[M,A] => X, ifGo: A => X) : X = ifGo(get)
+  def fold[X](ifNoGo: => X, ifRecover: Recover[M,A] => X, ifGo: A => X) : X = ifGo(get)
 }
 
 
 sealed trait BoxM[M[+_],+A] {
   import BoxM.OptM
-  import BoxM.LazyOptM
 
   // Override in inherited classes
-  def fold[X](ifNoGo: => X, ifRecover: LazyOptM[M,A] => X, ifGo: A => X) : X
+  def fold[X](ifNoGo: => X, ifRecover: Recover[M,A] => X, ifGo: A => X) : X
   def isNoGo : Boolean = false
   def isRecover : Boolean = false
   def isGo : Boolean = false
   def get : A = throw new NoSuchElementException
-  def recoverable : LazyOptM[M,A] = throw new IllegalStateException
+  def recoverable : OptM[M,A] = throw new IllegalStateException
 
-  def recover(implicit OptM: Monad[M]) : OptM[M,A] = fold(
-    ifNoGo = { OptM.pure(None) },
-    ifRecover = { recoverable => recoverable.value },
-    ifGo = { a => OptM.pure(Some(a)) }
+  def recover(implicit ev: Pointed[M]) : OptM[M,A] = fold(
+    ifNoGo = { None.pure[M] },
+    ifRecover = { recover => recover.recoverable },
+    ifGo = { a => Some(a).pure[M] }
   )
 
   def toOption : Option[A] = fold(
@@ -103,36 +106,32 @@ sealed trait BoxM[M[+_],+A] {
     ifGo = { a => Some(a) }
   )
 
-  def flatMap[B](f: A => BoxM[M,B])(implicit OptM: Monad[M]) : BoxM[M,B] = fold(
+  def flatMap[B](f: A => BoxM[M,B])(implicit ev1: Monad[M]) : BoxM[M,B] = fold(
       ifNoGo = { BoxM.empty },
       ifRecover = {
-        recoverable =>
-          Recover(Lazy({
-            recoverable.value.flatMap { oa =>
+        recover =>
+          lazy val inner = {
+            recover.recoverable.flatMap { oa =>
               if(oa.isDefined) {
                 f(oa.get).recover
               } else {
-                OptM.pure(None)
+                None.pure[M]
               }
             }
-          }))
+          }
+          Recover(inner)
       },
       ifGo = { a => f(a) }
     )
 
-  def map[B](f: A => B)(implicit OptM: Monad[M]) : BoxM[M,B] = fold(
+  def map[B](f: A => B)(implicit ev: Functor[M]) : BoxM[M,B] = fold(
       ifNoGo = { BoxM.empty },
       ifRecover = {
-        recoverable =>
-          Recover(Lazy({
-            recoverable.value.map { oa =>
-              if(oa.isDefined) {
-                Some(f(oa.get))
-              } else {
-                None
-              }
-            }
-          }))
+        recover =>
+          lazy val inner = {
+            for(oa <- recover.recoverable) yield for(a <- oa) yield f(a)
+          }
+          Recover(inner)
       },
       ifGo = { a => BoxM(f(a)) }
     )

@@ -55,11 +55,12 @@ package object box {
     def recover[A](recoverable : => Box[A]) : Box[A] = recover[A](Nil,recoverable)
     def recover[A](issue : Issue,recoverable : => Box[A]) : Box[A] = recover[A](List(issue),recoverable)
     def recover[A](log : List[Issue],recoverable : => Box[A]) : Box[A] = {
-      LogWriter(log, BoxM.recover[LogWriter,A](Lazy({
+      lazy val r = {
         val opt = recoverable.value.toOption
         val log = recoverable.written
         LogWriter(log,opt)
-      })))
+      }
+      LogWriter(log, BoxM.recover[LogWriter,A](r))
     }
   }
 
@@ -75,6 +76,7 @@ package object box {
     import org.gtri.util.iteratee.api.Issues._
     import scalaz._
     import Scalaz._
+//    import org.gtri.util.iteratee.impl.box._
 
     val issue1 = log("asdf1",java.util.logging.Level.INFO)
     val issue2 = log("asdf2",java.util.logging.Level.INFO)
@@ -90,16 +92,18 @@ package object box {
     val b3 : Box[Int] = Box.empty(issue3)
     val b4 : Box[String] = Box(issue4, "asdf")
     // build a box that represents a failed operation that can be recovered
-    val b5 : Box[String] = Box.recover(issue5, { println("here"); Box(issue7, "qwerty") })
-    // build a box that represents a failed operation that will fail again when recovered
-    val b6 : Box[String] = Box.recover(issue6, { println("here"); Box.empty(issue8) })
+    lazy val rb5 = { println("here5"); Box(issue7, "qwerty") }
+    val b5 : Box[String] = Box.recover(issue5, rb5)
+// build a box that represents a failed operation that will fail again when recovered
+    lazy val rb6 = { println("here6"); Box.empty(issue8) }
+    val b6 : Box[String] = Box.recover(issue6, rb6)
 
     b6.value.fold(
       ifGo = { a => println(a) },
       ifNoGo = { println("Nogo!") },
       ifRecover = {
-        recoverable =>
-          recoverable.value.value match {
+        recover =>
+          recover.recoverable.value match {
             case Some(item) =>
               println(item)
             case None =>
@@ -142,6 +146,7 @@ package object box {
     // b9 now contains LogWriter(List(issue5,issue2), Recover(...))
 
     // Issue command to recover
+    // TODO: here5 is printed twice - should only print once
     val b10 : LogWriter[Option[String]] = b9.value.recover
     // b10 now contains LogWriter(List(issue7),Some(qwerty2))
 
@@ -152,6 +157,7 @@ package object box {
     // b11 now contains LogWriter(List(issue6,issue2), Recover(...))
 
     // Issue command to recover
+    // TODO: here5 is printed twice - should only print once
     val b12 : LogWriter[Option[String]] = b11.value.recover
     // b12 now contains LogWriter(List(issue8),None)
   }
