@@ -34,8 +34,6 @@ import Scalaz._
 */
 
 object BoxM {
-  type OptM[M[+_], +A] = M[Option[A]]
-
   def empty[M[+_],A] : BoxM[M,A] = NoGo()
   def apply[M[+_],A](a : A) : BoxM[M,A] = Go(a)
   def fromOption[M[+_],A](opt : Option[A]) : BoxM[M,A] = {
@@ -45,7 +43,7 @@ object BoxM {
       NoGo()
     }
   }
-  def recover[M[+_],A](recoverable: => OptM[M,A]) : BoxM[M,A] = Recover(recoverable)
+  def recover[M[+_],A](recoverable: => M[Option[A]]) : BoxM[M,A] = Recover(recoverable)
 }
 
 case class NoGo[M[+_],A]() extends BoxM[M,A] {
@@ -54,7 +52,7 @@ case class NoGo[M[+_],A]() extends BoxM[M,A] {
   def fold[X](ifNoGo: => X, ifRecover: Recover[M,A] => X, ifGo: A => X) : X = ifNoGo
 }
 
-final class Recover[M[+_], +A](__recoverable : => BoxM.OptM[M,A]) extends BoxM[M, A] {
+final class Recover[M[+_], +A](__recoverable : => M[Option[A]]) extends BoxM[M, A] {
   private lazy val _recoverable = __recoverable
 
   override def recoverable = _recoverable
@@ -65,9 +63,8 @@ final class Recover[M[+_], +A](__recoverable : => BoxM.OptM[M,A]) extends BoxM[M
 }
 
 object Recover {
-  import BoxM.OptM
-  def apply[M[+_],A](recoverable: => OptM[M,A]) : Recover[M,A] = new Recover[M,A](recoverable)
-  def unapply[M[+_],A](box : BoxM[M,A]) : Option[OptM[M,A]] = {
+  def apply[M[+_],A](recoverable: => M[Option[A]]) : Recover[M,A] = new Recover[M,A](recoverable)
+  def unapply[M[+_],A](box : BoxM[M,A]) : Option[M[Option[A]]] = {
     if(box.isRecover) {
       Some(box.recoverable)
     } else {
@@ -84,7 +81,6 @@ final case class Go[M[+_], +A] (override val get : A) extends BoxM[M,A] {
 
 
 sealed trait BoxM[M[+_],+A] {
-  import BoxM.OptM
 
   // Override in inherited classes
   def fold[X](ifNoGo: => X, ifRecover: Recover[M,A] => X, ifGo: A => X) : X
@@ -92,9 +88,9 @@ sealed trait BoxM[M[+_],+A] {
   def isRecover : Boolean = false
   def isGo : Boolean = false
   def get : A = throw new NoSuchElementException
-  def recoverable : OptM[M,A] = throw new IllegalStateException
+  def recoverable : M[Option[A]] = throw new IllegalStateException
 
-  def recover(implicit ev: Pointed[M]) : OptM[M,A] = fold(
+  def recover(implicit ev: Pointed[M]) : M[Option[A]] = fold(
     ifNoGo = { None.pure[M] },
     ifRecover = { recover => recover.recoverable },
     ifGo = { a => Some(a).pure[M] }

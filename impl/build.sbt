@@ -10,6 +10,8 @@ scalacOptions ++= Seq("-feature","-unchecked", "-deprecation")
 
 resolvers += "iead-all" at "https://iead.ittl.gtri.org/artifactory/all" // need this for getting IEAD artifacts
 
+libraryDependencies += "org.scalatest" % "scalatest_2.10.0-RC5" % "2.0.M5-B1"
+
 libraryDependencies += "org.gtri.util" % "xsddatatypes" % "1.0-SNAPSHOT"
 
 libraryDependencies += "org.gtri.util" % "iteratee.api" % "1.0-SNAPSHOT"
