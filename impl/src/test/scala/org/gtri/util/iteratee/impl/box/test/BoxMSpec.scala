@@ -35,7 +35,7 @@ class BoxMSpec extends FunSpec {
     }
 
     it("should be able to be empty but provide a method to recover from bad input (Recover)") {
-      lazy val v : Id[Option[Int]] = { println("here");Some(2) }
+      lazy val v : Id[Option[Int]] = { Some(2) }
       val b1 : BoxM[Id,Int] = BoxM.recover[Id, Int](v)
       assert(b1.isRecover)
       assert(b1.recoverable eq v)
@@ -44,10 +44,13 @@ class BoxMSpec extends FunSpec {
     }
 
     it("should be able to recover from bad input") {
-      lazy val v : Id[Option[Int]] = { println("here");Some(2) }
+      var s = false
+      lazy val v : Id[Option[Int]] = { s = true;Some(2) }
       val b1 : BoxM[Id,Int] = BoxM.recover[Id, Int](v)
+      assert(s == false)
       val result = b1.recover
       assert(result == Some(2))
+      assert(s == true)
     }
 
     it("should be able to convert to an Option") {
@@ -57,7 +60,7 @@ class BoxMSpec extends FunSpec {
       val b2 : BoxM[Id,Int] = BoxM.empty
       val opt2 : Option[Int] = b2.toOption
       assert(opt2 == None)
-      lazy val v : Id[Option[Int]] = { println("here");Some(2) }
+      lazy val v : Id[Option[Int]] = { Some(2) }
       val b3 : BoxM[Id,Int] = BoxM.recover(v)
       val opt3 : Option[Int] = b3.toOption
       assert(opt3 == None)
@@ -81,7 +84,7 @@ class BoxMSpec extends FunSpec {
     }
 
     it("should return a Recover in a for-comprehension if any BoxM is a Recover") {
-      lazy val v : Id[Option[Int]] = { println("here");Some(2) }
+      lazy val v : Id[Option[Int]] = { Some(2) }
       val b1 : BoxM[Id,Int] = BoxM(1)
       val b2 : BoxM[Id,Int] = BoxM.recover(v)
       val b3 : BoxM[Id,Int] = BoxM(3)
@@ -90,8 +93,8 @@ class BoxMSpec extends FunSpec {
     }
 
     it("should be able to return the result of a for-comprehension that can be recovered") {
-      lazy val v2 : Id[Option[Int]] = { println("here");Some(2) }
-      lazy val v3 : Id[Option[Int]] = { println("here");Some(3) }
+      lazy val v2 : Id[Option[Int]] = { Some(2) }
+      lazy val v3 : Id[Option[Int]] = { Some(3) }
       val b1 : BoxM[Id,Int] = BoxM(1)
       val b2 : BoxM[Id,Int] = BoxM.recover(v2)
       val b3 : BoxM[Id,Int] = BoxM.recover(v3)
@@ -102,8 +105,8 @@ class BoxMSpec extends FunSpec {
     }
 
     it("should return None if any BoxM of a for-comprehension that can be recovered is NoGo") {
-      lazy val v2 : Id[Option[Int]] = { println("here");Some(2) }
-      lazy val v3 : Id[Option[Int]] = { println("here");Some(3) }
+      lazy val v2 : Id[Option[Int]] = { Some(2) }
+      lazy val v3 : Id[Option[Int]] = { Some(3) }
       val b1 : BoxM[Id,Int] = BoxM(1)
       val b2 : BoxM[Id,Int] = BoxM.recover(v2)
       val b3 : BoxM[Id,Int] = BoxM.recover(v3)
