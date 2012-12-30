@@ -21,6 +21,7 @@
 */
 package org.gtri.util.iteratee.impl
 
+import language.higherKinds
 import scalaz._
 import Scalaz._
 import org.gtri.util.iteratee.api.Issue

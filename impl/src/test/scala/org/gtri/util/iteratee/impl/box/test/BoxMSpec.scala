@@ -1,5 +1,6 @@
 package org.gtri.util.iteratee.impl.box.test
 
+import scala.language.higherKinds
 import org.scalatest.FunSpec
 import org.gtri.util.iteratee.impl.box._
 import scalaz._
@@ -44,6 +45,13 @@ class BoxMSpec extends FunSpec {
     }
 
     it("should be able to recover from bad input") {
+      lazy val v : Id[Option[Int]] = { Some(2) }
+      val b1 : BoxM[Id,Int] = BoxM.recover[Id, Int](v)
+      val result = b1.recover
+      assert(result == Some(2))
+    }
+
+    it("should not evaluate the recoverable until the request to recover from bad input") {
       var s = false
       lazy val v : Id[Option[Int]] = { s = true;Some(2) }
       val b1 : BoxM[Id,Int] = BoxM.recover[Id, Int](v)
@@ -51,6 +59,15 @@ class BoxMSpec extends FunSpec {
       val result = b1.recover
       assert(result == Some(2))
       assert(s == true)
+    }
+
+    it("should be able to wrap the recoverable in any Monad") {
+      type StrWriter[+A] = Writer[List[String],A]
+      lazy val writer = { Writer(List("message"),Some(2)) }
+      val b1 : BoxM[StrWriter,Int] = BoxM.recover[StrWriter,Int](writer)
+      val result = b1.recover
+      assert(result.value == Some(2))
+      assert(result.written.contains("message"))
     }
 
     it("should be able to convert to an Option") {
@@ -116,6 +133,33 @@ class BoxMSpec extends FunSpec {
       val result = bsum.recover
       assert(result == None)
     }
+
+    it("should map/flatMap the Recover Monad wrapper in a recoverable for-comprehension") {
+      type StrWriter[+A] = Writer[List[String],A]
+      lazy val writer2 = { Writer(List("message2"),Some(2)) }
+      lazy val writer3 = { Writer(List("message3"),Some(3)) }
+      val b1 : BoxM[StrWriter,Int] = BoxM(1)
+      val b2 : BoxM[StrWriter,Int] = BoxM.recover[StrWriter,Int](writer2)
+      val b3 : BoxM[StrWriter,Int] = BoxM.recover[StrWriter,Int](writer3)
+      val bsum = for(a <- b1; b <- b2; c <- b3) yield a+b+c
+      assert(bsum.isRecover)
+      val result = bsum.recover
+      assert(result.value == Some(6))
+      assert(result.written.contains("message2"))
+      assert(result.written.contains("message3"))
+    }
+  }
+
+  it("should be a scalaz.Monad and all Monad laws should be true") {
+    import BoxM._
+
+    type MyBox[+A] = BoxM[List,A]
+    // TODO: fix me
+//    val m = implicitly[Monad[MyBox]]
+    val m = boxMMonad[List]
+    assert(m.monadLaw.rightIdentity(BoxM(1)) == true)
+    assert(m.monadLaw.leftIdentity[Int,String](1, { a => BoxM(a.toString)}) == true)
+    assert(m.monadLaw.associativeBind[Int,String,Char](BoxM(1), { a => BoxM(a.toString)}, { b => BoxM(b(0))}) == true)
   }
 
 }

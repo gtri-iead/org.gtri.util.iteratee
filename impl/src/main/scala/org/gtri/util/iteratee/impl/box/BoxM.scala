@@ -33,7 +33,8 @@ import Scalaz._
 * To change this template use File | Settings | File Templates.
 */
 
-object BoxM {
+object BoxM extends BoxMTypeClassImplicits {
+
   def empty[M[+_],A] : BoxM[M,A] = NoGo()
   def apply[M[+_],A](a : A) : BoxM[M,A] = Go(a)
   def fromOption[M[+_],A](opt : Option[A]) : BoxM[M,A] = {
@@ -49,7 +50,7 @@ object BoxM {
 case class NoGo[M[+_],A]() extends BoxM[M,A] {
   override def isNoGo : Boolean = true
 
-  def fold[X](ifNoGo: => X, ifRecover: Recover[M,A] => X, ifGo: A => X) : X = ifNoGo
+  def fold[X](ifNoGo: => X, ifRecover: (=> M[Option[A]]) => X, ifGo: A => X) : X = ifNoGo
 }
 
 final class Recover[M[+_], +A](__recoverable : => M[Option[A]]) extends BoxM[M, A] {
@@ -59,14 +60,14 @@ final class Recover[M[+_], +A](__recoverable : => M[Option[A]]) extends BoxM[M, 
 
   override def isRecover : Boolean = true
 
-  def fold[X](ifNoGo: => X, ifRecover: Recover[M,A] => X, ifGo: A => X) : X = ifRecover(this)
+  def fold[X](ifNoGo: => X, ifRecover: (=> M[Option[A]]) => X, ifGo: A => X) : X = ifRecover(recoverable)
 }
 
 object Recover {
   def apply[M[+_],A](recoverable: => M[Option[A]]) : Recover[M,A] = new Recover[M,A](recoverable)
-  def unapply[M[+_],A](box : BoxM[M,A]) : Option[M[Option[A]]] = {
+  def unapply[M[+_],A](box : BoxM[M,A]) : Option[() => M[Option[A]]] = {
     if(box.isRecover) {
-      Some(box.recoverable)
+      Some({ () => box.recoverable })
     } else {
       None
     }
@@ -76,23 +77,23 @@ object Recover {
 final case class Go[M[+_], +A] (override val get : A) extends BoxM[M,A] {
   override def isGo : Boolean = true
 
-  def fold[X](ifNoGo: => X, ifRecover: Recover[M,A] => X, ifGo: A => X) : X = ifGo(get)
+  def fold[X](ifNoGo: => X, ifRecover: (=> M[Option[A]]) => X, ifGo: A => X) : X = ifGo(get)
 }
 
 
 sealed trait BoxM[M[+_],+A] {
 
   // Override in inherited classes
-  def fold[X](ifNoGo: => X, ifRecover: Recover[M,A] => X, ifGo: A => X) : X
+  def fold[X](ifNoGo: => X, ifRecover: (=> M[Option[A]]) => X, ifGo: A => X) : X
   def isNoGo : Boolean = false
   def isRecover : Boolean = false
   def isGo : Boolean = false
   def get : A = throw new NoSuchElementException
   def recoverable : M[Option[A]] = throw new IllegalStateException
 
-  def recover(implicit ev: Pointed[M]) : M[Option[A]] = fold(
+  def recover(implicit M0: Monad[M]) : M[Option[A]] = fold(
     ifNoGo = { None.pure[M] },
-    ifRecover = { recover => recover.recoverable },
+    ifRecover = { recoverable => recoverable },
     ifGo = { a => Some(a).pure[M] }
   )
 
@@ -102,12 +103,12 @@ sealed trait BoxM[M[+_],+A] {
     ifGo = { a => Some(a) }
   )
 
-  def flatMap[B](f: A => BoxM[M,B])(implicit ev1: Monad[M]) : BoxM[M,B] = fold(
+  def flatMap[B](f: A => BoxM[M,B])(implicit M0: Monad[M]) : BoxM[M,B] = fold(
       ifNoGo = { BoxM.empty },
       ifRecover = {
-        recover =>
+        recoverable =>
           lazy val inner = {
-            recover.recoverable.flatMap { oa =>
+            recoverable.flatMap { oa =>
               if(oa.isDefined) {
                 f(oa.get).recover
               } else {
@@ -120,24 +121,110 @@ sealed trait BoxM[M[+_],+A] {
       ifGo = { a => f(a) }
     )
 
-  def map[B](f: A => B)(implicit ev: Functor[M]) : BoxM[M,B] = fold(
-      ifNoGo = { BoxM.empty },
-      ifRecover = {
-        recover =>
-          lazy val inner = {
-            for(oa <- recover.recoverable) yield for(a <- oa) yield f(a)
-          }
-          Recover(inner)
-      },
-      ifGo = { a => BoxM(f(a)) }
-    )
+    def map[B](f: A => B)(implicit M0: Monad[M]) : BoxM[M,B] = flatMap { a => BoxM(f(a)) }
+  //  def map[B](f: A => B)(implicit F0: Functor[M]) : BoxM[M,B] = fold(
+//      ifNoGo = { BoxM.empty },
+//      ifRecover = {
+//        recoverable =>
+//          lazy val inner = {
+//            for(oa <- recoverable) yield for(a <- oa) yield f(a)
+//          }
+//          Recover(inner)
+//      },
+//      ifGo = { a => BoxM(f(a)) }
+//    )
 
+  def ap[B](fbox: => BoxM[M, (A) => B])(implicit M0: Monad[M]) : BoxM[M,B] =
+    for(f <- fbox;a <- this) yield f(a)
+  
+  def foreach[U](f: A => U) : Unit = fold(
+    ifNoGo = { () },
+    ifRecover = { _ => () },
+    ifGo = { a => f(a) }
+  )
+  
+}
 
-  def foreach[U](f: A => U) {
-    fold(
-      ifNoGo = { () },
-      ifRecover = { _ => () },
-      ifGo = { a => f(a) }
-    )
+trait BoxMTypeClassImplicits {
+
+  implicit def boxMFunctor = new BoxMFunctor[Id] {
+    implicit def M = idInstance
   }
+
+  implicit def boxMFunctor[M[+_]](implicit M0: Monad[M]) = new BoxMFunctor[M] {
+    implicit def M = M0
+  }
+
+  implicit def boxMApply = new BoxMApply[Id] {
+    implicit def M = idInstance
+  }
+
+  implicit def boxMApply[M[+_]](implicit M0: Monad[M]) = new BoxMApply[M] {
+    implicit def M = M0
+  }
+
+  implicit def boxMApplicative = new BoxMApplicative[Id] {
+    implicit def M = idInstance
+  }
+
+  implicit def boxMApplicative[M[+_]](implicit M0: Monad[M]) = new BoxMApplicative[M] {
+    implicit def M = M0
+  }
+
+  implicit def boxMEach = new BoxMEach[Id] {
+    implicit def M = idInstance
+  }
+
+  implicit def boxMEach[M[+_]](implicit M0: Monad[M]) = new BoxMEach[M] {
+    implicit def M = M0
+  }
+
+  implicit def boxMMonad = new BoxMMonad[Id] {
+    implicit def M = idInstance
+  }
+
+  implicit def boxMMonad[M[+_]](implicit M0: Monad[M]) : Monad[({type λ[α] = BoxM[M,α]})#λ] = new BoxMMonad[M] {
+    implicit def M = M0
+  }
+
+  implicit def boxMEqual[M[+_],A](implicit M0: Monad[M]) = new BoxMEqual[M,A] {
+    implicit def M = M0
+  }
+
+}
+
+private[box] trait BoxMFunctor[M[+_]] extends Functor[({type λ[+α]=BoxM[M, α]})#λ] {
+  implicit def M: Monad[M]
+
+  override def map[A, B](fa: BoxM[M, A])(f: (A) => B) = fa map f
+}
+
+private[box] trait BoxMApply[M[+_]] extends Apply[({type λ[+α]=BoxM[M, α]})#λ] with BoxMFunctor[M] {
+  implicit def M: Monad[M]
+
+  override def ap[A, B](fa: => BoxM[M, A])(f: => BoxM[M, (A) => B]) = fa ap f
+}
+
+private[box] trait BoxMApplicative[M[+_]] extends Applicative[({type λ[+α]=BoxM[M, α]})#λ] with BoxMApply[M] {
+  implicit def M: Monad[M]
+  
+  def point[A](a: => A) = BoxM(a)
+}
+
+private[box] trait BoxMEach[M[+_]] extends Each[({type λ[+α]=BoxM[M, α]})#λ] {
+  implicit def M: Monad[M]
+
+  def each[A](fa: BoxM[M, A])(f: (A) => Unit) = fa foreach f
+}
+
+private[box] trait BoxMMonad[M[+_]] extends Monad[({type λ[α] = BoxM[M,α]})#λ] with BoxMApplicative[M] {
+  implicit def M: Monad[M]
+
+  def bind[A, B](fa: BoxM[M,A])(f: (A) => BoxM[M,B]): BoxM[M,B] = fa flatMap f
+}
+
+private[box] trait BoxMEqual[M[+_],A] extends Equal[BoxM[M,A]]  {
+  implicit def M: Monad[M]
+
+  def equal(a1: BoxM[M,A], a2: BoxM[M,A]) = a1 == a2
 }

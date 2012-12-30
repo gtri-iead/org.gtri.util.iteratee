@@ -60,9 +60,9 @@ object Iteratees {
             issues = log
           )
         },
-        ifRecover = { recover =>
-          val opt = recover.recoverable.value
-          val bothLogs = recover.recoverable.written ::: log
+        ifRecover = { recoverable =>
+          val opt = recoverable.value
+          val bothLogs = recoverable.written ::: log
           if(opt.isDefined) {
             val output = opt.get
             Result(
