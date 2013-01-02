@@ -130,9 +130,12 @@ object Iteratees {
       } else {
         val item = buffer(pos)
         val nextResult = next(item)
-        val nextOutput = nextResult.output.append(output)
-        val nextOverflow = nextResult.overflow.append(overflow)
-        val nextIssues = nextResult.issues.append(issues)
+//        val nextOutput = nextResult.output.append(output)
+//        val nextOverflow = nextResult.overflow.append(overflow)
+//        val nextIssues = nextResult.issues.append(issues)
+        val nextOutput = output.append(nextResult.output)
+        val nextOverflow = overflow.append(nextResult.overflow)
+        val nextIssues = issues.append(nextResult.issues)
         val nextPos = pos + 1
         if(nextResult.next.statusCode.isDone) {
           // We are done - return anything remaining in the buffer as overflow
@@ -178,7 +181,7 @@ object Iteratees {
   }
 
   /**
-   * Convenience class for an input failure that is both a Iteratee.State and Iteratee.Result. FSM will stay in this
+   * Convenience class for a failure that is both a Iteratee.State and Iteratee.Result. FSM will stay in this
    * state regardless of further input.
    * @param output
    * @param overflow
