@@ -16,6 +16,33 @@ import org.gtri.util.iteratee.api.Issue.ImpactCode;
  */
 public class Issues {
 
+  public static abstract class BaseIssue implements Issue {
+    private final Thread thread;
+    private final long timeMillis, nanoTime;
+
+    public BaseIssue() {
+      this.timeMillis = System.currentTimeMillis();
+      this.nanoTime = System.nanoTime();
+      this.thread = Thread.currentThread();
+    }
+    
+    @Override
+    public long timeMillis() {
+      return timeMillis;
+    }
+
+    @Override
+    public long nanoTime() {
+      return nanoTime;
+    }
+
+    @Override
+    public Thread thread() {
+      return thread;
+    }
+    
+  }
+  
   public static ConfigIssue configFatalError(String message) {
     return new ConfigIssue(message, ImpactCode.FATAL);
   }
@@ -28,7 +55,7 @@ public class Issues {
     return new ConfigIssue(message, ImpactCode.WARNING);
   }
 
-  public static class ConfigIssue implements Issue {
+  public static class ConfigIssue extends BaseIssue {
 
     private final String message;
     private final Issue.ImpactCode impactCode;
@@ -66,7 +93,7 @@ public class Issues {
     return new InternalIssue(cause, ImpactCode.WARNING);
   }
 
-  public static class InternalIssue implements Issue {
+  public static class InternalIssue extends BaseIssue {
 
     private final Throwable cause;
     private final Issue.ImpactCode impactCode;
@@ -97,37 +124,57 @@ public class Issues {
     }
   }
 
-  public static InputIssue inputFatalError(String message, ImmutableDiagnosticLocator locator) {
-    return new InputIssue(message, locator, ImpactCode.FATAL);
+  public static InputLocationReport reportInputLocation(ImmutableDiagnosticLocator locator) {
+    return new InputLocationReport(locator);
   }
-
-  public static InputIssue inputRecoverableError(String message, ImmutableDiagnosticLocator locator) {
-    return new InputIssue(message, locator, ImpactCode.RECOVERABLE);
-  }
-
-  public static InputIssue inputWarning(String message, ImmutableDiagnosticLocator locator) {
-    return new InputIssue(message, locator, ImpactCode.WARNING);
-  }
-
-  public static class InputIssue implements Issue {
-
-    private final String message;
+  
+  public static class InputLocationReport extends BaseIssue {
     private final ImmutableDiagnosticLocator locator;
-    private final Issue.ImpactCode impactCode;
 
-    public InputIssue(String message, ImmutableDiagnosticLocator locator, Issue.ImpactCode impactCode) {
-      this.message = message;
+    public InputLocationReport(ImmutableDiagnosticLocator locator) {
       this.locator = locator;
-      this.impactCode = impactCode;
     }
-
+    
     public ImmutableDiagnosticLocator locator() {
       return locator;
     }
 
     @Override
     public String message() {
-      return new StringBuilder(256).append(locator).append(message).toString();
+      return locator.toString();
+    }
+
+    @Override
+    public ImpactCode impactCode() {
+      return ImpactCode.NONE;
+    }
+  }
+  
+  public static InputIssue inputFatalError(String message) {
+    return new InputIssue(message, ImpactCode.FATAL);
+  }
+
+  public static InputIssue inputRecoverableError(String message) {
+    return new InputIssue(message, ImpactCode.RECOVERABLE);
+  }
+
+  public static InputIssue inputWarning(String message) {
+    return new InputIssue(message, ImpactCode.WARNING);
+  }
+
+  public static class InputIssue extends BaseIssue {
+
+    private final String message;
+    private final Issue.ImpactCode impactCode;
+
+    public InputIssue(String message, Issue.ImpactCode impactCode) {
+      this.message = message;
+      this.impactCode = impactCode;
+    }
+
+    @Override
+    public String message() {
+      return new StringBuilder(256).append(message).toString();
     }
 
     @Override
@@ -144,8 +191,24 @@ public class Issues {
   public static LogIssue log(String message, Level logLevel) {
     return new LogIssue(message, logLevel);
   }
-
-  public static class LogIssue implements Issue {
+  
+  public static LogIssue info(String message) {
+    return new LogIssue(message, Level.INFO);
+  }
+  
+  public static LogIssue fine(String message) {
+    return new LogIssue(message, Level.FINE);
+  }
+  
+  public static LogIssue finer(String message) {
+    return new LogIssue(message, Level.FINER);
+  }
+  
+  public static LogIssue finest(String message) {
+    return new LogIssue(message, Level.FINEST);
+  }
+  
+  public static class LogIssue extends BaseIssue {
 //    private final String message;
 //    private final Level logLevel;
 

@@ -65,4 +65,23 @@ public interface Issue {
    */
   ImpactCode impactCode();
  
+  /**
+   * Get the absolute time the issue was raised. See System.currentTimeMillis
+   * for details.
+   */
+  long timeMillis();
+  
+  /**
+   * Get the relative time in nanoseconds at which the issue was raised. See 
+   * System.nanoTime for details on the limitations of nano time.
+   * @return 
+   */
+  long nanoTime();
+  
+  /**
+   * Get the thread that raised the issue.
+   * 
+   * @return 
+   */
+  Thread thread();
 }
