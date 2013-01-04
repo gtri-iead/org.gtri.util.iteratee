@@ -148,6 +148,11 @@ public class Issues {
     public ImpactCode impactCode() {
       return ImpactCode.NONE;
     }
+    
+    @Override
+    public String toString() {
+      return message();
+    }
   }
   
   public static InputIssue inputFatalError(String message) {
