@@ -22,6 +22,8 @@
 
 package org.gtri.util.iteratee.api;
 
+import org.gtri.util.issue.api.Issue;
+
 /**
  * An interface for an Enumerator of output items. An Enumerator is a Moore 
  * machine, a finite state machine whose output is determined solely by its 

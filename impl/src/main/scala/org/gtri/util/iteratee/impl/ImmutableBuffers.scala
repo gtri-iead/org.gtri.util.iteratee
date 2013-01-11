@@ -26,13 +26,6 @@ import org.gtri.util.iteratee.api
 import api.{ImmutableBuffers, ImmutableBuffer}
 import scala.collection.JavaConversions._
 
-/**
- * Created with IntelliJ IDEA.
- * User: Lance
- * Date: 12/2/12
- * Time: 6:02 PM
- * To change this template use File | Settings | File Templates.
- */
 object ImmutableBufferConversions {
   import scala.language.implicitConversions
 

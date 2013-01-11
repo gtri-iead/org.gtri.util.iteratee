@@ -23,6 +23,7 @@
 package org.gtri.util.iteratee.api;
 
 import java.util.Iterator;
+import org.gtri.util.issue.api.Issue;
 
 /**
  * An interface for a plan to stream items from an Enumerator to an Iteratee.

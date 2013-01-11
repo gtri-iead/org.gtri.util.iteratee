@@ -24,7 +24,8 @@ package org.gtri.util.iteratee.impl
 import language.higherKinds
 import scalaz._
 import Scalaz._
-import org.gtri.util.iteratee.api.Issue
+import org.gtri.util.issue.api.Issue
+import org.gtri.util.scala.optrecover._
 
 /**
  * Created with IntelliJ IDEA.
@@ -42,16 +43,15 @@ package object box {
     def apply[A](issues : List[Issue], a : A) : LogWriter[A] = Writer(issues, a)
   }
 
-  type InnerBox[+A] = BoxM[LogWriter,A]
-  type Box[+A] = LogWriter[InnerBox[A]]
+  type Box[+A] = OptRecover[LogWriter,A]
   object Box {
     def empty[A] : Box[A] = empty[A](Nil)
     def empty[A](issue : Issue) : Box[A] = empty[A](List(issue))
-    def empty[A](log : List[Issue]) : Box[A] = LogWriter(log, BoxM.empty[LogWriter,A])
+    def empty[A](log : List[Issue]) : Box[A] = OptRecover.empty[LogWriter,A]
 
     def apply[A](a : A) : Box[A] = apply[A](Nil,a)
     def apply[A](issue : Issue,a : A) : Box[A] = apply[A](List(issue),a)
-    def apply[A](log : List[Issue],a : A) : Box[A] = LogWriter(log,BoxM[LogWriter,A](a))
+    def apply[A](log : List[Issue],a : A) : Box[A] = LogWriter(log,OptRecoverM[LogWriter,A](a))
 
     def recover[A](recoverable : => Box[A]) : Box[A] = recover[A](Nil,recoverable)
     def recover[A](issue : Issue,recoverable : => Box[A]) : Box[A] = recover[A](List(issue),recoverable)
@@ -61,7 +61,7 @@ package object box {
         val log = recoverable.written
         LogWriter(log,opt)
       }
-      LogWriter(log, BoxM.recover[LogWriter,A](r))
+      LogWriter(log, OptRecoverM.recover[LogWriter,A](r))
     }
   }
 

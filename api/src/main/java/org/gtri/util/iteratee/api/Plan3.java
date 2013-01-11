@@ -23,6 +23,7 @@
 package org.gtri.util.iteratee.api;
 
 import java.util.Iterator;
+import org.gtri.util.issue.api.Issue;
 
 /**
  *

@@ -23,15 +23,15 @@
 package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.Iteratees._
+import org.gtri.util.iteratee.impl.iteratees._
 
 /**
- * Created with IntelliJ IDEA.
- * User: Lance
- * Date: 11/12/12
- * Time: 5:25 PM
- * To change this template use File | Settings | File Templates.
- */
+* Created with IntelliJ IDEA.
+* User: Lance
+* Date: 11/12/12
+* Time: 5:25 PM
+* To change this template use File | Settings | File Templates.
+*/
 class TestIntegerBuilder extends Iteratee[Int, Int] {
 
   case class Cont(acc: Int) extends SingleItemCont[Int, Int] {

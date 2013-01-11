@@ -22,6 +22,8 @@
 
 package org.gtri.util.iteratee.api;
 
+import org.gtri.util.issue.api.Issue;
+
 /**
  * An interface for an Iteratee. An Iteratee is a Mealy machine, a finite state 
  * machine whose output is determined by both its current state and its input. 

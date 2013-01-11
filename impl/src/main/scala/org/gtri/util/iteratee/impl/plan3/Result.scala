@@ -19,34 +19,25 @@
     along with org.gtri.util.iteratee library. If not, see <http://www.gnu.org/licenses/>.
 
 */
+package org.gtri.util.iteratee.impl.plan3
 
-package org.gtri.util.iteratee.impl.test
-
-import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.iteratees._
-import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
+import org.gtri.util.iteratee.api
+import api.ImmutableBuffer
+import org.gtri.util.issue.api.Issue
+import org.gtri.util.iteratee.impl.enumerators._
 
 /**
-* Created with IntelliJ IDEA.
-* User: Lance
-* Date: 11/12/12
-* Time: 4:22 PM
-* To change this template use File | Settings | File Templates.
-*/
-class TestStringConsumer(list : java.util.List[String]) extends Iteratee[String, Unit] {
-  case class Step() extends MultiItemCont[String, Unit] {
-    def apply(items: ImmutableBuffer[String]) = {
-      println("received=" + items)
-      for (item <- items) {
-        list.add(item)
-      }
-      Result(this)
-    }
-
-    def endOfInput() = {
-      println("eoi")
-      Result(Success())
-    }
-  }
-  def initialState = Step()
+ * Created with IntelliJ IDEA.
+ * User: Lance
+ * Date: 1/11/13
+ * Time: 12:02 AM
+ * To change this template use File | Settings | File Templates.
+ */
+case class Result[I1,I2,O](
+  next : api.Plan3.State[I1,I2,O],
+  output : ImmutableBuffer[O],
+  overflow : ImmutableBuffer[I2],
+  issues : ImmutableBuffer[Issue]
+) extends api.Plan3.State.Result[I1,I2,O] {
+  override def toString = this.toDebugString
 }

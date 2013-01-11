@@ -12,6 +12,12 @@ resolvers += "iead-all" at "https://iead.ittl.gtri.org/artifactory/all" // need 
 
 libraryDependencies += "org.scalatest" % "scalatest_2.10.0-RC5" % "2.0.M5-B1"
 
+libraryDependencies += "org.gtri.util" %% "issue.impl" % "1.0-SNAPSHOT"
+
+libraryDependencies += "org.gtri.util" %% "scala.exelog" % "1.0-SNAPSHOT"
+
+libraryDependencies += "org.gtri.util" %% "scala.optrecover" % "1.0-SNAPSHOT"
+
 libraryDependencies += "org.gtri.util" % "xsddatatypes" % "1.0-SNAPSHOT"
 
 libraryDependencies += "org.gtri.util" % "iteratee.api" % "1.0-SNAPSHOT"

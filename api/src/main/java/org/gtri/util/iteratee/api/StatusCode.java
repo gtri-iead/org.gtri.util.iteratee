@@ -77,7 +77,7 @@ public enum StatusCode {
    * @return a new StatusCode representing the "AND" of the supplied StatusCodes
    */
   public static StatusCode and(Iterable<StatusCode> statusCodes) {
-    StatusCode current = StatusCode.SUCCESS;
+    StatusCode current = StatusCode.CONTINUE;
     for(StatusCode status : statusCodes) {
       current = and(current, status);
     }
@@ -90,7 +90,7 @@ public enum StatusCode {
    * @return a new StatusCode representing the "AND" of the supplied StatusCodes
    */
   public static StatusCode and(StatusCode ... statusCodes) {
-    StatusCode current = StatusCode.SUCCESS;
+    StatusCode current = StatusCode.CONTINUE;
     for(StatusCode status : statusCodes) {
       current = and(current, status);
     }
@@ -105,18 +105,14 @@ public enum StatusCode {
    * @return a new StatusCode representing the "AND" of the supplied StatusCodes
    */
   public static StatusCode and(StatusCode lhs, StatusCode rhs) {
-    switch(lhs) {
-      case FAILURE :
+    if(lhs.isDone() || rhs.isDone()) {
+      if(lhs.isFailure() || rhs.isFailure()) {
         return FAILURE;
-      case SUCCESS :
-        return rhs;
-      case CONTINUE :
-    }
-    switch(rhs) {
-      case FAILURE :
-        return FAILURE;
-    }
-    return CONTINUE;
+      }
+      return SUCCESS;
+    } else {
+      return CONTINUE;
+    }    
   }
 
   /**
@@ -153,13 +149,12 @@ public enum StatusCode {
    * @return a new StatusCode representing the "OR" of the supplied StatusCodes
    */
   public static StatusCode or(StatusCode lhs, StatusCode rhs) {
-    switch(lhs) {
-      case FAILURE :
-        return rhs;
-      case SUCCESS :
-        return SUCCESS;
-      case CONTINUE :
+    if(lhs == SUCCESS || rhs == SUCCESS) {
+      return SUCCESS;
+    } else if(lhs.isFailure() && rhs.isFailure()) {
+      return FAILURE;
+    } else {
+      return CONTINUE;
     }
-    return rhs;
   }
 }  

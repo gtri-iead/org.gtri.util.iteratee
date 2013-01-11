@@ -22,6 +22,8 @@
 
 package org.gtri.util.iteratee.api;
 
+import org.gtri.util.issue.api.IssueHandlingStrategy;
+
 /**
  * An interface for a factory for creating implementations of various 
  * interfaces in the iteratee library.
@@ -33,8 +35,7 @@ public interface IterateeFactory {
    * Get the issue handling strategy for this factory.
    * @return the issue handling strategy for this factory
    */
-//  IssueHandlingStrategy issueHandlingStrategy();
-  IssueHandlingCode issueHandlingCode();
+  IssueHandlingStrategy issueHandlingStrategy();
   
   /**
    * Create an Enumerator from a Enumerator.State.

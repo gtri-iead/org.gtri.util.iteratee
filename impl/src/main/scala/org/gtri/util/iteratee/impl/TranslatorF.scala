@@ -22,23 +22,29 @@
 
 package org.gtri.util.iteratee.impl
 
+import org.gtri.util.scala.exelog.sideeffects._
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.Iteratees._
+import org.gtri.util.iteratee.impl.iteratees._
 import ImmutableBufferConversions._
 
-/**
- * Created with IntelliJ IDEA.
- * User: Lance
- * Date: 11/21/12
- * Time: 6:16 AM
- * To change this template use File | Settings | File Templates.
- */
-class TranslatorF[A,B](f: A => B) extends Iteratee[A,B]{
+object TranslatorF {
+  implicit val classlog = ClassLog(classOf[TranslatorF[_,_]])
+}
+class TranslatorF[A,B](f: A => B) extends Iteratee[A,B] {
+  import TranslatorF._
 
+  object Cont {
+    implicit val classlog = ClassLog(classOf[Cont])
+  }
   class Cont extends SingleItemCont[A,B] {
+    import Cont._
+
     def apply(item: A) = {
-      Result(this, Chunk(f(item)))
+      implicit val log = enter("apply") { "item" -> item :: Nil }
+      +"Translate the item and return result"
+      Result(this, Chunk(f(item))) <~: log
     }
+
     def endOfInput = Success()
   }
 

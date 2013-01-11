@@ -23,7 +23,7 @@
 package org.gtri.util.iteratee.impl.test
 
 import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.Iteratees._
+import org.gtri.util.iteratee.impl.iteratees._
 import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 
 /**

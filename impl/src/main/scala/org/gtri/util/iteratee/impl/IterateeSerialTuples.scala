@@ -22,27 +22,23 @@
 
 package org.gtri.util.iteratee.impl
 
+import org.gtri.util.scala.exelog.sideeffects._
 import org.gtri.util.iteratee.api.{ImmutableBuffer, Iteratee, StatusCode}
-import org.gtri.util.iteratee.impl.Iteratees._
+import org.gtri.util.iteratee.impl.iteratees._
 import ImmutableBufferConversions._
 
+// TODO: Comments and logs
+
 /**
- * Created with IntelliJ IDEA.
- * User: Lance
- * Date: 11/30/12
- * Time: 8:17 PM
- * To change this template use File | Settings | File Templates.
- */
-/**
- * An Iteratee that is composed of two iteratees. The input of this Iteratee is fed to the first inner Iteratee
- * and the output the first inner Iteratee is fed to input of the second Iteratee and the output of the second Iteratee
- * becomes the output of this Iteratee.
- * @param i1
- * @param i2
- * @tparam A
- * @tparam B
- * @tparam C
- */
+* An Iteratee that is composed of two iteratees. The input of this Iteratee is fed to the first inner Iteratee
+* and the output the first inner Iteratee is fed to input of the second Iteratee and the output of the second Iteratee
+* becomes the output of this Iteratee.
+* @param i1
+* @param i2
+* @tparam A
+* @tparam B
+* @tparam C
+*/
 case class IterateeSerialTuple2[A,B,C](
   i1 : Iteratee[A,B],
   i2 : Iteratee[B,C]
@@ -53,40 +49,59 @@ case class IterateeSerialTuple2[A,B,C](
 }
 object IterateeSerialTuple2 {
 
+  object State {
+    implicit val classlog = ClassLog(classOf[State[_,_,_]])
+  }
   case class State[A,B,C](
     i1 : Iteratee.State[A,B],
     i2 : Iteratee.State[B,C],
     val statusCode : StatusCode
   ) extends Iteratee.State[A,C] {
+    import State._
     def apply(input : A) = apply(Chunk(input))
     def apply(input: ImmutableBuffer[A]) = {
+      implicit val log = enter("apply") { "input#" -> input.length :: Nil }
+      +"Is this a done state?"
       if(statusCode.isDone) {
-        Result[A,C](this)
+        +"Yes, return a result that returns input as overflow and stays here"
+        Result(next = this, overflow = input) <~: log
       } else {
+        +"No, apply input, accumulate results and return next result"
+        ~"Apply input to i1"
         val resultI1 = i1.apply(input)
+        ~"Apply result from i1 to i2"
         val resultI2 = i2.apply(resultI1.output)
+        ~"Accumulate issues, overflow, output, statusCode and build next result"
         val issues = resultI1.issues ++ resultI2.issues
         val overflow = resultI1.overflow
         val output = resultI2.output
         val nextStatusCode = StatusCode.and(resultI1.next.statusCode, resultI2.next.statusCode)
         val next = State(resultI1.next, resultI2.next, nextStatusCode)
-        Result(next, output, overflow, issues)
+        Result(next, output, overflow, issues) <~: log
       }
     }
 
     def endOfInput() = {
+      implicit val log = enter("endOfInput")()
+      +"Is this a done state?"
       if(statusCode.isDone) {
-        Result(this)
+        +"Yes, return a result that stays here"
+        Result(next = this) <~: log
       } else {
+        +"No, apply EOI, accumulate results and return next result"
+        ~"Apply EOI to i1"
         val resultT1_EOI = i1.endOfInput()
+        ~"Apply result of i1 to i2"
         val resultI2 = i2.apply(resultT1_EOI.output)
+        ~"Apply result EOI to i2"
         val resultT2_EOI = i2.endOfInput()
+        ~"Accumulate issues, overflow, output, statusCode and build next result"
         val issues = resultT1_EOI.issues ++ resultI2.issues ++ resultT2_EOI.issues
         val overflow = resultT1_EOI.overflow
         val output = resultI2.output ++ resultT2_EOI.output
-        val nextStatusCode = StatusCode.and(resultT1_EOI.next.statusCode, resultI2.next.statusCode, resultT2_EOI.next.statusCode)
+        val nextStatusCode = StatusCode.and(resultT1_EOI.next.statusCode, resultT2_EOI.next.statusCode)
         val next = State(resultT1_EOI.next, resultT2_EOI.next, nextStatusCode)
-        Result(next, output, overflow, issues)
+        Result(next, output, overflow, issues) <~: log
       }
     }
   }
@@ -104,45 +119,68 @@ case class IterateeSerialTuple3[A,B,C,D](
 }
 object IterateeSerialTuple3 {
 
+  object State {
+    implicit val classlog = ClassLog(classOf[State[_,_,_,_]])
+  }
   case class State[A,B,C,D](
     i1 : Iteratee.State[A,B],
     i2 : Iteratee.State[B,C],
     i3 : Iteratee.State[C,D],
     val statusCode : StatusCode
   ) extends Iteratee.State[A,D] {
-
+    import State._
     def apply(input : A) = apply(Chunk(input))
     def apply(input: ImmutableBuffer[A]) = {
+      implicit val log = enter("apply") { "input#" -> input.length :: Nil }
+      +"Is this a done state?"
       if(statusCode.isDone) {
-        Result(this)
+        +"Yes, return a result that returns input as overflow and stays here"
+        Result(next = this, overflow = input) <~: log
       } else {
+        +"No, apply input, accumulate results and return next result"
+        ~"Apply input to i1"
         val resultI1 = i1.apply(input)
+        ~"Apply result of i1 to i2"
         val resultI2 = i2.apply(resultI1.output)
+        ~"Apply result of i2 to i3"
         val resultI3 = i3.apply(resultI2.output)
+        ~"Accumulate issues, overflow, output, statusCode and build next result"
         val issues = resultI1.issues ++ resultI2.issues ++ resultI3.issues
         val overflow = resultI1.overflow
         val output = resultI3.output
         val nextStatusCode = StatusCode.and(resultI1.next.statusCode, resultI2.next.statusCode, resultI3.next.statusCode)
         val next : Iteratee.State[A,D] = State(resultI1.next, resultI2.next, resultI3.next, nextStatusCode)
-        Result(next, output, overflow, issues)
+        Result(next, output, overflow, issues) <~: log
       }
     }
 
     def endOfInput() = {
+      implicit val log = enter("endOfInput")()
+      +"Is this a done state?"
       if(statusCode.isDone) {
-        Result(this)
+        +"Yes, return a result that stays here"
+        Result(next = this) <~: log
       } else {
+        +"No, apply EOI, accumulate results and return next result"
+        ~"Apply EOI to i1"
         val resultT1_EOI = i1.endOfInput()
-        val resultI2 = i2.apply(resultT1_EOI.output)
+        ~"Apply the result of i1 to i2"
+        val resultI2_T1_EOI = i2.apply(resultT1_EOI.output)
+        ~"Apply the result of i2 to i3"
+        val resultI3_T1_EOI = i3.apply(resultI2_T1_EOI.output)
+        ~"Apply EOI to i2"
         val resultT2_EOI = i2.endOfInput()
-        val resultI3 = i3.apply(resultT2_EOI.output)
+        ~"Apply result of i2 to i3"
+        val resultI3_T2_EOI = i3.apply(resultT2_EOI.output)
+        ~"Apply EOI to i3"
         val resultT3_EOI = i3.endOfInput()
-        val issues = resultT1_EOI.issues ++ resultI2.issues ++ resultT2_EOI.issues ++ resultI2.issues ++ resultT2_EOI.issues
+        ~"Accumulate issues, overflow, output, statusCode and build next result"
+        val issues = resultT1_EOI.issues ++ resultI2_T1_EOI.issues ++ resultI3_T1_EOI.issues ++ resultT2_EOI.issues ++ resultI3_T2_EOI.issues() ++ resultT3_EOI.issues
         val overflow = resultT1_EOI.overflow
-        val output = resultI3.output ++ resultT3_EOI.output
-        val nextStatusCode = StatusCode.and(resultT1_EOI.next.statusCode, resultI2.next.statusCode, resultT2_EOI.next.statusCode, resultI3.next.statusCode, resultT3_EOI.next.statusCode)
+        val output = resultI3_T1_EOI.output ++ resultI3_T2_EOI.output ++ resultT3_EOI.output
+        val nextStatusCode = StatusCode.and(resultT1_EOI.next.statusCode, resultT2_EOI.next.statusCode, resultT3_EOI.next.statusCode)
         val next : Iteratee.State[A,D] = State(resultT1_EOI.next, resultT2_EOI.next, resultT3_EOI.next, nextStatusCode)
-        Result(next, output, overflow, issues)
+        Result(next, output, overflow, issues) <~: log
       }
     }
 

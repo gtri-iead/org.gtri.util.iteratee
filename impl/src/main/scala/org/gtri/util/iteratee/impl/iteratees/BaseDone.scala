@@ -19,34 +19,32 @@
     along with org.gtri.util.iteratee library. If not, see <http://www.gnu.org/licenses/>.
 
 */
+package org.gtri.util.iteratee.impl.iteratees
 
-package org.gtri.util.iteratee.impl.test
-
-import org.gtri.util.iteratee.api._
-import org.gtri.util.iteratee.impl.iteratees._
+import org.gtri.util.iteratee.api.{ImmutableBuffer, Iteratee}
+import org.gtri.util.scala.exelog.sideeffects._
 import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 
-/**
-* Created with IntelliJ IDEA.
-* User: Lance
-* Date: 11/12/12
-* Time: 4:22 PM
-* To change this template use File | Settings | File Templates.
-*/
-class TestStringConsumer(list : java.util.List[String]) extends Iteratee[String, Unit] {
-  case class Step() extends MultiItemCont[String, Unit] {
-    def apply(items: ImmutableBuffer[String]) = {
-      println("received=" + items)
-      for (item <- items) {
-        list.add(item)
-      }
-      Result(this)
-    }
+object BaseDone {
+  implicit val classlog = ClassLog(classOf[BaseDone[_,_]])
+}
+abstract class BaseDone[I,O] extends Iteratee.State[I,O]  {
+  import BaseDone._
 
-    def endOfInput() = {
-      println("eoi")
-      Result(Success())
-    }
+  def apply(items: ImmutableBuffer[I]) = {
+    implicit val log = enter("apply") { ("items#" -> items.length) :: Nil }
+    +"Iteratee is done, returning all input as overflow"
+    Result(next = this, overflow = items) <~: log
   }
-  def initialState = Step()
+  def apply(item: I) = {
+    implicit val log = enter("apply") { ("item" ->  item) :: Nil }
+    +"Iteratee is done, returning input item as overflow"
+    Result(next = this, overflow = Chunk(item)) <~: log
+  }
+
+  def endOfInput() = {
+    implicit val log = enter("endOfInput")()
+    +"Iteratee is done, received eoi - no change in state"
+    Result(next = this) <~: log
+  }
 }

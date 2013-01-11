@@ -22,59 +22,47 @@
 
 package org.gtri.util.iteratee.impl
 
+import org.gtri.util.scala.exelog.sideeffects._
+import org.gtri.util.issue.api.Issue
 import org.gtri.util.iteratee.api
 import api._
 import scala.collection.JavaConversions._
-import org.gtri.util.iteratee.impl.Enumerators.EnumeratorIterator
+import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 
-/**
- * Created with IntelliJ IDEA.
- * User: Lance
- * Date: 11/30/12
- * Time: 3:59 AM
- * To change this template use File | Settings | File Templates.
- */
+object Plan2 {
+  implicit val plan2log = ClassLog(classOf[Plan2[_,_]])
+}
+
 class Plan2[I,O](val factory : IterateeFactory, val enumerator : Enumerator[I], val iteratee : Iteratee[I,O]) extends api.Plan2[I,O] {
-  import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
+  import Plan2._
 
-  def initialState = new State(enumerator.initialState, iteratee.initialState)
+  def initialState = new plan2.State(enumerator.initialState, iteratee.initialState)
 
-  case class Result[I,O](next : api.Plan2.State[I,O], output : ImmutableBuffer[O], overflow : ImmutableBuffer[I], issues : ImmutableBuffer[Issue]) extends api.Plan2.State.Result[I,O]
-
-  case class State[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O]) extends api.Plan2.State[I,O] {
-    def statusCode = StatusCode.or(enumeratorState.statusCode, iterateeState.statusCode)
-
-    def progress = enumeratorState.progress
-
-    def endOfInput() = {
-      val iResult_EOI = iterateeState.endOfInput()
-      Result(State(enumeratorState, iResult_EOI.next), iResult_EOI.output, iResult_EOI.overflow, iResult_EOI.issues)
-    }
-
-    def step() = {
-      if (statusCode.isDone) {
-        Result(this, ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty())
-      } else {
-        val eResult = enumeratorState.step()
-        val iResult = iterateeState.apply(eResult.output)
-        Result(State(eResult.next, iResult.next), iResult.output, iResult.overflow, eResult.issues ++ iResult.issues)
-      }
-    }
+  def iterator : java.util.Iterator[api.Plan2.State.Result[I,O]] = {
+    new EnumeratorIterator[O,api.Plan2.State.Result[I,O]](
+      r = initialState.step(),
+      step = { _.next.step() }
+    )
   }
 
-  def iterator : java.util.Iterator[Plan2.State.Result[I,O]] = new EnumeratorIterator[O,Plan2.State.Result[I,O]](initialState.step(), { _.next.step() })
-
   def run() = {
-    val initialR = initialState.step()
-    val i : Iterator[Plan2.State.Result[I,O]] = new EnumeratorIterator[O,Plan2.State.Result[I,O]](initialR, { _.next.step() })
+    implicit val log = enter("run")()
+    ~"Step the initial state once to get an initial result"
+    val initialResult = initialState.step()
+    ~"Get an iterator for the plan"
+    val i : Iterator[api.Plan2.State.Result[I,O]] =
+      new EnumeratorIterator[O,api.Plan2.State.Result[I,O]](initialResult, { _.next.step() })
+    ~"Fold the enumerator, accumulating output and issues"
     val (_lastResult, _allOutput, _allIssues) = {
-      i.foldLeft[(Plan2.State.Result[I,O], IndexedSeq[O],IndexedSeq[Issue])]((initialR, IndexedSeq[O](), IndexedSeq[Issue]())) {
+      i.foldLeft[(api.Plan2.State.Result[I,O], IndexedSeq[O],IndexedSeq[Issue])]((initialResult, IndexedSeq[O](), IndexedSeq[Issue]())) {
         (accTuple, result) =>
           val (_, outputAcc, issuesAcc) = accTuple
           (result, result.output ++ outputAcc, result.issues ++ issuesAcc)
       }
     }
+    ~"Apply endOfInput to last result"
     val eoiResult = _lastResult.next.endOfInput()
+    ~"Return a run result wrapper"
     new api.Plan2.RunResult[I,O] {
 
       def lastResult = _lastResult
@@ -92,6 +80,6 @@ class Plan2[I,O](val factory : IterateeFactory, val enumerator : Enumerator[I], 
       def allOutput = eoiResult.output ++ _allOutput
 
       def allIssues = eoiResult.issues ++ _allIssues
-    }
+    } <~: log
   }
 }

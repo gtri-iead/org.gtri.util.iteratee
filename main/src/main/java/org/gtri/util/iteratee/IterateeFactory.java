@@ -22,8 +22,9 @@
 
 package org.gtri.util.iteratee;
 
+import org.gtri.util.issue.IssueHandling;
+import org.gtri.util.issue.api.IssueHandlingStrategy;
 import org.gtri.util.iteratee.api.Enumerator;
-import org.gtri.util.iteratee.api.IssueHandlingCode;
 import org.gtri.util.iteratee.api.Iteratee;
 import org.gtri.util.iteratee.api.Plan2;
 import org.gtri.util.iteratee.api.Plan3;
@@ -34,18 +35,18 @@ import org.gtri.util.iteratee.api.Plan3;
  */
 public class IterateeFactory implements org.gtri.util.iteratee.api.IterateeFactory {
   
-  private final IssueHandlingCode issueHandlingCode;
+  private final IssueHandlingStrategy issueHandlingStrategy;
   
   public IterateeFactory() {
-    this(IssueHandlingCode.NORMAL);
+    this(IssueHandling.INSTANCE.createNormalStrategy());
   }
-  public IterateeFactory(final IssueHandlingCode errorHandlingCode) {
-    this.issueHandlingCode = errorHandlingCode;
+  public IterateeFactory(final IssueHandlingStrategy issueHandlingStrategy) {
+    this.issueHandlingStrategy = issueHandlingStrategy;
   }
   
   @Override
-  public IssueHandlingCode issueHandlingCode() {
-    return issueHandlingCode;
+  public IssueHandlingStrategy issueHandlingStrategy() {
+    return issueHandlingStrategy;
   }
 
   @Override
