@@ -57,7 +57,7 @@ package object iteratees {
       val boxlog = box.written
       box.value.fold(
         ifGo = { output =>
-          ~"Box is Success - return a result with the output and the next state of ifGo"
+          +"Box is Success - return a result with the output and the next state of ifGo"
           Result(
             next = ifGo(output),
             output = Chunk(output),
@@ -89,7 +89,7 @@ package object iteratees {
           }
         },
         ifNoGo = {
-          log warn "Box is nogo return Failure"
+          log error "Box is nogo return Failure"
           Failure(issues = boxlog)
         }
       )
