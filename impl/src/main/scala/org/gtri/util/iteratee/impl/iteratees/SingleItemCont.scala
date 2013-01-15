@@ -21,13 +21,14 @@
 */
 package org.gtri.util.iteratee.impl.iteratees
 
-import org.gtri.util.scala.exelog.sideeffects._
+import org.gtri.util.scala.exelog.noop._
 import org.gtri.util.issue.api.Issue
 import org.gtri.util.iteratee.api._
 import annotation.tailrec
 
 object SingleItemCont {
-  implicit val classlog = ClassLog(classOf[SingleItemCont[_,_]])
+  implicit val thisclass = classOf[SingleItemCont[_,_]]
+  implicit val log : Log = Logger.getLog(thisclass)
 }
 /**
 * Skeleton implementation class for Iteratees that process one item at a time. Derived class implement only the
@@ -41,11 +42,12 @@ abstract class SingleItemCont[I,O] extends Iteratee.State[I,O]  {
   def statusCode = StatusCode.CONTINUE
 
   final def apply(buffer : ImmutableBuffer[I]) = {
-    implicit val log = enter("apply") { ("buffer#" -> buffer.length) :: Nil }
-    +"Applying each item in buffer individually"
-    val result = doApply(buffer, 0, this, ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty())
-    +s"Final result=$result"
-    result <~: log
+    log.block("apply",Seq("buffer#" -> buffer.length)) {
+      +"Applying each item in buffer individually"
+      val result = doApply(buffer, 0, this, ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty())
+      +s"Final result=$result"
+      result
+    }
   }
 
   /**
@@ -69,7 +71,7 @@ abstract class SingleItemCont[I,O] extends Iteratee.State[I,O]  {
     overflow : ImmutableBuffer[I],
     issues : ImmutableBuffer[Issue]
   ) : Result[I,O] = {
-    implicit val log = enter("doApply") { "buffer#" -> buffer.length :: "pos" -> pos :: "next" -> next :: "output#" -> output.length :: "overflow#" -> overflow.length :: "issues#" -> issues :: Nil }
+    log.begin("doApply",Seq("buffer#" -> buffer.length, "pos" -> pos, "next" -> next, "output#" -> output.length, "overflow#" -> overflow.length, "issues#" -> issues))
     ~"Still more input in buffer?"
     if(pos >= buffer.length) {
       ~"Finished iterating buffer"
@@ -85,7 +87,9 @@ abstract class SingleItemCont[I,O] extends Iteratee.State[I,O]  {
       if(nextResult.next.statusCode.isDone) {
         ~"We are done - return anything remaining in the buffer as overflow"
         val remaining = buffer.slice(pos, buffer.length)
-        Result(nextResult.next, nextOutput, nextOverflow.append(remaining), nextIssues) <~: log
+        val retv = Result(nextResult.next, nextOutput, nextOverflow.append(remaining), nextIssues)
+        log.end("doApply", retv)
+        retv
       } else {
         ~"Still accepting more input - recurse"
         doApply(buffer,nextPos,nextResult.next, nextOutput, nextOverflow, nextIssues)

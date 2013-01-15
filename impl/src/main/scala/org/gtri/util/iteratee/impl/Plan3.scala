@@ -22,7 +22,7 @@
 
 package org.gtri.util.iteratee.impl
 
-import org.gtri.util.scala.exelog.sideeffects._
+import org.gtri.util.scala.exelog.noop._
 import org.gtri.util.iteratee.api
 import api._
 import org.gtri.util.iteratee.impl.plan3._
@@ -33,7 +33,8 @@ import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 // TODO: Comments and logs
 
 object Plan3 {
-  implicit val classlog = ClassLog(classOf[Plan3[_,_,_]])
+  implicit val thisclass = classOf[Plan3[_,_,_]]
+  implicit val log : Log = Logger.getLog(thisclass)
 }
 class Plan3[I1,I2,O](
   val factory: IterateeFactory,
@@ -49,41 +50,42 @@ class Plan3[I1,I2,O](
     new EnumeratorIterator[O,api.Plan3.State.Result[I1,I2,O]](initialState.step(), { _.next.step() })
 
   def run() = {
-    implicit val log = enter("run")()
-    ~"Step initial state"
-    val initialR = initialState.step()
-    ~"Create an iterator for this plan"
-    val i : Iterator[api.Plan3.State.Result[I1,I2,O]] =
-      new EnumeratorIterator[O,api.Plan3.State.Result[I1,I2,O]](initialR, { _.next.step() })
-    ~"Fold on iterator, accumulating results and issues"
-    val (_lastResult, _allOutput, _allIssues) = {
-      i.foldLeft[(api.Plan3.State.Result[I1,I2,O], IndexedSeq[O],IndexedSeq[Issue])]((initialR, IndexedSeq[O](), IndexedSeq[Issue]())) {
-        (accTuple, result) =>
-          val (_, outputAcc, issuesAcc) = accTuple
-          (result, result.output ++ outputAcc, result.issues ++ issuesAcc)
+    log.block("run") {
+      ~"Step initial state"
+      val initialR = initialState.step()
+      ~"Create an iterator for this plan"
+      val i : Iterator[api.Plan3.State.Result[I1,I2,O]] =
+        new EnumeratorIterator[O,api.Plan3.State.Result[I1,I2,O]](initialR, { _.next.step() })
+      ~"Fold on iterator, accumulating results and issues"
+      val (_lastResult, _allOutput, _allIssues) = {
+        i.foldLeft[(api.Plan3.State.Result[I1,I2,O], IndexedSeq[O],IndexedSeq[Issue])]((initialR, IndexedSeq[O](), IndexedSeq[Issue]())) {
+          (accTuple, result) =>
+            val (_, outputAcc, issuesAcc) = accTuple
+            (result, result.output ++ outputAcc, result.issues ++ issuesAcc)
+        }
       }
-    }
-    ~"Feed endOfInput to last iteratee state"
-    val eoiResult = _lastResult.next.endOfInput()
-    ~"Return a proxy plan run result"
-    new api.Plan3.RunResult[I1,I2,O] {
-      def lastResult = _lastResult
+      ~"Feed endOfInput to last iteratee state"
+      val eoiResult = _lastResult.next.endOfInput()
+      ~"Return a proxy plan run result"
+      new api.Plan3.RunResult[I1,I2,O] {
+        def lastResult = _lastResult
 
-      def endOfInput = eoiResult
+        def endOfInput = eoiResult
 
-      def statusCode = eoiResult.next.statusCode
+        def statusCode = eoiResult.next.statusCode
 
-      def progress = eoiResult.next.progress
+        def progress = eoiResult.next.progress
 
-      def enumerator = factory.createEnumerator(_lastResult.next.enumeratorState)
+        def enumerator = factory.createEnumerator(_lastResult.next.enumeratorState)
 
-      def translator = factory.createIteratee(_lastResult.next.translatorState)
+        def translator = factory.createIteratee(_lastResult.next.translatorState)
 
-      def iteratee = factory.createIteratee(_lastResult.next.iterateeState)
+        def iteratee = factory.createIteratee(_lastResult.next.iterateeState)
 
-      def allOutput = eoiResult.output ++ _allOutput
+        def allOutput = eoiResult.output ++ _allOutput
 
-      def allIssues = eoiResult.issues ++ _allIssues
+        def allIssues = eoiResult.issues ++ _allIssues
+      }
     }
   }
 }

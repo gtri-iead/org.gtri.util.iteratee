@@ -26,13 +26,6 @@ import api.ImmutableBuffer
 import org.gtri.util.issue.api.Issue
 import org.gtri.util.iteratee.impl.enumerators._
 
-/**
- * Created with IntelliJ IDEA.
- * User: Lance
- * Date: 1/10/13
- * Time: 4:08 AM
- * To change this template use File | Settings | File Templates.
- */
 case class Result[I,O](
   next : api.Plan2.State[I,O],
   output : ImmutableBuffer[O],

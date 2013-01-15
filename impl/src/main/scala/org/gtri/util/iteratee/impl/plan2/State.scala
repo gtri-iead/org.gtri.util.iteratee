@@ -21,59 +21,63 @@
 */
 package org.gtri.util.iteratee.impl.plan2
 
-import org.gtri.util.scala.exelog.sideeffects._
+import org.gtri.util.scala.exelog.noop._
 import org.gtri.util.iteratee.api.{StatusCode, Iteratee, Enumerator}
 import org.gtri.util.iteratee.api
 import api.ImmutableBuffers
 import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 
 object State {
-  implicit val classlog = ClassLog(classOf[State[_,_]])
+  implicit val thisclass = classOf[State[_,_]]
+  implicit val log : Log = Logger.getLog(thisclass)
 }
 case class State[I,O](val enumeratorState : Enumerator.State[I], val iterateeState : Iteratee.State[I,O]) extends api.Plan2.State[I,O] {
   import State._
 
   def statusCode = {
-    implicit val log = enter("statusCode")()
-    val eStatusCode = enumeratorState.statusCode
-    val iStatusCode = iterateeState.statusCode
-    ~s"and(enumeratorState.statusCode=$eStatusCode,iterateeState.statusCode=$iStatusCode)"
-    StatusCode.and(enumeratorState.statusCode, iterateeState.statusCode) <~: log
+    log.block("statusCode") {
+      val eStatusCode = enumeratorState.statusCode
+      val iStatusCode = iterateeState.statusCode
+      ~s"and(enumeratorState.statusCode=$eStatusCode,iterateeState.statusCode=$iStatusCode)"
+      StatusCode.and(enumeratorState.statusCode, iterateeState.statusCode)
+    }
   }
 
   def progress = enumeratorState.progress
 
   def endOfInput() = {
-    implicit val log = enter("endOfInput")()
-    +"Get eoi result from Iteratee"
-    val iResult_EOI = iterateeState.endOfInput()
-    +"Return a result with eoi output, overflow and issues"
-    Result(
-      next = State(enumeratorState, iResult_EOI.next),
-      output = iResult_EOI.output,
-      overflow = iResult_EOI.overflow,
-      issues = iResult_EOI.issues
-    ) <~: log
+    log.block("endOfInput") {
+      +"Get eoi result from Iteratee"
+      val iResult_EOI = iterateeState.endOfInput()
+      +"Return a result with eoi output, overflow and issues"
+      Result(
+        next = State(enumeratorState, iResult_EOI.next),
+        output = iResult_EOI.output,
+        overflow = iResult_EOI.overflow,
+        issues = iResult_EOI.issues
+      )
+    }
   }
 
   def step() = {
-    implicit val log = enter("step")()
-    +"Are we done?"
-    if (statusCode.isDone) {
-      +"Plan is done"
-      Result(this, ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty()) <~: log
-    } else {
-      +"Plan is not done, step the enumerator"
-      val eResult = enumeratorState.step()
-      ~s"Apply enumerator to Iteratee"
-      val iResult = iterateeState.apply(eResult.output)
+    log.block("step") {
+      +"Are we done?"
+      if (statusCode.isDone) {
+        +"Plan is done"
+        Result(this, ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty())
+      } else {
+        +"Plan is not done, step the enumerator"
+        val eResult = enumeratorState.step()
+        ~s"Apply enumerator to Iteratee"
+        val iResult = iterateeState.apply(eResult.output)
 
-      Result(
-        next = State(eResult.next, iResult.next),
-        output = iResult.output,
-        overflow = iResult.overflow,
-        issues = eResult.issues ++ iResult.issues
-      ) <~: log
+        Result(
+          next = State(eResult.next, iResult.next),
+          output = iResult.output,
+          overflow = iResult.overflow,
+          issues = eResult.issues ++ iResult.issues
+        )
+      }
     }
   }
 }

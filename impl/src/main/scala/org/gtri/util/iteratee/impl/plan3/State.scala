@@ -21,13 +21,14 @@
 */
 package org.gtri.util.iteratee.impl.plan3
 
-import org.gtri.util.scala.exelog.sideeffects._
+import org.gtri.util.scala.exelog.noop._
 import org.gtri.util.iteratee.api
 import api.{StatusCode, ImmutableBuffers}
 import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 
 object State {
-  implicit val classlog = ClassLog(classOf[State[_,_,_]])
+  implicit val thisclass = classOf[State[_,_,_]]
+  implicit val log : Log = Logger.getLog(thisclass)
 }
 case class State[I1,I2,O](
   val enumeratorState : api.Enumerator.State[I1],
@@ -37,53 +38,56 @@ case class State[I1,I2,O](
   import State._
 
   def statusCode = {
-    implicit val log = enter("statusCode")()
-    val t1 = enumeratorState.statusCode
-    val t2 = translatorState.statusCode
-    val t3 = iterateeState.statusCode
-    ~s"and(enumeratorState.statusCode=$t1,translatorState.statusCode=$t2,iterateeState.statusCode=$t3)"
-    StatusCode.and(enumeratorState.statusCode, translatorState.statusCode, iterateeState.statusCode) <~: log
+    log.block("statusCode") {
+      val t1 = enumeratorState.statusCode
+      val t2 = translatorState.statusCode
+      val t3 = iterateeState.statusCode
+      ~s"and(enumeratorState.statusCode=$t1,translatorState.statusCode=$t2,iterateeState.statusCode=$t3)"
+      StatusCode.and(enumeratorState.statusCode, translatorState.statusCode, iterateeState.statusCode)
+    }
   }
 
   def progress = enumeratorState.progress
 
   def endOfInput() = {
-    implicit val log = enter("endOfInput")()
-    +"Apply EOI and build result"
-    ~"Getting endOfInput result from translatorState"
-    val tResult_EOI = translatorState.endOfInput()
-    ~"Applying translatorState endOfInput result to iterateeState"
-    val iResult = iterateeState.apply(tResult_EOI.output())
-    ~"Getting endOfInput result from iterateeState"
-    val iResult_EOI = iResult.next.endOfInput()
-    Result(
-      next = State(enumeratorState, tResult_EOI.next, iResult_EOI.next),
-      output = iResult.output,
-      overflow = iResult.overflow,
-      issues = iResult.issues
-    ) <~: log
+    log.block("endOfInput") {
+      +"Apply EOI and build result"
+      ~"Getting endOfInput result from translatorState"
+      val tResult_EOI = translatorState.endOfInput()
+      ~"Applying translatorState endOfInput result to iterateeState"
+      val iResult = iterateeState.apply(tResult_EOI.output())
+      ~"Getting endOfInput result from iterateeState"
+      val iResult_EOI = iResult.next.endOfInput()
+      Result(
+        next = State(enumeratorState, tResult_EOI.next, iResult_EOI.next),
+        output = iResult.output,
+        overflow = iResult.overflow,
+        issues = iResult.issues
+      )
+    }
   }
 
   def step() = {
-    implicit val log = enter("step")()
-    +"Are we done?"
-    if(statusCode.isDone) {
-      +"Yes, return an empty result"
-      Result(this, ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty()) <~: log
-    } else {
-      +"Not done yet, step the enumerator"
-      val eResult = enumeratorState.step()
-      ~"Translate the results"
-      val tResult = translatorState.apply(eResult.output)
-      ~"Apply the translated results to the iteratee"
-      val iResult = iterateeState.apply(tResult.output)
-      ~"Return a result with Iteratee output/overflow and all logs appended"
-      Result(
-        next = State(eResult.next, tResult.next, iResult.next),
-        output = iResult.output,
-        overflow = iResult.overflow,
-        issues = eResult.issues ++ tResult.issues ++ iResult.issues
-      ) <~: log
+    log.block("step") {
+      +"Are we done?"
+      if(statusCode.isDone) {
+        +"Yes, return an empty result"
+        Result(this, ImmutableBuffers.empty(), ImmutableBuffers.empty(), ImmutableBuffers.empty())
+      } else {
+        +"Not done yet, step the enumerator"
+        val eResult = enumeratorState.step()
+        ~"Translate the results"
+        val tResult = translatorState.apply(eResult.output)
+        ~"Apply the translated results to the iteratee"
+        val iResult = iterateeState.apply(tResult.output)
+        ~"Return a result with Iteratee output/overflow and all logs appended"
+        Result(
+          next = State(eResult.next, tResult.next, iResult.next),
+          output = iResult.output,
+          overflow = iResult.overflow,
+          issues = eResult.issues ++ tResult.issues ++ iResult.issues
+        )
+      }
     }
   }
 }

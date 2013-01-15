@@ -21,10 +21,8 @@
 */
 package org.gtri.util.iteratee.impl
 
-import collection.immutable.Seq
-import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.api
-import org.gtri.util.scala.exelog.sideeffects.ClassLog
+
 
 /**
  * Created with IntelliJ IDEA.

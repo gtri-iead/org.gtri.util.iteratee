@@ -22,15 +22,15 @@
 package org.gtri.util.iteratee.impl
 
 import org.gtri.util.iteratee.api.Enumerator
-import org.gtri.util.scala.exelog.sideeffects.ClassLog
+import org.gtri.util.scala.exelog.noop._
 
 /**
- * A class to get an Iterator of Enumerator.State.Result for an Enumerator
- * @param r
- * @param step
- * @tparam O
- * @tparam R
- */
+* A class to get an Iterator of Enumerator.State.Result for an Enumerator
+* @param r
+* @param step
+* @tparam O
+* @tparam R
+*/
 class EnumeratorIterator[O,R <: Enumerator.State.Result[O]](r : R, step: R => R) extends scala.Iterator[R] {
 
   var current = r

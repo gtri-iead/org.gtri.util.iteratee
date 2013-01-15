@@ -21,30 +21,34 @@
 */
 package org.gtri.util.iteratee.impl.iteratees
 
+import org.gtri.util.scala.exelog.noop._
 import org.gtri.util.iteratee.api.{ImmutableBuffer, Iteratee}
-import org.gtri.util.scala.exelog.sideeffects._
 import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 
 object BaseDone {
-  implicit val classlog = ClassLog(classOf[BaseDone[_,_]])
+  implicit val thisclass = classOf[BaseDone[_,_]]
+  implicit val log : Log = Logger.getLog(thisclass)
 }
 abstract class BaseDone[I,O] extends Iteratee.State[I,O]  {
   import BaseDone._
 
   def apply(items: ImmutableBuffer[I]) = {
-    implicit val log = enter("apply") { ("items#" -> items.length) :: Nil }
-    +"Iteratee is done, returning all input as overflow"
-    Result(next = this, overflow = items) <~: log
+    log.block("apply",Seq("items#" -> items.length)) {
+      +"Iteratee is done, returning all input as overflow"
+      Result(next = this, overflow = items)
+    }
   }
   def apply(item: I) = {
-    implicit val log = enter("apply") { ("item" ->  item) :: Nil }
-    +"Iteratee is done, returning input item as overflow"
-    Result(next = this, overflow = Chunk(item)) <~: log
+    log.block("apply",Seq("item" ->  item)) {
+      +"Iteratee is done, returning input item as overflow"
+      Result(next = this, overflow = Chunk(item))
+    }
   }
 
   def endOfInput() = {
-    implicit val log = enter("endOfInput")()
-    +"Iteratee is done, received eoi - no change in state"
-    Result(next = this) <~: log
+    log.block("endOfInput") {
+      +"Iteratee is done, received eoi - no change in state"
+      Result(next = this)
+    }
   }
 }

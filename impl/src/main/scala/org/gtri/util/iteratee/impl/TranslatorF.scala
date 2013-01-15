@@ -22,27 +22,30 @@
 
 package org.gtri.util.iteratee.impl
 
-import org.gtri.util.scala.exelog.sideeffects._
+import org.gtri.util.scala.exelog.noop._
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.iteratees._
 import ImmutableBufferConversions._
 
 object TranslatorF {
-  implicit val classlog = ClassLog(classOf[TranslatorF[_,_]])
+  implicit val thisclass = classOf[TranslatorF[_,_]]
+  implicit val log : Log = Logger.getLog(thisclass)
 }
 class TranslatorF[A,B](f: A => B) extends Iteratee[A,B] {
   import TranslatorF._
 
   object Cont {
-    implicit val classlog = ClassLog(classOf[Cont])
+    implicit val thisclass = classOf[Cont]
+    implicit val log : Log = Logger.getLog(thisclass)
   }
   class Cont extends SingleItemCont[A,B] {
     import Cont._
 
     def apply(item: A) = {
-      implicit val log = enter("apply") { "item" -> item :: Nil }
-      +"Translate the item and return result"
-      Result(this, Chunk(f(item))) <~: log
+      log.block("apply", Seq("item" -> item)) {
+        +"Translate the item and return result"
+        Result(this, Chunk(f(item)))
+      }
     }
 
     def endOfInput = Success()

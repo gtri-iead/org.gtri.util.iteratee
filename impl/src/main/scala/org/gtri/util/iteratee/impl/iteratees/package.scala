@@ -22,7 +22,7 @@
 package org.gtri.util.iteratee.impl
 
 import box._
-import org.gtri.util.scala.exelog.sideeffects._
+import org.gtri.util.scala.exelog.noop._
 import org.gtri.util.issue.api.IssueHandlingStrategy
 import org.gtri.util.iteratee.api
 import ImmutableBufferConversions._
@@ -47,53 +47,53 @@ package object iteratees {
     }
   }
 
-  object boxToResult {
-    implicit val classlog = ClassLog(classOf[boxToResult[_]])
-  }
-  implicit class boxToResult[O](box : Box[O]) {
-    import boxToResult._
-    def toResult[I, OO >: O](ifGo : O => api.Iteratee.State[I,OO])(implicit issueHandlingStrategy : IssueHandlingStrategy) : api.Iteratee.State.Result[I,OO] = {
-      implicit val log = enter("toResult") { List("box" -> box, "issueHandlingStrategy" -> issueHandlingStrategy) }
-      val boxlog = box.written
-      box.value.fold(
-        ifGo = { output =>
-          +"Box is Success - return a result with the output and the next state of ifGo"
-          Result(
-            next = ifGo(output),
-            output = Chunk(output),
-            issues = boxlog
-          )
-        },
-        ifRecover = { recoverable =>
-          log warn "Box is Recover - is issueHandlingCode set to RECOVER?"
-          if(issueHandlingStrategy.canContinue(box.written.iterator)) {
-            log warn "Yes, recover"
-            val opt = recoverable.value
-            val bothLogs = recoverable.written ::: boxlog
-            log warn "Was recover successful?"
-            if(opt.isDefined) {
-              log warn "Yes, return result"
-              val output = opt.get
-              Result(
-                next = ifGo(output),
-                output = Chunk(output),
-                issues = bothLogs
-              )
-            } else {
-              log warn "No, recover failed return Failure"
-              Failure(issues = bothLogs)
-            }
-          } else {
-            log warn "No, issueHandlingCode not set to RECOVER return Failure"
-            Failure(issues = boxlog)
-          }
-        },
-        ifNoGo = {
-          log error "Box is nogo return Failure"
-          Failure(issues = boxlog)
-        }
-      )
-    }
-  }
+//  object boxToResult {
+//    implicit val classlog = ClassLog(classOf[boxToResult[_]])
+//  }
+//  implicit class boxToResult[O](box : Box[O]) {
+//    import boxToResult._
+//    def toResult[I, OO >: O](ifGo : O => api.Iteratee.State[I,OO])(implicit issueHandlingStrategy : IssueHandlingStrategy) : api.Iteratee.State.Result[I,OO] = {
+//      implicit val log = enter("toResult") { List("box" -> box, "issueHandlingStrategy" -> issueHandlingStrategy) }
+//      val boxlog = box.written
+//      box.value.fold(
+//        ifGo = { output =>
+//          +"Box is Success - return a result with the output and the next state of ifGo"
+//          Result(
+//            next = ifGo(output),
+//            output = Chunk(output),
+//            issues = boxlog
+//          )
+//        },
+//        ifRecover = { recoverable =>
+//          log warn "Box is Recover - is issueHandlingCode set to RECOVER?"
+//          if(issueHandlingStrategy.canContinue(box.written.iterator)) {
+//            log warn "Yes, recover"
+//            val opt = recoverable.value
+//            val bothLogs = recoverable.written ::: boxlog
+//            log warn "Was recover successful?"
+//            if(opt.isDefined) {
+//              log warn "Yes, return result"
+//              val output = opt.get
+//              Result(
+//                next = ifGo(output),
+//                output = Chunk(output),
+//                issues = bothLogs
+//              )
+//            } else {
+//              log warn "No, recover failed return Failure"
+//              Failure(issues = bothLogs)
+//            }
+//          } else {
+//            log warn "No, issueHandlingCode not set to RECOVER return Failure"
+//            Failure(issues = boxlog)
+//          }
+//        },
+//        ifNoGo = {
+//          log error "Box is nogo return Failure"
+//          Failure(issues = boxlog)
+//        }
+//      )
+//    }
+//  }
 
 }

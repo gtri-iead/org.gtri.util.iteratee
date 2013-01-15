@@ -22,35 +22,38 @@
 
 package org.gtri.util.iteratee.impl
 
-import org.gtri.util.scala.exelog.sideeffects._
+import org.gtri.util.scala.exelog.noop._
 import org.gtri.util.iteratee.api._
 import org.gtri.util.iteratee.impl.enumerators._
 import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 
 object SeqEnumerator {
-  implicit val classlog = ClassLog(classOf[SeqEnumerator[_]])
+  implicit val thisclass = classOf[SeqEnumerator[_]]
+  implicit val log : Log = Logger.getLog(thisclass)
 }
 class SeqEnumerator[A](traversable : Seq[A], chunkSize : Int = STD_CHUNK_SIZE) extends Enumerator[A] {
   require(chunkSize > 0)
   import SeqEnumerator._
 
   object BaseCont {
-    implicit val classlog = ClassLog(classOf[BaseCont[_]])
+    implicit val thisclass = classOf[BaseCont[_]]
+    implicit val log : Log = Logger.getLog(thisclass)
   }
   abstract class BaseCont[A](current : Seq[A]) extends enumerators.Cont[A] {
     import BaseCont._
     def step = {
-      implicit val log = enter("step")()
-      +"Step enumerator, split by chunkSize"
-      val (nextChunk, remaining) = current.splitAt(chunkSize)
-      ~s"nextChunk=$nextChunk, remaining=$remaining"
-      +"If any remaining then continue otherwise we are done"
-      if(remaining.isEmpty) {
-        +"Done"
-        Success(progress, nextChunk) <~: log
-      } else {
-        +"Continue"
-        Result(new Cont(remaining), nextChunk) <~: log
+      log.block("step") {
+        +"Step enumerator, split by chunkSize"
+        val (nextChunk, remaining) = current.splitAt(chunkSize)
+        ~s"nextChunk=$nextChunk, remaining=$remaining"
+        +"If any remaining then continue otherwise we are done"
+        if(remaining.isEmpty) {
+          +"Done"
+          Success(progress, nextChunk)
+        } else {
+          +"Continue"
+          Result(new Cont(remaining), nextChunk)
+        }
       }
     }
   }
@@ -60,12 +63,12 @@ class SeqEnumerator[A](traversable : Seq[A], chunkSize : Int = STD_CHUNK_SIZE) e
    * @tparam A
    */
   class Cont[A](current : Seq[A]) extends BaseCont[A](current) {
-    init { "current" -> current :: Nil }
     val progress = Progress.empty
   }
 
   object ContWithDefSize {
-    implicit val classlog = ClassLog(classOf[ContWithDefSize[_]])
+    implicit val thisclass = classOf[ContWithDefSize[_]]
+    implicit val log : Log = Logger.getLog(thisclass)
   }
   /**
    * When traversable has definite size, provide progress as enumeration proceeds
@@ -74,19 +77,19 @@ class SeqEnumerator[A](traversable : Seq[A], chunkSize : Int = STD_CHUNK_SIZE) e
    */
   class ContWithDefSize[A](current : Seq[A]) extends BaseCont[A](current) {
     import ContWithDefSize._
-    init { "current" -> current :: "progress" -> progress :: Nil }
     val progress = new Progress(0,traversable.size - current.size, traversable.size)
   }
 
   def initialState() = {
-    implicit val log = enter("initialState")()
-    +"If traversable has definite size then use ContWithDefSize otherwise Cont"
-    if (traversable.hasDefiniteSize) {
-      +"Traversable has definite size"
-      new ContWithDefSize(traversable) <~: log
-    } else {
-      +"Traversable does not have definite size"
-      new Cont(traversable) <~: log
+    log.block("initialState") {
+      +"If traversable has definite size then use ContWithDefSize otherwise Cont"
+      if (traversable.hasDefiniteSize) {
+        +"Traversable has definite size"
+        new ContWithDefSize(traversable)
+      } else {
+        +"Traversable does not have definite size"
+        new Cont(traversable)
+      }
     }
   }
 }

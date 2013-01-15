@@ -21,12 +21,13 @@
 */
 package org.gtri.util.iteratee.impl.enumerators
 
-import org.gtri.util.scala.exelog.sideeffects._
+import org.gtri.util.scala.exelog.noop._
 import org.gtri.util.iteratee.api.{ImmutableBuffers, Enumerator}
 
 
 object BaseDone {
-  implicit val classlog = ClassLog(classOf[BaseDone[_]])
+  implicit val thisclass = classOf[BaseDone[_]]
+  implicit val log = Logger.getLog(thisclass)
 }
 /**
  * A skeleton implementation for an Enumerator.State that is done. The FSM will not change with further step calls.
@@ -35,9 +36,10 @@ object BaseDone {
 abstract class BaseDone[A] extends Enumerator.State[A] {
   import BaseDone._
   def step() = {
-    implicit val log = enter("step")()
-    +"Enumerator is done returning empty result"
-    Result(this, ImmutableBuffers.empty()) <~: log
+    log.block("step") {
+      +"Enumerator is done returning empty result"
+      Result(this, ImmutableBuffers.empty())
+    }
   }
 }
 

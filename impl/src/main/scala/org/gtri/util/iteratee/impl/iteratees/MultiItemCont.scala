@@ -21,8 +21,8 @@
 */
 package org.gtri.util.iteratee.impl.iteratees
 
+import org.gtri.util.scala.exelog.noop._
 import org.gtri.util.iteratee.api.{StatusCode, Iteratee}
-import org.gtri.util.scala.exelog.sideeffects._
 import org.gtri.util.iteratee.impl.ImmutableBufferConversions._
 
 /**
